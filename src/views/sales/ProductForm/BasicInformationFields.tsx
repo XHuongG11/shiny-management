@@ -6,7 +6,7 @@ import { Field, FormikErrors, FormikTouched, FieldProps } from 'formik'
 
 type FormFieldsName = {
     name: string
-    productCode: string
+    material: string
     description: string
 }
 
@@ -36,15 +36,15 @@ const BasicInformationFields = (props: BasicInformationFields) => {
                 />
             </FormItem>
             <FormItem
-                label="Code"
-                invalid={(errors.productCode && touched.productCode) as boolean}
-                errorMessage={errors.productCode}
+                label="Material"
+                invalid={(errors.material && touched.material) as boolean}
+                errorMessage={errors.material}
             >
                 <Field
                     type="text"
                     autoComplete="off"
-                    name="productCode"
-                    placeholder="Code"
+                    name="material"
+                    placeholder="Material"
                     component={Input}
                 />
             </FormItem>

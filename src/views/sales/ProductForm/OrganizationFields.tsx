@@ -4,6 +4,9 @@ import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import CreatableSelect from 'react-select/creatable'
 import { Field, FormikErrors, FormikTouched, FieldProps } from 'formik'
+import { apiGetCategories } from '@/services/SalesService'
+import { useEffect, useState } from 'react'
+import { ApiResponse } from '@/@types/auth'
 
 type Options = {
     label: string
@@ -12,7 +15,7 @@ type Options = {
 
 type FormFieldsName = {
     category: string
-    tags: Options
+    collection: Options
     vendor: string
     brand: string
 }
@@ -22,26 +25,48 @@ type OrganizationFieldsProps = {
     errors: FormikErrors<FormFieldsName>
     values: {
         category: string
-        tags: Options
+        collection: Options
         [key: string]: unknown
     }
 }
+type Category = {
+    id: string
+    name: string
+}
 
-const categories = [
-    { label: 'Bags', value: 'bags' },
-    { label: 'Cloths', value: 'cloths' },
-    { label: 'Devices', value: 'devices' },
-    { label: 'Shoes', value: 'shoes' },
-    { label: 'Watches', value: 'watches' },
-]
-
-const tags = [
+const collection = [
     { label: 'trend', value: 'trend' },
     { label: 'unisex', value: 'unisex' },
 ]
 
 const OrganizationFields = (props: OrganizationFieldsProps) => {
-    const { values = { category: '', tags: [] }, touched, errors } = props
+    const { values = { category: '', collection: [] }, touched, errors } = props
+    const [categories, setCategories] = useState<Category[]>([])
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            setLoading(true)
+            try {
+                const response =
+                    await apiGetCategories<ApiResponse<Category[]>>()
+                console.log(response.data)
+                if (response) {
+                    setCategories(
+                        response.data.data.map((item) => ({
+                            id: item.id,
+                            name: item.name,
+                        })),
+                    )
+                }
+            } catch (error) {
+                console.error('Error fetching categories:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchCategories()
+    }, [])
 
     return (
         <AdaptableCard divider isLastChild className="mb-4">
@@ -57,43 +82,56 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                         errorMessage={errors.category}
                     >
                         <Field name="category">
-                            {({ field, form }: FieldProps) => (
-                                <Select
-                                    field={field}
-                                    form={form}
-                                    options={categories}
-                                    value={categories.filter(
-                                        (category) =>
-                                            category.value === values.category
-                                    )}
-                                    onChange={(option) =>
-                                        form.setFieldValue(
-                                            field.name,
-                                            option?.value
-                                        )
-                                    }
-                                />
-                            )}
+                            {({ field, form }: FieldProps) => {
+                                const selectedOption = categories.find(
+                                    (category) => category.id === field.value,
+                                )
+
+                                return (
+                                    <Select
+                                        options={categories.map((category) => ({
+                                            label: category.name,
+                                            value: category.id,
+                                        }))}
+                                        value={
+                                            selectedOption
+                                                ? {
+                                                      label: selectedOption.name,
+                                                      value: selectedOption.id,
+                                                  }
+                                                : null
+                                        }
+                                        onChange={(option) =>
+                                            form.setFieldValue(
+                                                field.name,
+                                                option?.value,
+                                            )
+                                        }
+                                        isLoading={loading}
+                                    />
+                                )
+                            }}
                         </Field>
                     </FormItem>
                 </div>
                 <div className="col-span-1">
                     <FormItem
-                        label="Tags"
+                        label="collection"
                         invalid={
-                            (errors.tags && touched.tags) as unknown as boolean
+                            (errors.collection &&
+                                touched.collection) as unknown as boolean
                         }
-                        errorMessage={errors.tags as string}
+                        errorMessage={errors.collection as string}
                     >
-                        <Field name="tags">
+                        <Field name="collection">
                             {({ field, form }: FieldProps) => (
                                 <Select
                                     isMulti
                                     componentAs={CreatableSelect}
                                     field={field}
                                     form={form}
-                                    options={tags}
-                                    value={values.tags}
+                                    options={collection}
+                                    value={values.collection}
                                     onChange={(option) =>
                                         form.setFieldValue(field.name, option)
                                     }

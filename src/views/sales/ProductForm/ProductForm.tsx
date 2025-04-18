@@ -20,7 +20,7 @@ type FormikRef = FormikProps<any>
 type InitialData = {
     id?: string
     name?: string
-    productCode?: string
+    material?: string
     img?: string
     imgList?: {
         id: string
@@ -120,7 +120,7 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
         initialData = {
             id: '',
             name: '',
-            productCode: '',
+            material: '',
             img: '',
             imgList: [],
             category: '',
@@ -150,7 +150,7 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
                     ...initialData,
                     tags: initialData?.tags
                         ? initialData.tags.map((value) => ({
-                              label: value,
+                              label: 'value',
                               value,
                           }))
                         : [],

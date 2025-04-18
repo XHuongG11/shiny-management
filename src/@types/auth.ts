@@ -1,16 +1,25 @@
 export type SignInCredential = {
-    userName: string
+    email: string
     password: string
+    role: string
 }
-
+export type ApiResponse<T> = {
+    code: string
+    message: string
+    data: T
+}
 export type SignInResponse = {
-    token: string
     user: {
-        userName: string
-        authority: string[]
-        avatar: string
+        username: string
         email: string
+        phone: string
+        fullName: string
+        dob: string
+        gender: string
+        status: string
+        role: string
     }
+    token: string
 }
 
 export type SignUpResponse = SignInResponse

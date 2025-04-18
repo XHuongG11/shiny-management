@@ -6,14 +6,22 @@ import type {
     ResetPassword,
     SignInResponse,
     SignUpResponse,
+    ApiResponse,
 } from '@/@types/auth'
 
 export async function apiSignIn(data: SignInCredential) {
-    return ApiService.fetchData<SignInResponse>({
-        url: '/sign-in',
-        method: 'post',
-        data,
-    })
+    if (data.role === 'Staff')
+        return ApiService.fetchData<ApiResponse<SignInResponse>>({
+            url: '/auth/token?role=staff',
+            method: 'post',
+            data,
+        })
+    else if (data.role === 'Manager')
+        return ApiService.fetchData<ApiResponse<SignInResponse>>({
+            url: '/auth/token?role=manager',
+            method: 'post',
+            data,
+        })
 }
 
 export async function apiSignUp(data: SignUpCredential) {
@@ -24,12 +32,12 @@ export async function apiSignUp(data: SignUpCredential) {
     })
 }
 
-export async function apiSignOut() {
-    return ApiService.fetchData({
-        url: '/sign-out',
-        method: 'post',
-    })
-}
+// export async function apiSignOut() {
+//     return ApiService.fetchData({
+//         url: '/sign-out',
+//         method: 'post',
+//     })
+// }
 
 export async function apiForgotPassword(data: ForgotPassword) {
     return ApiService.fetchData({

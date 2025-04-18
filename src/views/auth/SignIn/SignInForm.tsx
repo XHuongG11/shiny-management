@@ -7,9 +7,10 @@ import PasswordInput from '@/components/shared/PasswordInput'
 import ActionLink from '@/components/shared/ActionLink'
 import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
 import useAuth from '@/utils/hooks/useAuth'
-import { Field, Form, Formik } from 'formik'
+import { Field, FieldProps, Form, Formik } from 'formik'
 import * as Yup from 'yup'
 import type { CommonProps } from '@/@types/common'
+import { Select } from '@/components/ui'
 
 interface SignInFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -18,14 +19,16 @@ interface SignInFormProps extends CommonProps {
 }
 
 type SignInFormSchema = {
-    userName: string
+    email: string
     password: string
+    role: string
     rememberMe: boolean
 }
 
 const validationSchema = Yup.object().shape({
-    userName: Yup.string().required('Please enter your user name'),
+    email: Yup.string().required('Please enter your user name'),
     password: Yup.string().required('Please enter your password'),
+    role: Yup.string().required('Please select your role'),
     rememberMe: Yup.bool(),
 })
 
@@ -43,17 +46,16 @@ const SignInForm = (props: SignInFormProps) => {
 
     const onSignIn = async (
         values: SignInFormSchema,
-        setSubmitting: (isSubmitting: boolean) => void
+        setSubmitting: (isSubmitting: boolean) => void,
     ) => {
-        const { userName, password } = values
+        const { email, password, role } = values
         setSubmitting(true)
 
-        const result = await signIn({ userName, password })
+        const result = await signIn({ email, password, role })
 
         if (result?.status === 'failed') {
             setMessage(result.message)
         }
-
         setSubmitting(false)
     }
 
@@ -66,8 +68,9 @@ const SignInForm = (props: SignInFormProps) => {
             )}
             <Formik
                 initialValues={{
-                    userName: 'admin',
-                    password: '123Qwe',
+                    email: '',
+                    password: '',
+                    role: 'Manager',
                     rememberMe: true,
                 }}
                 validationSchema={validationSchema}
@@ -83,18 +86,17 @@ const SignInForm = (props: SignInFormProps) => {
                     <Form>
                         <FormContainer>
                             <FormItem
-                                label="User Name"
+                                label="Email"
                                 invalid={
-                                    (errors.userName &&
-                                        touched.userName) as boolean
+                                    (errors.email && touched.email) as boolean
                                 }
-                                errorMessage={errors.userName}
+                                errorMessage={errors.email}
                             >
                                 <Field
                                     type="text"
                                     autoComplete="off"
-                                    name="userName"
-                                    placeholder="User Name"
+                                    name="email"
+                                    placeholder="Email"
                                     component={Input}
                                 />
                             </FormItem>
@@ -112,6 +114,36 @@ const SignInForm = (props: SignInFormProps) => {
                                     placeholder="Password"
                                     component={PasswordInput}
                                 />
+                            </FormItem>
+                            <FormItem label="Role">
+                                <Field name="role">
+                                    {({ field, form }: FieldProps) => {
+                                        const options = [
+                                            {
+                                                label: 'Manager',
+                                                value: 'Manager',
+                                            },
+                                            { label: 'Staff', value: 'Staff' },
+                                        ]
+
+                                        return (
+                                            <Select
+                                                options={options}
+                                                value={options.find(
+                                                    (option) =>
+                                                        option.value ===
+                                                        field.value,
+                                                )}
+                                                onChange={(option) =>
+                                                    form.setFieldValue(
+                                                        field.name,
+                                                        option?.value,
+                                                    )
+                                                }
+                                            />
+                                        )
+                                    }}
+                                </Field>
                             </FormItem>
                             <div className="flex justify-between mb-6">
                                 <Field
