@@ -28,18 +28,24 @@ const sideNavCollapseStyle = {
 const SideNav = () => {
     const themeColor = useAppSelector((state) => state.theme.themeColor)
     const primaryColorLevel = useAppSelector(
-        (state) => state.theme.primaryColorLevel
+        (state) => state.theme.primaryColorLevel,
     )
     const navMode = useAppSelector((state) => state.theme.navMode)
     const mode = useAppSelector((state) => state.theme.mode)
     const direction = useAppSelector((state) => state.theme.direction)
     const currentRouteKey = useAppSelector(
-        (state) => state.base.common.currentRouteKey
+        (state) => state.base.common.currentRouteKey,
     )
     const sideNavCollapse = useAppSelector(
-        (state) => state.theme.layout.sideNavCollapse
+        (state) => state.theme.layout.sideNavCollapse,
     )
-    const userAuthority = useAppSelector((state) => state.auth.user.authority)
+    let userAuthority = [] as string[]
+    const role = useAppSelector((state) => state.auth.user.role)
+    if (role === 'Manager') {
+        userAuthority = ['admin', 'user']
+    } else if (role === 'Staff') {
+        userAuthority = ['user']
+    }
 
     const { larger } = useResponsive()
 
@@ -68,7 +74,7 @@ const SideNav = () => {
             collapsed={sideNavCollapse}
             navigationTree={navigationConfig}
             routeKey={currentRouteKey}
-            userAuthority={userAuthority as string[]}
+            userAuthority={userAuthority}
             direction={direction}
         />
     )
@@ -83,7 +89,7 @@ const SideNav = () => {
                     className={classNames(
                         'side-nav',
                         sideNavColor(),
-                        !sideNavCollapse && 'side-nav-expand'
+                        !sideNavCollapse && 'side-nav-expand',
                     )}
                 >
                     <div className="side-nav-header">

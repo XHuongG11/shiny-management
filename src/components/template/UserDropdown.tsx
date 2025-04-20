@@ -28,20 +28,19 @@ const dropdownItemList: DropdownList[] = [
 ]
 
 const _UserDropdown = ({ className }: CommonProps) => {
-    const { avatar, userName, authority, email } = useAppSelector(
-        (state) => state.auth.user,
-    )
+    const { username, role, email } = useAppSelector((state) => state.auth.user)
 
     const { signOut } = useAuth()
 
     const UserAvatar = (
         <div className={classNames(className, 'flex items-center gap-2')}>
-            <Avatar size={32} shape="circle" src={avatar} />
+            <Avatar size={32} shape="circle" src={''} />
             <div className="hidden md:block">
                 <div className="text-xs capitalize">
-                    {authority?.[0] || 'guest'}
+                    {/* {authority?.[0] || 'guest'} */}
+                    {[role]?.[0] || 'guest'}
                 </div>
-                <div className="font-bold">{userName}</div>
+                <div className="font-bold">{username}</div>
             </div>
         </div>
     )
@@ -55,10 +54,10 @@ const _UserDropdown = ({ className }: CommonProps) => {
             >
                 <Dropdown.Item variant="header">
                     <div className="py-2 px-3 flex items-center gap-2">
-                        <Avatar shape="circle" src={avatar} />
+                        <Avatar shape="circle" src={'avatar'} />
                         <div>
                             <div className="font-bold text-gray-900 dark:text-gray-100">
-                                {userName}
+                                {username}
                             </div>
                             <div className="text-xs">{email}</div>
                         </div>
