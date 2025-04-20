@@ -50,12 +50,11 @@ export async function apiPutSalesProduct<T, U extends Record<string, unknown>>(
     })
 }
 
-export async function apiCreateSalesProduct<
-    T,
-    U extends Record<string, unknown>,
->(data: U) {
+export async function apiCreateProduct<T, U extends Record<string, unknown>>(
+    data: U,
+) {
     return ApiService.fetchData<T>({
-        url: '/sales/products/create',
+        url: '/products/add',
         method: 'post',
         data,
     })
@@ -98,5 +97,21 @@ export async function apiGetCategories<T extends Record<string, unknown>>() {
         url: '/categories/all',
         method: 'get',
         authRequired: false,
+    })
+}
+
+export async function apiGetCollections<T extends Record<string, unknown>>() {
+    return ApiService.fetchData<T>({
+        url: '/collections/all',
+        method: 'get',
+        authRequired: false,
+    })
+}
+
+export async function apiAddProductImage(data: FormData) {
+    return ApiService.fetchData({
+        url: '/images/upload',
+        method: 'post',
+        data,
     })
 }

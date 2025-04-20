@@ -13,6 +13,7 @@ type Image = {
     id: string
     name: string
     img: string
+    // files: File
 }
 
 type FormModel = {
@@ -146,7 +147,7 @@ const ProductImages = (props: ProductImagesProps) => {
     const onUpload = (
         form: FormikProps<FormModel>,
         field: FieldInputProps<FormModel>,
-        files: File[]
+        files: File[],
     ) => {
         let imageId = '1-img-0'
         const latestUpload = files.length - 1
@@ -162,6 +163,7 @@ const ProductImages = (props: ProductImagesProps) => {
             id: imageId,
             name: files[latestUpload].name,
             img: URL.createObjectURL(files[latestUpload]),
+            file: files[latestUpload],
         }
         const imageList = [...values.imgList, ...[image]]
         console.log('imageList', imageList)
@@ -171,7 +173,7 @@ const ProductImages = (props: ProductImagesProps) => {
     const handleImageDelete = (
         form: FormikProps<FormModel>,
         field: FieldInputProps<FormModel>,
-        deletedImg: Image
+        deletedImg: Image,
     ) => {
         let imgList = cloneDeep(values.imgList)
         imgList = imgList.filter((img) => img.id !== deletedImg.id)

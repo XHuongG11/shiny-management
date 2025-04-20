@@ -1,61 +1,77 @@
+import { ApiResponse } from '@/@types/auth'
 import AdaptableCard from '@/components/shared/AdaptableCard'
+import { Button } from '@/components/ui'
 import { FormItem } from '@/components/ui/Form'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
-import CreatableSelect from 'react-select/creatable'
-import { Field, FormikErrors, FormikTouched, FieldProps } from 'formik'
-import { apiGetCategories } from '@/services/SalesService'
+import { apiGetCategories, apiGetCollections } from '@/services/SalesService'
+import {
+    Field,
+    FieldArray,
+    FieldProps,
+    FormikErrors,
+    FormikTouched,
+} from 'formik'
 import { useEffect, useState } from 'react'
-import { ApiResponse } from '@/@types/auth'
-
-type Options = {
-    label: string
-    value: string
-}[]
+import { IoIosAddCircle } from 'react-icons/io'
+import CreatableSelect from 'react-select/creatable'
+import { FiTrash } from 'react-icons/fi'
+import { Category, Collection } from '@/@types/product'
 
 type FormFieldsName = {
-    category: string
-    collection: Options
-    vendor: string
-    brand: string
+    category: Category
+    collection: Collection
+    attributes: {
+        name: string
+        value: string
+    }
 }
 
 type OrganizationFieldsProps = {
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
     values: {
-        category: string
-        collection: Options
+        category: Category
+        collection: Collection
+        attributes: {
+            name: string
+            value: string
+        }[]
         [key: string]: unknown
     }
 }
-type Category = {
-    id: string
-    name: string
-}
-
-const collection = [
-    { label: 'trend', value: 'trend' },
-    { label: 'unisex', value: 'unisex' },
-]
 
 const OrganizationFields = (props: OrganizationFieldsProps) => {
-    const { values = { category: '', collection: [] }, touched, errors } = props
+    const { values, touched, errors } = props
     const [categories, setCategories] = useState<Category[]>([])
+    const [collections, setCollections] = useState<Collection[]>([])
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         const fetchCategories = async () => {
             setLoading(true)
             try {
-                const response =
+                const categoryResp =
                     await apiGetCategories<ApiResponse<Category[]>>()
-                console.log(response.data)
-                if (response) {
+                console.log(categoryResp.data)
+                if (categoryResp) {
                     setCategories(
-                        response.data.data.map((item) => ({
+                        categoryResp.data.data.map((item) => ({
                             id: item.id,
                             name: item.name,
+                            parent: item.parent,
+                        })),
+                    )
+                }
+                const collectionResp =
+                    await apiGetCollections<ApiResponse<Collection[]>>()
+                console.log(collectionResp.data)
+                if (collectionResp) {
+                    setCollections(
+                        collectionResp.data.data.map((item) => ({
+                            id: item.id,
+                            name: item.name,
+                            description: item.description,
                         })),
                     )
                 }
@@ -70,34 +86,36 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
 
     return (
         <AdaptableCard divider isLastChild className="mb-4">
-            <h5>Organizations</h5>
-            <p className="mb-6">Section to config the product attribute</p>
+            <h5>Category & Collection</h5>
+            <p className="mb-6"></p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-1">
                     <FormItem
                         label="Category"
                         invalid={
-                            (errors.category && touched.category) as boolean
+                            (errors.collection &&
+                                touched.collection) as unknown as boolean
                         }
-                        errorMessage={errors.category}
+                        errorMessage={errors.collection as string}
                     >
                         <Field name="category">
                             {({ field, form }: FieldProps) => {
-                                const selectedOption = categories.find(
-                                    (category) => category.id === field.value,
-                                )
+                                const selectedOption = field.value
 
                                 return (
                                     <Select
+                                        componentAs={CreatableSelect}
+                                        field={field}
+                                        form={form}
                                         options={categories.map((category) => ({
                                             label: category.name,
-                                            value: category.id,
+                                            value: category,
                                         }))}
                                         value={
                                             selectedOption
                                                 ? {
                                                       label: selectedOption.name,
-                                                      value: selectedOption.id,
+                                                      value: selectedOption,
                                                   }
                                                 : null
                                         }
@@ -107,6 +125,7 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                                                 option?.value,
                                             )
                                         }
+                                        placeholder="Category"
                                         isLoading={loading}
                                     />
                                 )
@@ -116,7 +135,7 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                 </div>
                 <div className="col-span-1">
                     <FormItem
-                        label="collection"
+                        label="Collection"
                         invalid={
                             (errors.collection &&
                                 touched.collection) as unknown as boolean
@@ -124,55 +143,127 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                         errorMessage={errors.collection as string}
                     >
                         <Field name="collection">
-                            {({ field, form }: FieldProps) => (
-                                <Select
-                                    isMulti
-                                    componentAs={CreatableSelect}
-                                    field={field}
-                                    form={form}
-                                    options={collection}
-                                    value={values.collection}
-                                    onChange={(option) =>
-                                        form.setFieldValue(field.name, option)
-                                    }
-                                />
-                            )}
+                            {({ field, form }: FieldProps) => {
+                                const selectedOption = field.value
+                                return (
+                                    <Select
+                                        // isMulti // chọn nhiều option
+                                        componentAs={CreatableSelect}
+                                        field={field}
+                                        form={form}
+                                        options={collections.map(
+                                            (collection) => ({
+                                                label: collection.name,
+                                                value: collection,
+                                            }),
+                                        )}
+                                        value={
+                                            selectedOption
+                                                ? {
+                                                      label: selectedOption.name,
+                                                      value: selectedOption,
+                                                  }
+                                                : null
+                                        }
+                                        onChange={(option) =>
+                                            form.setFieldValue(
+                                                field.name,
+                                                option?.value,
+                                            )
+                                        }
+                                        placeholder="Collection"
+                                    />
+                                )
+                            }}
                         </Field>
                     </FormItem>
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="col-span-1">
-                    <FormItem
-                        label="Brand"
-                        invalid={(errors.brand && touched.brand) as boolean}
-                        errorMessage={errors.brand}
-                    >
-                        <Field
-                            type="text"
-                            autoComplete="off"
-                            name="brand"
-                            placeholder="Brand"
-                            component={Input}
-                        />
-                    </FormItem>
-                </div>
-                <div className="col-span-1">
-                    <FormItem
-                        label="Vendor"
-                        invalid={(errors.vendor && touched.vendor) as boolean}
-                        errorMessage={errors.vendor}
-                    >
-                        <Field
-                            type="text"
-                            autoComplete="off"
-                            name="vendor"
-                            placeholder="Vendor"
-                            component={Input}
-                        />
-                    </FormItem>
-                </div>
-            </div>
+
+            <h5>Attributes</h5>
+            <p className="mb-6"></p>
+            <FieldArray name="attributes">
+                {({ push, remove }) => (
+                    <>
+                        {values.attributes.map((_, index) => (
+                            <div key={index}>
+                                <p className="mb-6">Attribute {index + 1}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="col-span-1">
+                                        <FormItem
+                                            label="Name"
+                                            invalid={
+                                                (errors.attributes?.name &&
+                                                    touched.attributes
+                                                        ?.name) as boolean
+                                            }
+                                            errorMessage={
+                                                errors.attributes?.name
+                                            }
+                                        >
+                                            <Field
+                                                type="text"
+                                                autoComplete="off"
+                                                name={`attributes[${index}].name`}
+                                                placeholder="Name"
+                                                component={Input}
+                                            />
+                                        </FormItem>
+                                    </div>
+                                    <div className="col-span-1">
+                                        <FormItem
+                                            label="Value"
+                                            invalid={
+                                                (errors.attributes?.value &&
+                                                    touched.attributes
+                                                        ?.value) as boolean
+                                            }
+                                            errorMessage={
+                                                errors.attributes?.value
+                                            }
+                                        >
+                                            <Field
+                                                type="text"
+                                                autoComplete="off"
+                                                name={`attributes[${index}].value`}
+                                                placeholder="Value"
+                                                component={Input}
+                                            />
+                                        </FormItem>
+                                    </div>
+                                    {values.attributes.length > 1 && (
+                                        <div className="col-span-1 flex items-center">
+                                            <Button
+                                                size="sm"
+                                                variant="solid"
+                                                color="orange-500"
+                                                icon={<FiTrash />}
+                                                type="button"
+                                                onClick={() => remove(index)}
+                                            ></Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        <div className="col-span-1">
+                            <Button
+                                size="sm"
+                                variant="solid"
+                                color="green-500"
+                                icon={<IoIosAddCircle />}
+                                type="button"
+                                onClick={() =>
+                                    push({
+                                        name: '',
+                                        value: '',
+                                    })
+                                }
+                            ></Button>
+                        </div>
+                    </>
+                )}
+            </FieldArray>
         </AdaptableCard>
     )
 }

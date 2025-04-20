@@ -13,31 +13,36 @@ import cloneDeep from 'lodash/cloneDeep'
 import { HiOutlineTrash } from 'react-icons/hi'
 import { AiOutlineSave } from 'react-icons/ai'
 import * as Yup from 'yup'
+import { Category, Collection } from '@/@types/product'
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 type FormikRef = FormikProps<any>
 
 type InitialData = {
     id?: string
-    name?: string
-    material?: string
-    img?: string
+    name: string
+    material: string
+    description: string
+    // img?: string
     imgList?: {
         id: string
         name: string
         img: string
+        file: File
     }[]
-    category?: string
-    price?: number
-    stock?: number
-    status?: number
-    costPerItem?: number
-    bulkDiscountPrice?: number
-    taxRate?: number
-    tags?: string[]
-    brand?: string
-    vendor?: string
-    description?: string
+    category: Category
+    collection: Collection
+    attributes: {
+        name: string
+        value: string
+    }[]
+    productSizes: {
+        size: number
+        stock: number
+        price: number
+        discountPrice: number
+        discountRate: number
+    }[]
 }
 
 export type FormModel = Omit<InitialData, 'tags'> & {
@@ -62,9 +67,6 @@ const { useUniqueId } = hooks
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().required('Product Name Required'),
-    price: Yup.number().required('Price Required'),
-    stock: Yup.number().required('SKU Required'),
-    category: Yup.string().required('Category Required'),
 })
 
 const DeleteProductButton = ({ onDelete }: { onDelete: OnDelete }) => {
@@ -118,22 +120,38 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
     const {
         type,
         initialData = {
-            id: '',
-            name: '',
+            title: '',
             material: '',
-            img: '',
+            // img: '',
             imgList: [],
-            category: '',
-            price: 0,
-            stock: 0,
-            status: 0,
-            costPerItem: 0,
-            bulkDiscountPrice: 0,
-            taxRate: 6,
-            tags: [],
-            brand: '',
-            vendor: '',
             description: '',
+            category: {
+                id: null,
+                name: '',
+                parent: null,
+            },
+            collection: [
+                {
+                    id: null,
+                    name: '',
+                    description: '',
+                },
+            ],
+            attributes: [
+                {
+                    name: '',
+                    value: '',
+                },
+            ],
+            productSizes: [
+                {
+                    size: null,
+                    stock: 0,
+                    price: 0,
+                    discountPrice: 0,
+                    discountRate: 0,
+                },
+            ],
         },
         onFormSubmit,
         onDiscard,
@@ -148,28 +166,17 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
                 innerRef={ref}
                 initialValues={{
                     ...initialData,
-                    tags: initialData?.tags
-                        ? initialData.tags.map((value) => ({
-                              label: 'value',
-                              value,
-                          }))
-                        : [],
                 }}
-                validationSchema={validationSchema}
+                validationSchema={undefined}
                 onSubmit={(values: FormModel, { setSubmitting }) => {
+                    console.log('onSubmit triggered! values:', values)
                     const formData = cloneDeep(values)
-                    formData.tags = formData.tags.map((tag) => {
-                        if (typeof tag !== 'string') {
-                            return tag.value
-                        }
-                        return tag
-                    })
-                    if (type === 'new') {
-                        formData.id = newId
-                        if (formData.imgList && formData.imgList.length > 0) {
-                            formData.img = formData.imgList[0].img
-                        }
-                    }
+                    // if (type === 'new') {
+                    //     // formData.id = newId
+                    //     // if (formData.imgList && formData.imgList.length > 0) {
+                    //     //     formData.img = formData.imgList[0].img
+                    //     // }
+                    // }
                     onFormSubmit?.(formData, setSubmitting)
                 }}
             >
@@ -182,11 +189,12 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
                                         touched={touched}
                                         errors={errors}
                                     />
-                                    <PricingFields
+                                    <OrganizationFields
                                         touched={touched}
                                         errors={errors}
+                                        values={values}
                                     />
-                                    <OrganizationFields
+                                    <PricingFields
                                         touched={touched}
                                         errors={errors}
                                         values={values}

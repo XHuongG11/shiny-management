@@ -4,8 +4,13 @@ import { useAppSelector } from '@/store'
 
 const HorizontalNav = () => {
     const mode = useAppSelector((state) => state.theme.mode)
-    const userAuthority = useAppSelector((state) => state.auth.user.authority)
-
+    let userAuthority = [] as string[]
+    const role = useAppSelector((state) => state.auth.user.role)
+    if (role === 'Manager') {
+        userAuthority = ['admin', 'user']
+    } else if (role === 'Staff') {
+        userAuthority = ['user']
+    }
     const { larger } = useResponsive()
 
     return (

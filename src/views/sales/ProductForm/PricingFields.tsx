@@ -8,24 +8,38 @@ import {
     FormikTouched,
     FieldProps,
     FieldInputProps,
+    FieldArray,
 } from 'formik'
 import type { ComponentType } from 'react'
 import type { InputProps } from '@/components/ui/Input'
+import { Button } from '@/components/ui'
+import { IoIosAddCircle } from 'react-icons/io'
+import { FiTrash } from 'react-icons/fi'
 
 type FormFieldsName = {
+    size: number
     stock: number
     price: number
-    bulkDiscountPrice: number
-    taxRate: number
+    discountPrice: number
+    discountRate: number
 }
 
 type PricingFieldsProps = {
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
+    values: {
+        productSizes: {
+            size: number
+            stock: number
+            price: number
+            discountPrice: number
+            discountRate: number
+        }[]
+    }
 }
 
 const PriceInput = (props: InputProps) => {
-    return <Input {...props} value={props.field.value} prefix="$" />
+    return <Input {...props} value={props.field.value} prefix="VND" />
 }
 
 const NumberInput = (props: InputProps) => {
@@ -56,134 +70,255 @@ const NumericFormatInput = ({
 }
 
 const PricingFields = (props: PricingFieldsProps) => {
-    const { touched, errors } = props
+    const { values, touched, errors } = props
 
     return (
         <AdaptableCard divider className="mb-4">
-            <h5>Pricing</h5>
-            <p className="mb-6">Section to config product sales information</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="col-span-1">
-                    <FormItem
-                        label="SKU"
-                        invalid={(errors.stock && touched.stock) as boolean}
-                        errorMessage={errors.stock}
-                    >
-                        <Field name="stock">
-                            {({ field, form }: FieldProps) => {
-                                return (
-                                    <NumericFormatInput
-                                        form={form}
-                                        field={field}
-                                        placeholder="Stock"
-                                        customInput={
-                                            NumberInput as ComponentType
-                                        }
-                                        onValueChange={(e) => {
-                                            form.setFieldValue(
-                                                field.name,
-                                                e.value
-                                            )
-                                        }}
-                                    />
-                                )
-                            }}
-                        </Field>
-                    </FormItem>
-                </div>
-                <div className="col-span-1">
-                    <FormItem
-                        label="Price"
-                        invalid={(errors.price && touched.price) as boolean}
-                        errorMessage={errors.price}
-                    >
-                        <Field name="price">
-                            {({ field, form }: FieldProps) => {
-                                return (
-                                    <NumericFormatInput
-                                        form={form}
-                                        field={field}
-                                        placeholder="Price"
-                                        customInput={
-                                            PriceInput as ComponentType
-                                        }
-                                        onValueChange={(e) => {
-                                            form.setFieldValue(
-                                                field.name,
-                                                e.value
-                                            )
-                                        }}
-                                    />
-                                )
-                            }}
-                        </Field>
-                    </FormItem>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="col-span-1">
-                    <FormItem
-                        label="Bulk Discount Price"
-                        invalid={
-                            (errors.bulkDiscountPrice &&
-                                touched.bulkDiscountPrice) as boolean
-                        }
-                        errorMessage={errors.bulkDiscountPrice}
-                    >
-                        <Field name="bulkDiscountPrice">
-                            {({ field, form }: FieldProps) => {
-                                return (
-                                    <NumericFormatInput
-                                        form={form}
-                                        field={field}
-                                        placeholder="Bulk Discount Price"
-                                        customInput={
-                                            PriceInput as ComponentType
-                                        }
-                                        onValueChange={(e) => {
-                                            form.setFieldValue(
-                                                field.name,
-                                                e.value
-                                            )
-                                        }}
-                                    />
-                                )
-                            }}
-                        </Field>
-                    </FormItem>
-                </div>
-                <div className="col-span-1">
-                    <FormItem
-                        label="Tax Rate(%)"
-                        invalid={(errors.taxRate && touched.taxRate) as boolean}
-                        errorMessage={errors.taxRate}
-                    >
-                        <Field name="taxRate">
-                            {({ field, form }: FieldProps) => {
-                                return (
-                                    <NumericFormatInput
-                                        form={form}
-                                        field={field}
-                                        placeholder="Tax Rate"
-                                        customInput={
-                                            TaxRateInput as ComponentType
-                                        }
-                                        isAllowed={({ floatValue }) =>
-                                            (floatValue as number) <= 100
-                                        }
-                                        onValueChange={(e) => {
-                                            form.setFieldValue(
-                                                field.name,
-                                                e.value
-                                            )
-                                        }}
-                                    />
-                                )
-                            }}
-                        </Field>
-                    </FormItem>
-                </div>
-            </div>
+            <h5>Product Size</h5>
+            <p className="mb-6">Section to config product size</p>
+            <FieldArray name="productSizes">
+                {({ remove, push }) => (
+                    <>
+                        {values.productSizes.map((_, index) => (
+                            <div key={index}>
+                                <p className="mb-6">Product size {index + 1}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="col-span-1">
+                                        <FormItem
+                                            label="Size"
+                                            invalid={
+                                                (errors.stock &&
+                                                    touched.stock) as boolean
+                                            }
+                                            errorMessage={errors.stock}
+                                        >
+                                            <Field
+                                                name={`productSizes[${index}].size`}
+                                            >
+                                                {({
+                                                    field,
+                                                    form,
+                                                }: FieldProps) => {
+                                                    return (
+                                                        <NumericFormatInput
+                                                            form={form}
+                                                            field={field}
+                                                            placeholder="Size"
+                                                            customInput={
+                                                                NumberInput as ComponentType
+                                                            }
+                                                            onValueChange={(
+                                                                e,
+                                                            ) => {
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    e.value,
+                                                                )
+                                                            }}
+                                                        />
+                                                    )
+                                                }}
+                                            </Field>
+                                        </FormItem>
+                                    </div>
+                                    <div className="col-span-1">
+                                        <FormItem
+                                            label="Stock"
+                                            invalid={
+                                                (errors.stock &&
+                                                    touched.stock) as boolean
+                                            }
+                                            errorMessage={errors.stock}
+                                        >
+                                            <Field
+                                                name={`productSizes[${index}].stock`}
+                                            >
+                                                {({
+                                                    field,
+                                                    form,
+                                                }: FieldProps) => {
+                                                    return (
+                                                        <NumericFormatInput
+                                                            form={form}
+                                                            field={field}
+                                                            placeholder="Stock"
+                                                            customInput={
+                                                                NumberInput as ComponentType
+                                                            }
+                                                            onValueChange={(
+                                                                e,
+                                                            ) => {
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    e.value,
+                                                                )
+                                                            }}
+                                                        />
+                                                    )
+                                                }}
+                                            </Field>
+                                        </FormItem>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="col-span-1">
+                                        <FormItem
+                                            label="Price"
+                                            invalid={
+                                                (errors.price &&
+                                                    touched.price) as boolean
+                                            }
+                                            errorMessage={errors.price}
+                                        >
+                                            <Field
+                                                name={`productSizes[${index}].price`}
+                                            >
+                                                {({
+                                                    field,
+                                                    form,
+                                                }: FieldProps) => {
+                                                    return (
+                                                        <NumericFormatInput
+                                                            form={form}
+                                                            field={field}
+                                                            placeholder="Price"
+                                                            customInput={
+                                                                PriceInput as ComponentType
+                                                            }
+                                                            onValueChange={(
+                                                                e,
+                                                            ) => {
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    e.value,
+                                                                )
+                                                            }}
+                                                        />
+                                                    )
+                                                }}
+                                            </Field>
+                                        </FormItem>
+                                    </div>
+                                    <div className="col-span-1">
+                                        <FormItem
+                                            label="Discount Price"
+                                            invalid={
+                                                (errors.discountPrice &&
+                                                    touched.discountPrice) as boolean
+                                            }
+                                            errorMessage={errors.discountPrice}
+                                        >
+                                            <Field
+                                                name={`productSizes[${index}].discountPrice`}
+                                            >
+                                                {({
+                                                    field,
+                                                    form,
+                                                }: FieldProps) => {
+                                                    return (
+                                                        <NumericFormatInput
+                                                            form={form}
+                                                            field={field}
+                                                            placeholder="Discount Price"
+                                                            customInput={
+                                                                PriceInput as ComponentType
+                                                            }
+                                                            onValueChange={(
+                                                                e,
+                                                            ) => {
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    e.value,
+                                                                )
+                                                            }}
+                                                        />
+                                                    )
+                                                }}
+                                            </Field>
+                                        </FormItem>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="col-span-1">
+                                        <FormItem
+                                            label="Discount Rate %"
+                                            invalid={
+                                                (errors.discountRate &&
+                                                    touched.discountRate) as boolean
+                                            }
+                                            errorMessage={errors.discountRate}
+                                        >
+                                            <Field
+                                                name={`productSizes[${index}].discountRate`}
+                                            >
+                                                {({
+                                                    field,
+                                                    form,
+                                                }: FieldProps) => {
+                                                    return (
+                                                        <NumericFormatInput
+                                                            form={form}
+                                                            field={field}
+                                                            placeholder="Discount Rate"
+                                                            customInput={
+                                                                TaxRateInput as ComponentType
+                                                            }
+                                                            isAllowed={({
+                                                                floatValue,
+                                                            }) =>
+                                                                (floatValue as number) <=
+                                                                100
+                                                            }
+                                                            onValueChange={(
+                                                                e,
+                                                            ) => {
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    e.value,
+                                                                )
+                                                            }}
+                                                        />
+                                                    )
+                                                }}
+                                            </Field>
+                                        </FormItem>
+                                    </div>
+                                    {values.productSizes.length > 1 && (
+                                        <div className="col-span-1 flex items-center ">
+                                            <Button
+                                                size="sm"
+                                                variant="solid"
+                                                color="orange-500"
+                                                icon={<FiTrash />}
+                                                type="button"
+                                                onClick={() => remove(index)}
+                                            ></Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        <div className="col-span-1">
+                            <Button
+                                size="sm"
+                                variant="solid"
+                                color="green-500"
+                                icon={<IoIosAddCircle />}
+                                type="button"
+                                onClick={() =>
+                                    push({
+                                        size: null,
+                                        stock: null,
+                                        price: null,
+                                        discountPrice: null,
+                                        discountRate: null,
+                                    })
+                                }
+                            ></Button>
+                        </div>
+                    </>
+                )}
+            </FieldArray>
         </AdaptableCard>
     )
 }
