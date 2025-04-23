@@ -70,7 +70,7 @@ const SignInForm = (props: SignInFormProps) => {
                 initialValues={{
                     email: '',
                     password: '',
-                    role: 'Manager',
+                    role: 'MANAGER',
                     rememberMe: true,
                 }}
                 validationSchema={validationSchema}
@@ -121,9 +121,9 @@ const SignInForm = (props: SignInFormProps) => {
                                         const options = [
                                             {
                                                 label: 'Manager',
-                                                value: 'Manager',
+                                                value: 'MANAGER',
                                             },
-                                            { label: 'Staff', value: 'Staff' },
+                                            { label: 'Staff', value: 'STAFF' },
                                         ]
 
                                         return (

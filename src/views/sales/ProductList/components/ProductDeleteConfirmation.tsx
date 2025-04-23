@@ -12,13 +12,13 @@ import {
 const ProductDeleteConfirmation = () => {
     const dispatch = useAppDispatch()
     const dialogOpen = useAppSelector(
-        (state) => state.salesProductList.data.deleteConfirmation
+        (state) => state.salesProductList.data.deleteConfirmation,
     )
     const selectedProduct = useAppSelector(
-        (state) => state.salesProductList.data.selectedProduct
+        (state) => state.salesProductList.data.selectedProduct,
     )
     const tableData = useAppSelector(
-        (state) => state.salesProductList.data.tableData
+        (state) => state.salesProductList.data.tableData,
     )
 
     const onDialogClose = () => {
@@ -27,21 +27,35 @@ const ProductDeleteConfirmation = () => {
 
     const onDelete = async () => {
         dispatch(toggleDeleteConfirmation(false))
-        const success = await deleteProduct({ id: selectedProduct })
-
-        if (success) {
+        if (selectedProduct !== undefined) {
+            const success = await deleteProduct(selectedProduct)
             dispatch(getProducts(tableData))
+            if (success) {
+                toast.push(
+                    <Notification
+                        title={'Successfuly Deleted'}
+                        type="success"
+                        duration={2500}
+                    >
+                        Product successfuly deleted
+                    </Notification>,
+                    {
+                        placement: 'top-center',
+                    },
+                )
+            }
+        } else {
             toast.push(
                 <Notification
-                    title={'Successfuly Deleted'}
-                    type="success"
+                    title={`Fail Deleted`}
+                    type="danger"
                     duration={2500}
                 >
-                    Product successfuly deleted
+                    Failed to delete product
                 </Notification>,
                 {
                     placement: 'top-center',
-                }
+                },
             )
         }
     }
@@ -57,11 +71,7 @@ const ProductDeleteConfirmation = () => {
             onCancel={onDialogClose}
             onConfirm={onDelete}
         >
-            <p>
-                Are you sure you want to delete this product? All record related
-                to this product will be deleted as well. This action cannot be
-                undone.
-            </p>
+            <p>Bạn có chắc chắn muốn xóa món sản phẩm này không?</p>
         </ConfirmDialog>
     )
 }

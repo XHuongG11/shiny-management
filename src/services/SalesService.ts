@@ -9,42 +9,36 @@ export async function apiGetSalesDashboardData<
     })
 }
 
-export async function apiGetSalesProducts<T, U extends Record<string, unknown>>(
-    data: U,
-) {
-    return ApiService.fetchData<T>({
-        url: '/sales/products',
-        method: 'post',
-        data,
-    })
-}
-
-export async function apiDeleteSalesProducts<
-    T,
-    U extends Record<string, unknown>,
->(data: U) {
-    return ApiService.fetchData<T>({
-        url: '/sales/products/delete',
-        method: 'delete',
-        data,
-    })
-}
-
-export async function apiGetSalesProduct<T, U extends Record<string, unknown>>(
+export async function apiGetAllProducts<T, U extends Record<string, unknown>>(
     params: U,
 ) {
     return ApiService.fetchData<T>({
-        url: '/sales/product',
+        url: '/products/search-and-filter',
         method: 'get',
         params,
     })
 }
 
-export async function apiPutSalesProduct<T, U extends Record<string, unknown>>(
+export async function apiDeleteProduct<T>(id: number) {
+    return ApiService.fetchData<T>({
+        url: `/products/product/${id}`,
+        method: 'delete',
+    })
+}
+
+export async function getProductById<T>(id: number) {
+    return ApiService.fetchData<T>({
+        url: `/products/${id}`,
+        method: 'get',
+    })
+}
+
+export async function apiUpdateProduct<T, U extends Record<string, unknown>>(
+    id: number,
     data: U,
 ) {
     return ApiService.fetchData<T>({
-        url: '/sales/products/update',
+        url: `/products/product/${id}`,
         method: 'put',
         data,
     })
@@ -113,5 +107,18 @@ export async function apiAddProductImage(data: FormData) {
         url: '/images/upload',
         method: 'post',
         data,
+    })
+}
+export async function apiUpdateProductImage(id: number, data: FormData) {
+    return ApiService.fetchData({
+        url: `/images/${id}`,
+        method: 'put',
+        data,
+    })
+}
+export async function apiDeleteImageProduct(id: number) {
+    return ApiService.fetchData({
+        url: `/images/${id}`,
+        method: 'delete',
     })
 }

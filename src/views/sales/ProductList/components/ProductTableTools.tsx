@@ -1,14 +1,12 @@
 import Button from '@/components/ui/Button'
 import { HiDownload, HiPlusCircle } from 'react-icons/hi'
 import ProductTableSearch from './ProductTableSearch'
-import ProductFilter from './ProductFilter'
 import { Link } from 'react-router-dom'
 
 const ProductTableTools = () => {
     return (
         <div className="flex flex-col lg:flex-row lg:items-center">
             <ProductTableSearch />
-            <ProductFilter />
             <Link
                 download
                 className="block lg:inline-block md:mx-2 md:mb-0 mb-4"

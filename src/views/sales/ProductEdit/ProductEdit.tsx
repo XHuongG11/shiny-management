@@ -1,22 +1,26 @@
-import { useEffect } from 'react'
-import Loading from '@/components/shared/Loading'
 import DoubleSidedImage from '@/components/shared/DoubleSidedImage'
-import toast from '@/components/ui/toast'
+import Loading from '@/components/shared/Loading'
 import Notification from '@/components/ui/Notification'
+import toast from '@/components/ui/toast'
+import { injectReducer } from '@/store'
+import { useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import reducer, {
+    deleteProduct,
     getProduct,
     updateProduct,
-    deleteProduct,
-    useAppSelector,
     useAppDispatch,
+    useAppSelector,
 } from './store'
-import { injectReducer } from '@/store'
-import { useLocation, useNavigate } from 'react-router-dom'
 
+import {
+    apiAddProductImage,
+    apiUpdateProductImage,
+} from '@/services/SalesService'
 import ProductForm, {
     FormModel,
-    SetSubmitting,
     OnDeleteCallback,
+    SetSubmitting,
 } from '@/views/sales/ProductForm'
 import isEmpty from 'lodash/isEmpty'
 
@@ -29,25 +33,49 @@ const ProductEdit = () => {
     const navigate = useNavigate()
 
     const productData = useAppSelector(
-        (state) => state.salesProductEdit.data.productData
+        (state) => state.salesProductEdit.data.productData,
     )
     const loading = useAppSelector(
-        (state) => state.salesProductEdit.data.loading
+        (state) => state.salesProductEdit.data.loading,
     )
 
-    const fetchData = (data: { id: string }) => {
+    const fetchData = (data: number) => {
         dispatch(getProduct(data))
     }
 
     const handleFormSubmit = async (
         values: FormModel,
-        setSubmitting: SetSubmitting
+        setSubmitting: SetSubmitting,
     ) => {
         setSubmitting(true)
-        const success = await updateProduct(values)
-        setSubmitting(false)
-        if (success) {
-            popNotification('updated')
+        const productid = values.id
+        if (productid !== undefined) {
+            const success = await updateProduct(productid, values)
+            // update images
+            if (values.images?.length !== 0) {
+                values.images?.forEach(async (i) => {
+                    const formData = new FormData()
+                    formData.append('files', i?.file || '')
+                    if (i.id === null) {
+                        formData.append('productId', String(productid) || '')
+                        const responseImage = await apiAddProductImage(formData)
+                        console.log('img data', responseImage.data)
+                    }
+                    // } else {
+                    //     const responseImage = await apiUpdateProductImage(
+                    //         i?.id,
+                    //         formData,
+                    //     )
+                    //     console.log('img data', responseImage.data)
+                    // }
+                })
+            }
+            setSubmitting(false)
+            if (success) {
+                popNotification('updated')
+            }
+        } else {
+            popNotificationFailed('updated')
         }
     }
 
@@ -57,12 +85,29 @@ const ProductEdit = () => {
 
     const handleDelete = async (setDialogOpen: OnDeleteCallback) => {
         setDialogOpen(false)
-        const success = await deleteProduct({ id: productData.id })
-        if (success) {
-            popNotification('deleted')
+        if (productData?.id !== undefined) {
+            const success = await deleteProduct(productData.id)
+            if (success) {
+                popNotification('deleted')
+            }
+        } else {
+            popNotificationFailed('deleted')
         }
     }
-
+    const popNotificationFailed = (keyword: string) => {
+        toast.push(
+            <Notification
+                title={`Fail ${keyword}`}
+                type="danger"
+                duration={2500}
+            >
+                Failed to delete product.
+            </Notification>,
+            {
+                placement: 'top-center',
+            },
+        )
+    }
     const popNotification = (keyword: string) => {
         toast.push(
             <Notification
@@ -74,17 +119,21 @@ const ProductEdit = () => {
             </Notification>,
             {
                 placement: 'top-center',
-            }
+            },
         )
         navigate('/app/sales/product-list')
     }
 
     useEffect(() => {
         const path = location.pathname.substring(
-            location.pathname.lastIndexOf('/') + 1
+            location.pathname.lastIndexOf('/') + 1,
         )
-        const rquestParam = { id: path }
-        fetchData(rquestParam)
+        const id = Number(path)
+        if (isNaN(id)) {
+            console.error('Invalid ID')
+            return
+        }
+        fetchData(id)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname])
 

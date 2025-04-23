@@ -10,15 +10,15 @@ import type {
 } from '@/@types/auth'
 
 export async function apiSignIn(data: SignInCredential) {
-    if (data.role === 'Staff')
+    if (data.role === 'STAFF')
         return ApiService.fetchData<ApiResponse<SignInResponse>>({
-            url: '/auth/token?role=staff',
+            url: '/auth/login',
             method: 'post',
             data,
         })
-    else if (data.role === 'Manager')
+    else if (data.role === 'MANAGER')
         return ApiService.fetchData<ApiResponse<SignInResponse>>({
-            url: '/auth/token?role=manager',
+            url: '/auth/login',
             method: 'post',
             data,
         })

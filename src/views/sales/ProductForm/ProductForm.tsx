@@ -1,51 +1,24 @@
-import { forwardRef, useState } from 'react'
-import { FormContainer } from '@/components/ui/Form'
-import Button from '@/components/ui/Button'
-import hooks from '@/components/ui/hooks'
-import StickyFooter from '@/components/shared/StickyFooter'
+import { ProductRequest, ProductResponse } from '@/@types/product'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
+import StickyFooter from '@/components/shared/StickyFooter'
+import Button from '@/components/ui/Button'
+import { FormContainer } from '@/components/ui/Form'
+import hooks from '@/components/ui/hooks'
 import { Form, Formik, FormikProps } from 'formik'
-import BasicInformationFields from './BasicInformationFields'
-import PricingFields from './PricingFields'
-import OrganizationFields from './OrganizationFields'
-import ProductImages from './ProductImages'
 import cloneDeep from 'lodash/cloneDeep'
-import { HiOutlineTrash } from 'react-icons/hi'
+import { forwardRef, useState } from 'react'
 import { AiOutlineSave } from 'react-icons/ai'
+import { HiOutlineTrash } from 'react-icons/hi'
 import * as Yup from 'yup'
-import { Category, Collection } from '@/@types/product'
+import BasicInformationFields from './BasicInformationFields'
+import OrganizationFields from './OrganizationFields'
+import PricingFields from './PricingFields'
+import ProductImages from './ProductImages'
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 type FormikRef = FormikProps<any>
 
-type InitialData = {
-    id?: string
-    name: string
-    material: string
-    description: string
-    // img?: string
-    imgList?: {
-        id: string
-        name: string
-        img: string
-        file: File
-    }[]
-    category: Category
-    collection: Collection
-    attributes: {
-        name: string
-        value: string
-    }[]
-    productSizes: {
-        size: number
-        stock: number
-        price: number
-        discountPrice: number
-        discountRate: number
-    }[]
-}
-
-export type FormModel = Omit<InitialData, 'tags'> & {
+export type FormModel = Omit<ProductRequest, 'tags'> & {
     tags: { label: string; value: string }[] | string[]
 }
 
@@ -56,7 +29,7 @@ export type OnDeleteCallback = React.Dispatch<React.SetStateAction<boolean>>
 type OnDelete = (callback: OnDeleteCallback) => void
 
 type ProductForm = {
-    initialData?: InitialData
+    initialData?: ProductRequest | ProductResponse
     type: 'edit' | 'new'
     onDiscard?: () => void
     onDelete?: OnDelete
@@ -66,7 +39,23 @@ type ProductForm = {
 const { useUniqueId } = hooks
 
 const validationSchema = Yup.object().shape({
-    name: Yup.string().required('Product Name Required'),
+    title: Yup.string().required('Product name Required'),
+    // category: Yup.string().required('Category Required'),
+    productSizes: Yup.array()
+        .of(
+            Yup.object().shape({
+                size: Yup.number().required('Size is required'),
+                stock: Yup.number().required('Stock is required'),
+                price: Yup.number().required('Price is required'),
+                discountPrice: Yup.number().required(
+                    'Discount price is required',
+                ),
+                discountRate: Yup.number()
+                    .required('Discount rate is required')
+                    .max(100, 'Discount rate cannot exceed 100%'),
+            }),
+        )
+        .min(1, 'At least one product size is required'),
 })
 
 const DeleteProductButton = ({ onDelete }: { onDelete: OnDelete }) => {
@@ -106,11 +95,7 @@ const DeleteProductButton = ({ onDelete }: { onDelete: OnDelete }) => {
                 onCancel={onConfirmDialogClose}
                 onConfirm={handleConfirm}
             >
-                <p>
-                    Are you sure you want to delete this product? All record
-                    related to this product will be deleted as well. This action
-                    cannot be undone.
-                </p>
+                <p>Bạn có chắc chắn muốn xóa món sản phẩm này không?</p>
             </ConfirmDialog>
         </>
     )
@@ -122,34 +107,18 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
         initialData = {
             title: '',
             material: '',
-            // img: '',
-            imgList: [],
+            images: [],
             description: '',
-            category: {
-                id: null,
-                name: '',
-                parent: null,
-            },
-            collection: [
-                {
-                    id: null,
-                    name: '',
-                    description: '',
-                },
-            ],
-            attributes: [
-                {
-                    name: '',
-                    value: '',
-                },
-            ],
+            category: null,
+            collection: null,
+            attributes: [],
             productSizes: [
                 {
                     size: null,
-                    stock: 0,
-                    price: 0,
-                    discountPrice: 0,
-                    discountRate: 0,
+                    stock: null,
+                    price: null,
+                    discountPrice: null,
+                    discountRate: null,
                 },
             ],
         },
@@ -167,7 +136,7 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
                 initialValues={{
                     ...initialData,
                 }}
-                validationSchema={undefined}
+                validationSchema={validationSchema}
                 onSubmit={(values: FormModel, { setSubmitting }) => {
                     console.log('onSubmit triggered! values:', values)
                     const formData = cloneDeep(values)

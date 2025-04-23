@@ -8,21 +8,21 @@ import Upload from '@/components/ui/Upload'
 import { HiEye, HiTrash } from 'react-icons/hi'
 import cloneDeep from 'lodash/cloneDeep'
 import { Field, FieldProps, FieldInputProps, FormikProps } from 'formik'
+import { apiDeleteImageProduct } from '@/services/SalesService'
 
 type Image = {
     id: string
     name: string
-    img: string
-    // files: File
+    url: string
 }
 
 type FormModel = {
-    imgList: Image[]
+    images: Image[]
     [key: string]: unknown
 }
 
 type ImageListProps = {
-    imgList: Image[]
+    images: Image[]
     onImageDelete: (img: Image) => void
 }
 
@@ -31,7 +31,7 @@ type ProductImagesProps = {
 }
 
 const ImageList = (props: ImageListProps) => {
-    const { imgList, onImageDelete } = props
+    const { images, onImageDelete } = props
 
     const [selectedImg, setSelectedImg] = useState<Image>({} as Image)
     const [viewOpen, setViewOpen] = useState(false)
@@ -66,14 +66,14 @@ const ImageList = (props: ImageListProps) => {
 
     return (
         <>
-            {imgList.map((img) => (
+            {images.map((img) => (
                 <div
                     key={img.id}
                     className="group relative rounded border p-2 flex"
                 >
                     <img
                         className="rounded max-h-[140px] max-w-full"
-                        src={img.img}
+                        src={img.url}
                         alt={img.name}
                     />
                     <div className="absolute inset-2 bg-gray-900/[.7] group-hover:flex hidden text-xl items-center justify-center">
@@ -100,7 +100,7 @@ const ImageList = (props: ImageListProps) => {
                 <h5 className="mb-4">{selectedImg.name}</h5>
                 <img
                     className="w-full"
-                    src={selectedImg.img}
+                    src={selectedImg.url}
                     alt={selectedImg.name}
                 />
             </Dialog>
@@ -149,24 +149,30 @@ const ProductImages = (props: ProductImagesProps) => {
         field: FieldInputProps<FormModel>,
         files: File[],
     ) => {
-        let imageId = '1-img-0'
+        // let imageId = '1-img-0'
         const latestUpload = files.length - 1
-        if (values.imgList.length > 0) {
-            const prevImgId = values.imgList[values.imgList.length - 1].id
-            const splitImgId = prevImgId.split('-')
-            const newIdNumber = parseInt(splitImgId[splitImgId.length - 1]) + 1
-            splitImgId.pop()
-            const newIdArr = [...splitImgId, ...[newIdNumber]]
-            imageId = newIdArr.join('-')
-        }
+        // if (values.images.length > 0) {
+        //     const prevImgId = values.images[values.images.length - 1].id
+        //     const splitImgId = prevImgId.split('-')
+        //     const newIdNumber = parseInt(splitImgId[splitImgId.length - 1]) + 1
+        //     splitImgId.pop()
+        //     const newIdArr = [...splitImgId, ...[newIdNumber]]
+        //     imageId = newIdArr.join('-')
+        // }
         const image = {
-            id: imageId,
+            id: null,
             name: files[latestUpload].name,
-            img: URL.createObjectURL(files[latestUpload]),
+            url: URL.createObjectURL(files[latestUpload]),
             file: files[latestUpload],
         }
-        const imageList = [...values.imgList, ...[image]]
-        console.log('imageList', imageList)
+        const imageList = [...values.images, ...[image]]
+        // const imageList = values.images.map((img, index) => ({
+        //     id: `db-img-${index}`,
+        //     name: img.name,
+        //     img: img.url,
+        //     file: null,
+        // }))
+        console.log('images', imageList)
         form.setFieldValue(field.name, imageList)
     }
 
@@ -176,8 +182,13 @@ const ProductImages = (props: ProductImagesProps) => {
         deletedImg: Image,
     ) => {
         let imgList = cloneDeep(values.imgList)
-        imgList = imgList.filter((img) => img.id !== deletedImg.id)
+        imgList = values.images.filter((img) => img.id !== deletedImg.id)
         form.setFieldValue(field.name, imgList)
+        if (Number(deletedImg.id) !== 0) {
+            apiDeleteImageProduct(Number(deletedImg?.id))
+                .then(() => console.log('Success'))
+                .catch((error) => console.log(error))
+        }
     }
 
     return (
@@ -185,13 +196,13 @@ const ProductImages = (props: ProductImagesProps) => {
             <h5>Product Image</h5>
             <p className="mb-6">Add or change image for the product</p>
             <FormItem>
-                <Field name="imgList">
+                <Field name="images">
                     {({ field, form }: FieldProps) => {
-                        if (values.imgList.length > 0) {
+                        if (values.images.length > 0) {
                             return (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                                     <ImageList
-                                        imgList={values.imgList}
+                                        images={values.images}
                                         onImageDelete={(img: Image) =>
                                             handleImageDelete(form, field, img)
                                         }
