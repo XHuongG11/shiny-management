@@ -13,23 +13,42 @@ const ProductNew = () => {
     const navigate = useNavigate()
 
     const addProduct = async (data: FormModel) => {
+        const cleanData = { ...data }
+
+        ;(Object.keys(cleanData) as (keyof typeof cleanData)[]).forEach(
+            (key) => {
+                const value = cleanData[key]
+                if (
+                    value == null ||
+                    (Array.isArray(value) && value.length === 0) ||
+                    (typeof value === 'object' &&
+                        !Array.isArray(value) &&
+                        Object.keys(value).length === 0)
+                ) {
+                    delete cleanData[key]
+                }
+            },
+        )
         // thêm product
         const response = await apiCreateProduct<
             ApiResponse<ProductResponse>,
             FormModel
-        >(data)
+        >(cleanData)
         // thêm image
-        const productId = response.data.data.id
-        const formData = new FormData()
-        formData.append('productId', String(productId))
-
-        data.imgList
-            ?.map((i) => i.file)
-            .forEach((file) => {
-                formData.append('files', file) // append nhiều file với key "files"
-            })
-        const responseImage = await apiAddProductImage(formData)
-        console.log(responseImage.data)
+        if (data.images?.length !== 0) {
+            const productId = response.data.data.id
+            const formData = new FormData()
+            formData.append('productId', String(productId))
+            data.images
+                ?.map((i) => i.file)
+                .forEach((file) => {
+                    if (file) {
+                        formData.append('files', file)
+                    }
+                })
+            const responseImage = await apiAddProductImage(formData)
+            console.log('img data', responseImage.data)
+        }
         return response.data
     }
 

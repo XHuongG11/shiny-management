@@ -1,70 +1,68 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { ApiResponse } from '@/@types/auth'
+import { ProductResponse } from '@/@types/product'
 import {
-    apiGetSalesProduct,
-    apiPutSalesProduct,
-    apiDeleteSalesProducts,
+    apiDeleteProduct,
+    apiUpdateProduct,
+    getProductById,
 } from '@/services/SalesService'
-
-type ProductData = {
-    id?: string
-    name?: string
-    productCode?: string
-    img?: string
-    imgList?: {
-        id: string
-        name: string
-        img: string
-    }[]
-    category?: string
-    price?: number
-    stock?: number
-    status?: number
-    costPerItem?: number
-    bulkDiscountPrice?: number
-    description?: string
-    taxRate?: 6
-    tags?: string[]
-    brand?: string
-    vendor?: string
-}
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
 export type SalesProductEditState = {
     loading: boolean
-    productData: ProductData
+    productData: ProductResponse
 }
 
-type GetSalesProductResponse = ProductData
+type GetSalesProductResponse = ProductResponse
 
 export const SLICE_NAME = 'salesProductEdit'
 
 export const getProduct = createAsyncThunk(
     SLICE_NAME + '/getProducts',
-    async (data: { id: string }) => {
-        const response = await apiGetSalesProduct<
-            GetSalesProductResponse,
-            { id: string }
-        >(data)
-        return response.data
-    }
+    async (data: number) => {
+        const response =
+            await getProductById<ApiResponse<GetSalesProductResponse>>(data)
+        console.log('Product: ', response.data.data)
+        return response.data.data
+    },
 )
 
 export const updateProduct = async <T, U extends Record<string, unknown>>(
-    data: U
+    id: number,
+    data: U,
 ) => {
-    const response = await apiPutSalesProduct<T, U>(data)
+    const response = await apiUpdateProduct<T, U>(id, data)
     return response.data
 }
 
-export const deleteProduct = async <T, U extends Record<string, unknown>>(
-    data: U
-) => {
-    const response = await apiDeleteSalesProducts<T, U>(data)
+export const deleteProduct = async <ApiResponse>(data: number) => {
+    const response = await apiDeleteProduct<ApiResponse>(data)
     return response.data
 }
 
 const initialState: SalesProductEditState = {
     loading: true,
-    productData: {},
+    productData: {
+        id: 0,
+        title: '',
+        description: '',
+        material: '',
+        category: {
+            id: 0,
+            name: '',
+            parent: null,
+        },
+        collection: {
+            id: 0,
+            name: '',
+            description: '',
+        },
+        status: '',
+        attributes: [],
+        productSizes: [],
+        images: [],
+        createdAt: '',
+        updatedAt: '',
+    },
 }
 
 const productEditSlice = createSlice({

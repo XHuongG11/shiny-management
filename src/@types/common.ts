@@ -7,10 +7,10 @@ export interface CommonProps {
 }
 
 export type TableQueries = {
-    total?: number
-    pageIndex?: number
-    pageSize?: number
-    query?: string
+    totalPages?: number
+    page?: number
+    size?: number
+    title?: string
     sort?: {
         order: 'asc' | 'desc' | ''
         key: string | number

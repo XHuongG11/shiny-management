@@ -21,44 +21,32 @@ import type {
     OnSortParam,
     ColumnDef,
 } from '@/components/shared/DataTable'
+import { ProductResponse } from '@/@types/product'
 
-type Product = {
-    id: string
-    name: string
-    productCode: string
-    img: string
-    category: string
-    price: number
-    stock: number
-    status: number
-}
-
-const inventoryStatusColor: Record<
-    number,
+const inventoryStatusColors = [
     {
-        label: string
-        dotClass: string
-        textClass: string
-    }
-> = {
-    0: {
-        label: 'In Stock',
+        label: 'IN_STOCK',
         dotClass: 'bg-emerald-500',
         textClass: 'text-emerald-500',
     },
-    1: {
-        label: 'Limited',
+    {
+        label: 'COMMING_SOON',
         dotClass: 'bg-amber-500',
         textClass: 'text-amber-500',
     },
-    2: {
-        label: 'Out of Stock',
+    {
+        label: 'OUT_OF_STOCK',
         dotClass: 'bg-red-500',
         textClass: 'text-red-500',
     },
-}
+    {
+        label: 'NOT_AVAILABLE',
+        dotClass: 'bg-neutral-400',
+        textClass: 'text-neutral-400',
+    },
+]
 
-const ActionColumn = ({ row }: { row: Product }) => {
+const ActionColumn = ({ row }: { row: ProductResponse }) => {
     const dispatch = useAppDispatch()
     const { textTheme } = useThemeClass()
     const navigate = useNavigate()
@@ -90,17 +78,18 @@ const ActionColumn = ({ row }: { row: Product }) => {
     )
 }
 
-const ProductColumn = ({ row }: { row: Product }) => {
-    const avatar = row.img ? (
-        <Avatar src={row.img} />
-    ) : (
-        <Avatar icon={<FiPackage />} />
-    )
+const ProductColumn = ({ row }: { row: ProductResponse }) => {
+    const avatar =
+        row !== undefined && row?.images !== undefined && row?.images.at(0) ? (
+            <Avatar src={row?.images.at(0)?.url} />
+        ) : (
+            <Avatar icon={<FiPackage />} />
+        )
 
     return (
         <div className="flex items-center">
             {avatar}
-            <span className={`ml-2 rtl:mr-2 font-semibold`}>{row.name}</span>
+            <span className={`ml-2 rtl:mr-2 font-semibold`}>{row.title}</span>
         </div>
     )
 }
@@ -110,43 +99,34 @@ const ProductTable = () => {
 
     const dispatch = useAppDispatch()
 
-    const { pageIndex, pageSize, sort, query, total } = useAppSelector(
-        (state) => state.salesProductList.data.tableData
-    )
-
-    const filterData = useAppSelector(
-        (state) => state.salesProductList.data.filterData
+    const { page, size, sort, title, totalPages } = useAppSelector(
+        (state) => state.salesProductList.data.tableData,
     )
 
     const loading = useAppSelector(
-        (state) => state.salesProductList.data.loading
+        (state) => state.salesProductList.data.loading,
     )
 
     const data = useAppSelector(
-        (state) => state.salesProductList.data.productList
+        (state) => state.salesProductList.data.productList,
     )
 
     useEffect(() => {
         fetchData()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pageIndex, pageSize, sort])
-
-    useEffect(() => {
-        if (tableRef) {
-            tableRef.current?.resetSorting()
-        }
-    }, [filterData])
+    }, [page, size, sort])
 
     const tableData = useMemo(
-        () => ({ pageIndex, pageSize, sort, query, total }),
-        [pageIndex, pageSize, sort, query, total]
+        () => ({ page, size, sort, title, totalPages }),
+        [page, size, sort, title, totalPages],
     )
 
     const fetchData = () => {
-        dispatch(getProducts({ pageIndex, pageSize, sort, query, filterData }))
+        // dispatch(getProducts({ pageIndex, pageSize, sort, query, filterData }))
+        dispatch(getProducts({ page, size, title }))
     }
 
-    const columns: ColumnDef<Product>[] = useMemo(
+    const columns: ColumnDef<ProductResponse>[] = useMemo(
         () => [
             {
                 header: 'Name',
@@ -161,41 +141,37 @@ const ProductTable = () => {
                 accessorKey: 'category',
                 cell: (props) => {
                     const row = props.row.original
-                    return <span className="capitalize">{row.category}</span>
+                    return (
+                        <span className="capitalize">{row.category.name}</span>
+                    )
                 },
             },
             {
-                header: 'Quantity',
-                accessorKey: 'stock',
-                sortable: true,
+                header: 'Material',
+                accessorKey: 'material',
+                cell: (props) => {
+                    const row = props.row.original
+                    return <span className="capitalize">{row.material}</span>
+                },
             },
             {
                 header: 'Status',
                 accessorKey: 'status',
                 cell: (props) => {
                     const { status } = props.row.original
+                    const inventoryStatusColor = inventoryStatusColors.find(
+                        (i) => i.label === status,
+                    )
                     return (
                         <div className="flex items-center gap-2">
-                            <Badge
-                                className={
-                                    inventoryStatusColor[status].dotClass
-                                }
-                            />
+                            <Badge className={inventoryStatusColor?.dotClass} />
                             <span
-                                className={`capitalize font-semibold ${inventoryStatusColor[status].textClass}`}
+                                className={`capitalize font-semibold ${inventoryStatusColor?.textClass}`}
                             >
-                                {inventoryStatusColor[status].label}
+                                {inventoryStatusColor?.label}
                             </span>
                         </div>
                     )
-                },
-            },
-            {
-                header: 'Price',
-                accessorKey: 'price',
-                cell: (props) => {
-                    const { price } = props.row.original
-                    return <span>${price}</span>
                 },
             },
             {
@@ -204,19 +180,19 @@ const ProductTable = () => {
                 cell: (props) => <ActionColumn row={props.row.original} />,
             },
         ],
-        []
+        [],
     )
 
     const onPaginationChange = (page: number) => {
         const newTableData = cloneDeep(tableData)
-        newTableData.pageIndex = page
+        newTableData.page = page
         dispatch(setTableData(newTableData))
     }
 
     const onSelectChange = (value: number) => {
         const newTableData = cloneDeep(tableData)
-        newTableData.pageSize = Number(value)
-        newTableData.pageIndex = 1
+        newTableData.size = Number(value)
+        newTableData.page = 1
         dispatch(setTableData(newTableData))
     }
 
@@ -236,9 +212,9 @@ const ProductTable = () => {
                 skeletonAvatarProps={{ className: 'rounded-md' }}
                 loading={loading}
                 pagingData={{
-                    total: tableData.total as number,
-                    pageIndex: tableData.pageIndex as number,
-                    pageSize: tableData.pageSize as number,
+                    total: tableData.totalPages as number,
+                    pageIndex: tableData.page as number,
+                    pageSize: tableData.size as number,
                 }}
                 onPaginationChange={onPaginationChange}
                 onSelectChange={onSelectChange}
