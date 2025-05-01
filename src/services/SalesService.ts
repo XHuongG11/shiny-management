@@ -1,14 +1,136 @@
 import ApiService from './ApiService'
 
-export async function apiGetSalesDashboardData<
-    T extends Record<string, unknown>,
->() {
+export async function apiGetTotalRevenue<T extends Record<string, unknown>>({
+    month,
+    year,
+}: {
+    month: number
+    year: number
+}) {
     return ApiService.fetchData<T>({
-        url: '/sales/dashboard',
-        method: 'post',
+        url: '/dashboard/revenue',
+        method: 'get',
+        params: {
+            month,
+            year,
+        },
+    })
+}
+export async function apiGetTotalOrders<T extends Record<string, unknown>>({
+    month,
+    year,
+}: {
+    month: number
+    year: number
+}) {
+    return ApiService.fetchData<T>({
+        url: '/dashboard/total-orders',
+        method: 'get',
+        params: {
+            month,
+            year,
+        },
+    })
+}
+export async function apiGetNewCustomers<T extends Record<string, unknown>>({
+    month,
+    year,
+}: {
+    month: number
+    year: number
+}) {
+    return ApiService.fetchData<T>({
+        url: '/dashboard/new-customers',
+        method: 'get',
+        params: {
+            month,
+            year,
+        },
+    })
+}
+export async function apiGetTotalReturnOrders<
+    T extends Record<string, unknown>,
+>({ month, year }: { month: number; year: number }) {
+    return ApiService.fetchData<T>({
+        url: '/dashboard/total-return-orders',
+        method: 'get',
+        params: {
+            month,
+            year,
+        },
     })
 }
 
+export async function apiGetTopSellingProduct<
+    T extends Record<string, unknown>,
+>({ month, year, limit }: { month: number; year: number; limit?: number }) {
+    return ApiService.fetchData<T>({
+        url: '/dashboard/top-selling-products',
+        method: 'get',
+        params: {
+            month,
+            year,
+            limit,
+        },
+    })
+}
+
+export async function apiGetLatestOrders<T extends Record<string, unknown>>({
+    month,
+    year,
+    limit,
+}: {
+    month: number
+    year: number
+    limit?: number
+}) {
+    return ApiService.fetchData<T>({
+        url: '/dashboard/latest-orders',
+        method: 'get',
+        params: {
+            month,
+            year,
+            limit,
+        },
+    })
+}
+
+export async function apiGetProductSoldByCategory<
+    T extends Record<string, unknown>,
+>({ month, year }: { month: number; year: number }) {
+    return ApiService.fetchData<T>({
+        url: '/dashboard/product-sold-by-category',
+        method: 'get',
+        params: {
+            month,
+            year,
+        },
+    })
+}
+export async function apigetMonthlyRevenue<T extends Record<string, unknown>>({
+    year,
+}: {
+    year: number
+}) {
+    return ApiService.fetchData<T>({
+        url: '/dashboard/monthly-revenue',
+        method: 'get',
+        params: {
+            year,
+        },
+    })
+}
+export async function apiGetRevenueByCategory<
+    T extends Record<string, unknown>,
+>({ year }: { year: number }) {
+    return ApiService.fetchData<T>({
+        url: '/dashboard/revenue-by-category',
+        method: 'get',
+        params: {
+            year,
+        },
+    })
+}
 export async function apiGetAllProducts<T, U extends Record<string, unknown>>(
     params: U,
 ) {

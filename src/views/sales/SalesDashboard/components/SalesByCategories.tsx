@@ -10,19 +10,25 @@ type SalesByCategoriesProps = {
     }
 }
 
+// Dữ liệu giả
+const fakeSalesByCategoriesData = {
+    labels: ['Electronics', 'Clothing', 'Books', 'Home Decor', 'Toys'],
+    data: [120, 95, 60, 80, 40],
+}
+
 const SalesByCategories = ({
-    data = { labels: [], data: [] },
+    data = fakeSalesByCategoriesData,
 }: SalesByCategoriesProps) => {
     return (
         <Card>
-            <h4>Categories</h4>
+            <h4 className="text-lg font-semibold">Categories</h4>
             <div className="mt-6">
                 {data.data.length > 0 && (
                     <>
                         <Chart
                             donutTitle={`${data.data.reduce(
                                 (a, b) => a + b,
-                                0
+                                0,
                             )}`}
                             donutText="Product Sold"
                             series={data.data}
@@ -30,7 +36,7 @@ const SalesByCategories = ({
                             type="donut"
                         />
                         {data.data.length === data.labels.length && (
-                            <div className="mt-6 grid grid-cols-2 gap-4 max-w-[180px] mx-auto">
+                            <div className="mt-6 grid grid-cols-2 gap-4 mx-auto">
                                 {data.labels.map((value, index) => (
                                     <div
                                         key={value}
@@ -38,7 +44,10 @@ const SalesByCategories = ({
                                     >
                                         <Badge
                                             badgeStyle={{
-                                                backgroundColor: COLORS[index],
+                                                backgroundColor:
+                                                    COLORS[
+                                                        index % COLORS.length
+                                                    ],
                                             }}
                                         />
                                         <span className="font-semibold">

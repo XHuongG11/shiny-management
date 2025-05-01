@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
 import DataTable from '@/components/shared/DataTable'
-import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi'
+import { HiOutlineEye, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi'
 import { FiPackage } from 'react-icons/fi'
 import {
     getProducts,
@@ -59,9 +59,17 @@ const ActionColumn = ({ row }: { row: ProductResponse }) => {
         dispatch(toggleDeleteConfirmation(true))
         dispatch(setSelectedProduct(row.id))
     }
-
+    const onViewDetail = () => {
+        navigate(`/app/sales/product-detail/${row.id}`)
+    }
     return (
         <div className="flex justify-end text-lg">
+            <span
+                className="cursor-pointer p-2 hover:text-red-500"
+                onClick={onViewDetail}
+            >
+                <HiOutlineEye />
+            </span>
             <span
                 className={`cursor-pointer p-2 hover:${textTheme}`}
                 onClick={onEdit}
@@ -142,7 +150,9 @@ const ProductTable = () => {
                 cell: (props) => {
                     const row = props.row.original
                     return (
-                        <span className="capitalize">{row.category.name}</span>
+                        <span className="capitalize">
+                            {row.category?.name || 'N/A'}
+                        </span>
                     )
                 },
             },

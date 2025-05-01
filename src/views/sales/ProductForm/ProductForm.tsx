@@ -30,7 +30,7 @@ type OnDelete = (callback: OnDeleteCallback) => void
 
 type ProductForm = {
     initialData?: ProductRequest | ProductResponse
-    type: 'edit' | 'new'
+    type: 'edit' | 'new' | 'view'
     onDiscard?: () => void
     onDelete?: OnDelete
     onFormSubmit: (formData: FormModel, setSubmitting: SetSubmitting) => void
@@ -155,22 +155,28 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                 <div className="lg:col-span-2">
                                     <BasicInformationFields
+                                        type={type}
                                         touched={touched}
                                         errors={errors}
                                     />
                                     <OrganizationFields
+                                        type={type}
                                         touched={touched}
                                         errors={errors}
                                         values={values}
                                     />
                                     <PricingFields
+                                        type={type}
                                         touched={touched}
                                         errors={errors}
                                         values={values}
                                     />
                                 </div>
                                 <div className="lg:col-span-1">
-                                    <ProductImages values={values} />
+                                    <ProductImages
+                                        type={type}
+                                        values={values}
+                                    />
                                 </div>
                             </div>
                             <StickyFooter
@@ -193,15 +199,17 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
                                     >
                                         Discard
                                     </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="solid"
-                                        loading={isSubmitting}
-                                        icon={<AiOutlineSave />}
-                                        type="submit"
-                                    >
-                                        Save
-                                    </Button>
+                                    {type !== 'view' && (
+                                        <Button
+                                            size="sm"
+                                            variant="solid"
+                                            loading={isSubmitting}
+                                            icon={<AiOutlineSave />}
+                                            type="submit"
+                                        >
+                                            Save
+                                        </Button>
+                                    )}
                                 </div>
                             </StickyFooter>
                         </FormContainer>
