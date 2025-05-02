@@ -1,119 +1,85 @@
-import {
-    createSlice,
-    createAsyncThunk,
-    current,
-    PayloadAction,
-} from '@reduxjs/toolkit'
-import {
-    apiGetSalesOrders,
-    apiDeleteSalesOrders,
-} from '@/services/SalesService'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { apiGetSalesOrders, apiDeleteSalesOrders } from '@/services/SalesService'
 import type { TableQueries } from '@/@types/common'
+import { OrderResponse } from '@/@types/order'
+import { ApiResponse } from '@/@types/auth'
 
-type Order = {
-    id: string
-    date: number
-    customer: string
-    status: number
-    paymentMehod: string
-    paymentIdendifier: string
-    totalAmount: number
-}
-
-type Orders = Order[]
+type Orders = OrderResponse[]
 
 type GetSalesOrdersResponse = {
-    data: Orders
-    total: number
+    content: Orders
+    totalPages: number
 }
 
 export type SalesOrderListState = {
     loading: boolean
-    orderList: Orders
+    deleteConfirmation: boolean
+    selectedOrder?: string
     tableData: TableQueries
-    deleteMode: 'single' | 'batch' | ''
-    selectedRows: string[]
-    selectedRow: string
+    orderList: OrderResponse[]
 }
+
+type GetSalesOrdersRequest = TableQueries
 
 export const SLICE_NAME = 'salesOrderList'
 
 export const getOrders = createAsyncThunk(
     SLICE_NAME + '/getOrders',
-    async (data: TableQueries) => {
+    async (data: GetSalesOrdersRequest) => {
         const response = await apiGetSalesOrders<
-            GetSalesOrdersResponse,
-            TableQueries
+            ApiResponse<GetSalesOrdersResponse>,
+            GetSalesOrdersRequest
         >(data)
-        return response.data
+        console.log(response.data.data)
+        return response.data.data
     }
 )
 
-export const deleteOrders = async (data: { id: string | string[] }) => {
+export const deleteOrders = async (id: string) => {
     const response = await apiDeleteSalesOrders<
         boolean,
-        { id: string | string[] }
-    >(data)
+        { id: string }
+    >({ id })
     return response.data
+}
+
+export const initialTableData: TableQueries = {
+    totalPages: 0,
+    page: 1,
+    size: 10,
+    title: '',
 }
 
 const initialState: SalesOrderListState = {
     loading: false,
+    deleteConfirmation: false,
+    selectedOrder: undefined,
     orderList: [],
-    tableData: {
-        total: 0,
-        pageIndex: 1,
-        pageSize: 10,
-        query: '',
-        sort: {
-            order: '',
-            key: '',
-        },
-    },
-    selectedRows: [],
-    selectedRow: '',
-    deleteMode: '',
+    tableData: initialTableData,
 }
 
 const orderListSlice = createSlice({
     name: `${SLICE_NAME}/state`,
     initialState,
     reducers: {
-        setOrderList: (state, action) => {
+        updateOrderList: (state, action) => {
             state.orderList = action.payload
         },
         setTableData: (state, action) => {
             state.tableData = action.payload
         },
-        setSelectedRows: (state, action) => {
-            state.selectedRows = action.payload
+        toggleDeleteConfirmation: (state, action) => {
+            state.deleteConfirmation = action.payload
         },
-        setSelectedRow: (state, action) => {
-            state.selectedRow = action.payload
-        },
-        addRowItem: (state, { payload }) => {
-            const currentState = current(state)
-            if (!currentState.selectedRows.includes(payload)) {
-                state.selectedRows = [...currentState.selectedRows, ...payload]
-            }
-        },
-        removeRowItem: (state, { payload }: PayloadAction<string>) => {
-            const currentState = current(state)
-            if (currentState.selectedRows.includes(payload)) {
-                state.selectedRows = currentState.selectedRows.filter(
-                    (id) => id !== payload
-                )
-            }
-        },
-        setDeleteMode: (state, action) => {
-            state.deleteMode = action.payload
+        setSelectedOrder: (state, action) => {
+            state.selectedOrder = action.payload
         },
     },
     extraReducers: (builder) => {
         builder
             .addCase(getOrders.fulfilled, (state, action) => {
-                state.orderList = action.payload.data
-                state.tableData.total = action.payload.total
+                state.orderList = action.payload.content
+                state.tableData.totalPages = action.payload.totalPages
                 state.loading = false
             })
             .addCase(getOrders.pending, (state) => {
@@ -123,13 +89,10 @@ const orderListSlice = createSlice({
 })
 
 export const {
-    setOrderList,
+    updateOrderList,
     setTableData,
-    setSelectedRows,
-    setSelectedRow,
-    addRowItem,
-    removeRowItem,
-    setDeleteMode,
+    toggleDeleteConfirmation,
+    setSelectedOrder,
 } = orderListSlice.actions
 
 export default orderListSlice.reducer

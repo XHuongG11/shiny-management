@@ -1,15 +1,10 @@
 import { useEffect, useCallback, useMemo, useRef } from 'react'
-import Badge from '@/components/ui/Badge'
-import Tooltip from '@/components/ui/Tooltip'
 import DataTable from '@/components/shared/DataTable'
-import { HiOutlineEye, HiOutlineTrash } from 'react-icons/hi'
 import { NumericFormat } from 'react-number-format'
+import { HiOutlineEye } from 'react-icons/hi'
+import Tooltip from '@/components/ui/Tooltip'
+import Badge from '@/components/ui/Badge'
 import {
-    setSelectedRows,
-    addRowItem,
-    removeRowItem,
-    setDeleteMode,
-    setSelectedRow,
     getOrders,
     setTableData,
     useAppDispatch,
@@ -23,54 +18,31 @@ import type {
     DataTableResetHandle,
     OnSortParam,
     ColumnDef,
-    Row,
 } from '@/components/shared/DataTable'
 
 type Order = {
     id: string
-    date: number
-    customer: string
-    status: number
-    paymentMehod: string
-    paymentIdendifier: string
-    totalAmount: number
-}
-
-const orderStatusColor: Record<
-    number,
-    {
-        label: string
-        dotClass: string
-        textClass: string
-    }
-> = {
-    0: {
-        label: 'Paid',
-        dotClass: 'bg-emerald-500',
-        textClass: 'text-emerald-500',
-    },
-    1: {
-        label: 'Pending',
-        dotClass: 'bg-amber-500',
-        textClass: 'text-amber-500',
-    },
-    2: { label: 'Failed', dotClass: 'bg-red-500', textClass: 'text-red-500' },
+    orderDate: string
+    shippingAddress: { recipientName: string }
+    paymentMethod: string
+    status: string
+    totalPrice: number
 }
 
 const PaymentMethodImage = ({
-    paymentMehod,
+    paymentMethod,
     className,
 }: {
-    paymentMehod: string
+    paymentMethod: string
     className: string
 }) => {
-    switch (paymentMehod) {
+    switch (paymentMethod.toLowerCase()) {
         case 'visa':
             return (
                 <img
                     className={className}
                     src="/img/others/img-8.png"
-                    alt={paymentMehod}
+                    alt={paymentMethod}
                 />
             )
         case 'master':
@@ -78,7 +50,7 @@ const PaymentMethodImage = ({
                 <img
                     className={className}
                     src="/img/others/img-9.png"
-                    alt={paymentMehod}
+                    alt={paymentMethod}
                 />
             )
         case 'paypal':
@@ -86,44 +58,85 @@ const PaymentMethodImage = ({
                 <img
                     className={className}
                     src="/img/others/img-10.png"
-                    alt={paymentMehod}
+                    alt={paymentMethod}
                 />
             )
+        case 'vn-pay':
+            return <span className={className}>VN-PAY</span>
+        case 'cod':
+            return <span className={className}>COD</span>
         default:
-            return <></>
+            return <span className={className}>{paymentMethod}</span>
     }
 }
 
-const OrderColumn = ({ row }: { row: Order }) => {
-    const { textTheme } = useThemeClass()
-    const navigate = useNavigate()
-
-    const onView = useCallback(() => {
-        navigate(`/app/sales/order-details/${row.id}`)
-    }, [navigate, row])
-
-    return (
-        <span
-            className={`cursor-pointer select-none font-semibold hover:${textTheme}`}
-            onClick={onView}
-        >
-            #{row.id}
-        </span>
-    )
+const statusDisplayMap: Record<
+    string,
+    { label: string; dotClass: string; textClass: string }
+> = {
+    RETURN_REQUESTED: {
+        label: 'RETURN REQUESTED',
+        dotClass: 'bg-purple-500',
+        textClass: 'text-purple-500',
+    },
+    PENDING: {
+        label: 'PENDING',
+        dotClass: 'bg-orange-500',
+        textClass: 'text-orange-500',
+    },
+    SHIPPING: {
+        label: 'SHIPPING',
+        dotClass: 'bg-amber-500',
+        textClass: 'text-amber-500',
+    },
+    CANCELLED: {
+        label: 'CANCELLED',
+        dotClass: 'bg-red-500',
+        textClass: 'text-red-500',
+    },
+    COMPLETED: {
+        label: 'COMPLETED',
+        dotClass: 'bg-emerald-500',
+        textClass: 'text-emerald-500',
+    },
+    CONFIRMED: {
+        label: 'CONFIRMED',
+        dotClass: 'bg-lime-500',
+        textClass: 'text-lime-500',
+    },
+    DELIVERED: {
+        label: 'DELIVERED',
+        dotClass: 'bg-blue-500',
+        textClass: 'text-blue-500',
+    },
+    RETURNED: {
+        label: 'RETURNED',
+        dotClass: 'bg-gray-500',
+        textClass: 'text-gray-500',
+    },
+    RETURN_REJECTED: {
+        label: 'RETURN REJECTED',
+        dotClass: 'bg-red-500',
+        textClass: 'text-red-500',
+    },
+    UNKNOWN: {
+        label: 'UNKNOWN',
+        dotClass: 'bg-neutral-400',
+        textClass: 'text-neutral-400',
+    },
 }
 
 const ActionColumn = ({ row }: { row: Order }) => {
-    const dispatch = useAppDispatch()
     const { textTheme } = useThemeClass()
     const navigate = useNavigate()
 
-    const onDelete = () => {
-        dispatch(setDeleteMode('single'))
-        dispatch(setSelectedRow([row.id]))
-    }
-
     const onView = useCallback(() => {
-        navigate(`/app/sales/order-details/${row.id}`)
+        if (row.id) {
+            console.log('Navigating to:', `/app/sales/order-details/${row.id}`)
+            navigate(`/app/sales/order-details/${row.id}`)
+        } else {
+            console.error('Order ID is undefined or invalid')
+        }
     }, [navigate, row])
 
     return (
@@ -136,54 +149,34 @@ const ActionColumn = ({ row }: { row: Order }) => {
                     <HiOutlineEye />
                 </span>
             </Tooltip>
-            <Tooltip title="Delete">
-                <span
-                    className="cursor-pointer p-2 hover:text-red-500"
-                    onClick={onDelete}
-                >
-                    <HiOutlineTrash />
-                </span>
-            </Tooltip>
         </div>
     )
 }
 
 const OrdersTable = () => {
     const tableRef = useRef<DataTableResetHandle>(null)
-
     const dispatch = useAppDispatch()
+    const navigate = useNavigate()
 
-    const { pageIndex, pageSize, sort, query, total } = useAppSelector(
+    const { page, size, sort, title, totalPages } = useAppSelector(
         (state) => state.salesOrderList.data.tableData
     )
     const loading = useAppSelector((state) => state.salesOrderList.data.loading)
-
     const data = useAppSelector((state) => state.salesOrderList.data.orderList)
 
     const fetchData = useCallback(() => {
-        console.log('{ pageIndex, pageSize, sort, query }', {
-            pageIndex,
-            pageSize,
-            sort,
-            query,
-        })
-        dispatch(getOrders({ pageIndex, pageSize, sort, query }))
-    }, [dispatch, pageIndex, pageSize, sort, query])
+        console.log('{ page, size, sort, title }', { page, size, sort, title })
+        dispatch(getOrders({ page, size, sort, title }))
+    }, [dispatch, page, size, sort, title])
 
     useEffect(() => {
-        dispatch(setSelectedRows([]))
+        console.log('orderList:', data)
         fetchData()
-    }, [dispatch, fetchData, pageIndex, pageSize, sort])
-
-    useEffect(() => {
-        if (tableRef) {
-            tableRef.current?.resetSelected()
-        }
-    }, [data])
+    }, [dispatch, fetchData, page, size, sort])
 
     const tableData = useMemo(
-        () => ({ pageIndex, pageSize, sort, query, total }),
-        [pageIndex, pageSize, sort, query, total]
+        () => ({ page, size, sort, title, total: totalPages * size }),
+        [page, size, sort, title, totalPages]
     )
 
     const columns: ColumnDef<Order>[] = useMemo(
@@ -191,72 +184,85 @@ const OrdersTable = () => {
             {
                 header: 'Order',
                 accessorKey: 'id',
-                cell: (props) => <OrderColumn row={props.row.original} />,
+                cell: (props) => {
+                    const { id } = props.row.original
+                    return (
+                        <span
+                            className="cursor-pointer select-none font-semibold hover:text-blue-600"
+                            onClick={() =>
+                                navigate(`/app/sales/order-details/${id}`)
+                            }
+                        >
+                            #{id}
+                        </span>
+                    )
+                },
             },
             {
                 header: 'Date',
-                accessorKey: 'date',
+                accessorKey: 'orderDate',
                 cell: (props) => {
-                    const row = props.row.original
+                    const { orderDate } = props.row.original
                     return (
-                        <span>{dayjs.unix(row.date).format('DD/MM/YYYY')}</span>
+                        <span>
+                            {dayjs(orderDate).format('DD/MM/YYYY HH:mm')}
+                        </span>
                     )
                 },
             },
             {
                 header: 'Customer',
-                accessorKey: 'customer',
+                accessorKey: 'shippingAddress.recipientName',
+                cell: (props) => {
+                    const { shippingAddress } = props.row.original
+                    return <span>{shippingAddress.recipientName}</span>
+                },
+            },
+            {
+                header: 'Payment Method',
+                accessorKey: 'paymentMethod',
+                cell: (props) => {
+                    const { paymentMethod } = props.row.original
+                    return (
+                        <span className="flex items-center">
+                            <PaymentMethodImage
+                                className="max-h-[20px]"
+                                paymentMethod={paymentMethod}
+                            />
+                        </span>
+                    )
+                },
             },
             {
                 header: 'Status',
                 accessorKey: 'status',
                 cell: (props) => {
                     const { status } = props.row.original
+                    const statusKey = status in statusDisplayMap ? status : 'UNKNOWN'
                     return (
                         <div className="flex items-center">
-                            <Badge
-                                className={orderStatusColor[status].dotClass}
-                            />
+                            <Badge className={statusDisplayMap[statusKey].dotClass} />
                             <span
-                                className={`ml-2 rtl:mr-2 capitalize font-semibold ${orderStatusColor[status].textClass}`}
+                                className={`ml-2 rtl:mr-2 capitalize font-semibold ${statusDisplayMap[statusKey].textClass}`}
                             >
-                                {orderStatusColor[status].label}
+                                {statusDisplayMap[statusKey].label}
                             </span>
                         </div>
                     )
                 },
             },
             {
-                header: 'Payment Method',
-                accessorKey: 'paymentMehod',
-                cell: (props) => {
-                    const { paymentMehod, paymentIdendifier } =
-                        props.row.original
-                    return (
-                        <span className="flex items-center">
-                            <PaymentMethodImage
-                                className="max-h-[20px]"
-                                paymentMehod={paymentMehod}
-                            />
-                            <span className="ltr:ml-2 rtl:mr-2">
-                                {paymentIdendifier}
-                            </span>
-                        </span>
-                    )
-                },
-            },
-            {
                 header: 'Total',
-                accessorKey: 'totalAmount',
+                accessorKey: 'totalPrice',
                 cell: (props) => {
-                    const { totalAmount } = props.row.original
+                    const { totalPrice } = props.row.original
                     return (
                         <NumericFormat
                             displayType="text"
-                            value={(
-                                Math.round(totalAmount * 100) / 100
-                            ).toFixed(2)}
-                            prefix={'$'}
+                            value={(Math.round(totalPrice * 100) / 100).toFixed(
+                                2
+                            )}
+                            suffix={' VNĐ'}
                             thousandSeparator={true}
                         />
                     )
@@ -268,19 +274,19 @@ const OrdersTable = () => {
                 cell: (props) => <ActionColumn row={props.row.original} />,
             },
         ],
-        []
+        [navigate]
     )
 
     const onPaginationChange = (page: number) => {
         const newTableData = cloneDeep(tableData)
-        newTableData.pageIndex = page
+        newTableData.page = page
         dispatch(setTableData(newTableData))
     }
 
     const onSelectChange = (value: number) => {
         const newTableData = cloneDeep(tableData)
-        newTableData.pageSize = Number(value)
-        newTableData.pageIndex = 1
+        newTableData.size = Number(value)
+        newTableData.page = 1
         dispatch(setTableData(newTableData))
     }
 
@@ -290,47 +296,20 @@ const OrdersTable = () => {
         dispatch(setTableData(newTableData))
     }
 
-    const onRowSelect = (checked: boolean, row: Order) => {
-        if (checked) {
-            dispatch(addRowItem([row.id]))
-        } else {
-            dispatch(removeRowItem(row.id))
-        }
-    }
-
-    const onAllRowSelect = useCallback(
-        (checked: boolean, rows: Row<Order>[]) => {
-            if (checked) {
-                const originalRows = rows.map((row) => row.original)
-                const selectedIds: string[] = []
-                originalRows.forEach((row) => {
-                    selectedIds.push(row.id)
-                })
-                dispatch(setSelectedRows(selectedIds))
-            } else {
-                dispatch(setSelectedRows([]))
-            }
-        },
-        [dispatch]
-    )
-
     return (
         <DataTable
             ref={tableRef}
-            selectable
             columns={columns}
             data={data}
             loading={loading}
             pagingData={{
                 total: tableData.total as number,
-                pageIndex: tableData.pageIndex as number,
-                pageSize: tableData.pageSize as number,
+                pageIndex: tableData.page as number,
+                pageSize: tableData.size as number,
             }}
             onPaginationChange={onPaginationChange}
             onSelectChange={onSelectChange}
             onSort={onSort}
-            onCheckBoxChange={onRowSelect}
-            onIndeterminateCheckBoxChange={onAllRowSelect}
         />
     )
 }
