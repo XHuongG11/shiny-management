@@ -39,6 +39,32 @@ const getApplicabilityLabel = (applicabilities: VoucherApplicability[]): string 
     return 'ALL'
 }
 
+const VoucherTypeColumn = ({ type }: { type: string }) => {
+    let color = ''
+    let label = type
+    
+    switch(type) {
+        case 'PROMOTION':
+            color = 'bg-emerald-500'
+            label = 'PROMOTION'
+            break
+        case 'FREESHIP':
+            color = 'bg-blue-500'
+            label = 'FREESHIP'
+            break
+        default:
+            color = 'bg-gray-500'
+            break
+    }
+    
+    return (
+        <div className="flex items-center">
+            <span className={`${color} w-2.5 h-2.5 rounded-full mr-2`}></span>
+            <span>{label}</span>
+        </div>
+    )
+}
+
 const VoucherTable = ({ onEdit }: VoucherTableProps) => {
     const tableRef = useRef<DataTableResetHandle>(null)
     const dispatch = useAppDispatch()
@@ -90,23 +116,7 @@ const VoucherTable = ({ onEdit }: VoucherTableProps) => {
                 accessorKey: 'type',
                 cell: (props) => {
                     const { type } = props.row.original
-                    
-                    let badgeClass = ''
-                    if (type === 'PROMOTION') {
-                        badgeClass = 'bg-emerald-500'
-                    } else if (type === 'FREESHIP') {
-                        badgeClass = 'bg-blue-500'
-                    }
-                    
-                    return (
-                        <div className="flex items-center">
-                            <Badge className={badgeClass}>
-                            <span className={`ml-2 rtl:mr-2 capitalize font-semibold text-emerald-500`}>
-                                {type}
-                            </span>
-                            </Badge>
-                        </div>
-                    )
+                    return <VoucherTypeColumn type={type} />
                 }
             },
             {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Form, Formik, Field, FieldProps } from 'formik'
+import { Form, Formik, Field, FieldProps, FormikProps } from 'formik'
 import * as Yup from 'yup'
 import { 
     FormContainer, 
@@ -18,7 +18,7 @@ import {
     apiGetCollections, 
     apiGetCustomers 
 } from '@/services/VoucherService'
-import { getVouchers, useAppDispatch, useAppSelector } from '../store'
+import { getVouchers, useAppDispatch, useAppSelector, setSelectedVoucher } from '../store'
 import toast from '@/components/ui/toast'
 import Notification from '@/components/ui/Notification'
 import dayjs from 'dayjs'
@@ -27,6 +27,7 @@ import {
     VoucherApplicability, 
     VoucherType 
 } from '@/@types/voucher'
+import React from 'react'
 
 type VoucherFormProps = {
     open: boolean
@@ -34,10 +35,10 @@ type VoucherFormProps = {
     editMode: boolean
 }
 
-type ProductOption = {
-    value: number
-    label: string
-}
+// type ProductOption = {
+//     value: number
+//     label: string
+// }
 
 type ApplicabilityOption = {
     value: string
@@ -93,64 +94,110 @@ const voucherValidationSchema = Yup.object().shape({
     }),
 })
 
+const defaultInitialValues = {
+    code: '',
+    name: '',
+    discountRate: 0,
+    minimumToApply: 0,
+    applyLimit: 0,
+    validFrom: dayjs().toDate(),
+    validTo: dayjs().add(30, 'day').toDate(),
+    quantity: 100,
+    limitUsePerCustomer: 1,
+    type: 'PROMOTION',
+    applicabilityType: 'ALL',
+    selectedApplicabilities: [],
+}
+
 const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
     const dispatch = useAppDispatch()
+    const formikRef = React.useRef<FormikProps<typeof defaultInitialValues>>(null)
 
     const selectedVoucher = useAppSelector(
         (state) => state.salesVoucherList.data.selectedVoucher
     )
 
-    const [products, setProducts] = useState<ProductOption[]>([])
-    const [categories, setCategories] = useState<ProductOption[]>([])
-    const [collections, setCollections] = useState<ProductOption[]>([])
-    const [customers, setCustomers] = useState<ProductOption[]>([])
+    const [products, setProducts] = useState<ApplicabilityOption[]>([])
+    const [categories, setCategories] = useState<ApplicabilityOption[]>([])
+    const [collections, setCollections] = useState<ApplicabilityOption[]>([])
+    const [customers, setCustomers] = useState<ApplicabilityOption[]>([])
     const [submitting, setSubmitting] = useState(false)
+    const [applicableObjects, setApplicableObjects] = useState<ApplicabilityOption[]>([])
 
     useEffect(() => {
         if (open) {
-            fetchSelectionOptions()
+            if (!editMode) {
+                // Reset form when opening in add mode
+                if (formikRef.current) {
+                    formikRef.current.resetForm({
+                        values: defaultInitialValues
+                    })
+                }
+            }
         }
-    }, [open])
+    }, [open, editMode])
+
+    const handleDialogClose = () => {
+        dispatch(setSelectedVoucher(null))
+        onClose()
+    }
     
-    const fetchSelectionOptions = async () => {
+    const fetchApplicableObjects = async (applicabilityType: string) => {
+        if (applicabilityType === 'ALL') {
+            setApplicableObjects([])
+            return
+        }
+
         try {
-            const [productsRes, categoriesRes, collectionsRes, customersRes] = await Promise.all([
-                apiGetProducts<any>(),
-                apiGetCategories<any>(),
-                apiGetCollections<any>(),
-                apiGetCustomers<any>(),
-            ])
+            let response: any
             
-            // Assuming appropriate response formats, adjust as needed
-            if (productsRes.data && productsRes.data.data) {
-                setProducts(productsRes.data.data.content.map((p: any) => ({ 
-                    value: p.id, 
-                    label: p.title 
-                })))
-            }
-            
-            if (categoriesRes.data) {
-                setCategories(categoriesRes.data.map((c: any) => ({ 
-                    value: c.id, 
-                    label: c.name 
-                })))
-            }
-            
-            if (collectionsRes.data) {
-                setCollections(collectionsRes.data.map((c: any) => ({ 
-                    value: c.id, 
-                    label: c.name 
-                })))
-            }
-            
-            if (customersRes.data && customersRes.data.data) {
-                setCustomers(customersRes.data.data.content.map((c: any) => ({ 
-                    value: c.id, 
-                    label: c.fullName 
-                })))
+            switch (applicabilityType) {
+                case 'PRODUCT':
+                    response = await apiGetProducts<any>(1, 10, '')
+                    if (response.data && response.data.data) {
+                        setApplicableObjects(response.data.data.content.map((p: any) => ({ 
+                            value: p.id, 
+                            label: p.title 
+                        })))
+                    }
+                    break
+                    
+                case 'CATEGORY':
+                    response = await apiGetCategories<any>('')
+                    if (response.data && response.data.data) {
+                        setApplicableObjects(response.data.data.map((c: any) => ({ 
+                            value: c.id, 
+                            label: c.name 
+                        })))
+                    }
+                    break
+                    
+                case 'COLLECTION':
+                    response = await apiGetCollections<any>('')
+                    if (response.data && response.data.data) {
+                        setApplicableObjects(response.data.data.map((c: any) => ({ 
+                            value: c.id, 
+                            label: c.name 
+                        })))
+                    }
+                    break
+                    
+                case 'CUSTOMER':
+                    response = await apiGetCustomers<any>(1, 10)
+                    if (response.data && response.data.data) {
+                        setApplicableObjects(response.data.data.content.map((c: any) => ({ 
+                            value: c.id, 
+                            label: c.fullName 
+                        })))
+                    }
+                    break
+                    
+                default:
+                    setApplicableObjects([])
             }
         } catch (error) {
-            console.error('Error fetching options:', error)
+            console.error('Error fetching applicable objects:', error)
+            setApplicableObjects([])
         }
     }
 
@@ -175,7 +222,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
             .map(app => app.applicableObjectId as number)
     }
 
-    const initialValues = {
+    const initialValues = editMode && selectedVoucher ? {
         code: selectedVoucher?.code || '',
         name: selectedVoucher?.name || '',
         discountRate: selectedVoucher?.discountRate || 0,
@@ -195,9 +242,17 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
             getApplicabilityType(selectedVoucher?.applicabilities),
             selectedVoucher?.applicabilities
         ),
-    }
+    } : defaultInitialValues
 
-    const handleFormSubmit = async (values: typeof initialValues) => {
+    useEffect(() => {
+        if (editMode && selectedVoucher) {
+            // Load applicable objects when editing
+            const applicabilityType = getApplicabilityType(selectedVoucher.applicabilities)
+            fetchApplicableObjects(applicabilityType)
+        }
+    }, [editMode, selectedVoucher])
+
+    const handleFormSubmit = async (values: typeof defaultInitialValues) => {
         setSubmitting(true)
         
         try {
@@ -243,7 +298,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
             
             // Refresh voucher list
             dispatch(getVouchers({ page: 1, size: 10 }))
-            onClose()
+            handleDialogClose()
         } catch (error: any) {
             toast.push(
                 <Notification title="Error" type="danger">
@@ -252,21 +307,6 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
             )
         } finally {
             setSubmitting(false)
-        }
-    }
-
-    const getApplicabilityOptions = (applicabilityType: string) => {
-        switch (applicabilityType) {
-            case 'PRODUCT':
-                return products
-            case 'CATEGORY':
-                return categories
-            case 'COLLECTION':
-                return collections
-            case 'CUSTOMER':
-                return customers
-            default:
-                return []
         }
     }
 
@@ -279,8 +319,6 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
         if (values.type === 'FREESHIP' || applicabilityType === 'ALL') {
             return null
         }
-        
-        const options = getApplicabilityOptions(applicabilityType)
         
         return (
             <FormItem
@@ -298,8 +336,8 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                             isMulti
                             field={field}
                             form={form}
-                            options={options}
-                            value={options.filter(
+                            options={applicableObjects}
+                            value={applicableObjects.filter(
                                 option => field.value?.includes(option.value)
                             )}
                             onChange={(selections) => {
@@ -318,14 +356,15 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
     return (
         <Dialog
             isOpen={open}
-            onClose={onClose}
-            onRequestClose={onClose}
+            onClose={handleDialogClose}
+            onRequestClose={handleDialogClose}
             width={700}
         >
             <h4>{editMode ? 'Edit Voucher' : 'Add New Voucher'}</h4>
             <div className="mt-4">
                 <Formik
-                    initialValues={initialValues}
+                    innerRef={formikRef}
+                    initialValues={initialValues as typeof defaultInitialValues}
                     validationSchema={voucherValidationSchema}
                     onSubmit={handleFormSubmit}
                     enableReinitialize
@@ -429,7 +468,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                                     <FormItem
                                         label="Valid From"
                                         invalid={(errors.validFrom && touched.validFrom) as boolean}
-                                        errorMessage={errors.validFrom as string}
+                                        errorMessage={errors.validFrom as string} 
                                     >
                                         <Field name="validFrom">
                                             {({ field, form }: FieldProps) => (
@@ -511,9 +550,12 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                                                             option => option.value === values.applicabilityType
                                                         )}
                                                         onChange={(option) => {
-                                                            form.setFieldValue(field.name, option?.value)
+                                                            const newType = option?.value || 'ALL'
+                                                            form.setFieldValue(field.name, newType)
                                                             // Clear previous selections when changing applicability type
                                                             form.setFieldValue('selectedApplicabilities', [])
+                                                            // Fetch applicable objects for the selected type
+                                                            fetchApplicableObjects(newType)
                                                         }}
                                                     />
                                                 )}
@@ -532,7 +574,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                                         className="ltr:mr-2 rtl:ml-2"
                                         type="button"
                                         variant="plain"
-                                        onClick={onClose}
+                                        onClick={handleDialogClose}
                                         disabled={submitting}
                                     >
                                         Cancel

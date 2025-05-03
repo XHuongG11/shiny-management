@@ -40,32 +40,34 @@ export async function apiDeleteVoucher<T>(id: number) {
     })
 }
 
-export async function apiGetProducts<T>() {
+export async function apiGetProducts<T>(page: number, size: number, title: string) {
     return ApiService.fetchData<T>({
-        url: '/products/all',
+        url: '/products/search-and-filter',
         method: 'get',
-        params: { page: 1, size: 100 },
+        params : { page, size, title },
     })
 }
 
-export async function apiGetCategories<T>() {
+export async function apiGetCategories<T>(name : string) {
     return ApiService.fetchData<T>({
-        url: '/categories/all',
+        url: '/categories/category',
         method: 'get',
+        params: { name : name },
     })
 }
 
-export async function apiGetCollections<T>() {
+export async function apiGetCollections<T>(name : string) {
     return ApiService.fetchData<T>({
-        url: '/collections/all',
+        url: '/collections/collection',
         method: 'get',
+        params: { name : name },
     })
 }
 
-export async function apiGetCustomers<T>() {
+export async function apiGetCustomers<T>(page: number, size: number) {
     return ApiService.fetchData<T>({
-        url: '/customers/all',
+        url: '/users/customers',
         method: 'get',
-        params: { page: 1, size: 100 },
+        params: { page, size },
     })
 }
