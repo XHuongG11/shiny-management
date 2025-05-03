@@ -101,6 +101,15 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER]
     },
     {
+        key: 'appsSales.vouchers',
+        path: `${APP_PREFIX_PATH}/sales/vouchers`,
+        component: lazy(() => import('@/views/sales/VoucherList')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Voucher Management',
+        },
+    },
+    {
         key: 'appsknowledgeBase.helpCenter',
         path: `${APP_PREFIX_PATH}/knowledge-base/help-center`,
         component: lazy(() => import('@/views/knowledge-base/HelpCenter')),

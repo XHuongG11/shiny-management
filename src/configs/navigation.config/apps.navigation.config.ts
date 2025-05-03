@@ -117,6 +117,16 @@ const appsNavigationConfig: NavigationTree[] = [
                         authority: [ADMIN, USER],
                         subMenu: [],
                     },
+                    {
+                        key: 'appsSales.vouchers',
+                        path: `${APP_PREFIX_PATH}/sales/vouchers`,
+                        title: 'Vouchers',
+                        translateKey: 'nav.sales.vouchers',
+                        icon: '',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
                 ],
             },
             {

@@ -96,7 +96,6 @@ const ReviewTable = () => {
 
     useEffect(() => {
         fetchData()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, size, sort])
 
     const tableData = useMemo(
@@ -166,12 +165,6 @@ const ReviewTable = () => {
         dispatch(setTableData(newTableData))
     }
 
-    const onSort = (sort: OnSortParam) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.sort = sort
-        dispatch(setTableData(newTableData))
-    }
-
     return (
         <DataTable
             ref={tableRef}
@@ -187,7 +180,6 @@ const ReviewTable = () => {
             }}
             onPaginationChange={onPaginationChange}
             onSelectChange={onSelectChange}
-            onSort={onSort}
         />
     )
 }
