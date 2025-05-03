@@ -13,6 +13,9 @@ export default defineConfig({
     }
   }),
   dynamicImport()],
+  server: {
+    port: 5174,
+  },
   assetsInclude: ['**/*.md'],
   resolve: {
     alias: {

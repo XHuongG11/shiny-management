@@ -10,92 +10,35 @@ import Button from '@/components/ui/Button'
 import Tooltip from '@/components/ui/Tooltip'
 import {
     HiOutlineBell,
-    HiOutlineCalendar,
-    HiOutlineClipboardCheck,
-    HiOutlineBan,
     HiOutlineMailOpen,
+    HiOutlineTrash,
 } from 'react-icons/hi'
 import {
     apiGetNotificationList,
     apiGetNotificationCount,
+    apiMarkNotificationAsRead,
+    apiMarkAllNotificationsAsRead,
+    apiDeleteNotification,
+    apiDeleteAllNotifications,
 } from '@/services/CommonService'
-import { Link } from 'react-router-dom'
 import isLastChild from '@/utils/isLastChild'
 import useTwColorByName from '@/utils/hooks/useTwColorByName'
 import useThemeClass from '@/utils/hooks/useThemeClass'
 import { useAppSelector } from '@/store'
 import useResponsive from '@/utils/hooks/useResponsive'
 import acronym from '@/utils/acronym'
+import { ApiResponse } from '@/@types/auth'
 
 type NotificationList = {
-    id: string
-    target: string
-    description: string
-    date: string
-    image: string
-    type: number
-    location: string
-    locationLabel: string
+    id: number
+    title: string
+    content: string
     status: string
-    readed: boolean
+    sentAt: string
 }
 
 const notificationHeight = 'h-72'
-const imagePath = '/img/avatars/'
 
-const GeneratedAvatar = ({ target }: { target: string }) => {
-    const color = useTwColorByName()
-    return (
-        <Avatar shape="circle" className={`${color(target)}`}>
-            {acronym(target)}
-        </Avatar>
-    )
-}
-
-const notificationTypeAvatar = (data: {
-    type: number
-    target: string
-    image: string
-    status: string
-}) => {
-    const { type, target, image, status } = data
-    switch (type) {
-        case 0:
-            if (image) {
-                return <Avatar shape="circle" src={`${imagePath}${image}`} />
-            } else {
-                return <GeneratedAvatar target={target} />
-            }
-        case 1:
-            return (
-                <Avatar
-                    shape="circle"
-                    className="bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-100"
-                    icon={<HiOutlineCalendar />}
-                />
-            )
-        case 2:
-            return (
-                <Avatar
-                    shape="circle"
-                    className={
-                        status === 'succeed'
-                            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-100'
-                            : 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-100'
-                    }
-                    icon={
-                        status === 'succeed' ? (
-                            <HiOutlineClipboardCheck />
-                        ) : (
-                            <HiOutlineBan />
-                        )
-                    }
-                />
-            )
-        default:
-            return <Avatar />
-    }
-}
 
 const NotificationToggle = ({
     className,
@@ -132,8 +75,8 @@ const _Notification = ({ className }: { className?: string }) => {
     const direction = useAppSelector((state) => state.theme.direction)
 
     const getNotificationCount = useCallback(async () => {
-        const resp = await apiGetNotificationCount()
-        if (resp.data.count > 0) {
+        const resp = await apiGetNotificationCount<ApiResponse<number>>()
+        if (resp.data.data > 0) {
             setNoResult(false)
             setUnreadNotification(true)
         } else {
@@ -141,47 +84,96 @@ const _Notification = ({ className }: { className?: string }) => {
         }
     }, [setUnreadNotification])
 
+    const fetchNotifications = useCallback(async () => {
+        setLoading(true)
+        const resp = await apiGetNotificationList()
+        setLoading(false)
+        setNotificationList(resp.data.data.content)
+        if (resp.data.data.content.length === 0) {
+            setNoResult(true)
+        } else {
+            setNoResult(false)
+        }
+    }, [])
+
     useEffect(() => {
         getNotificationCount()
     }, [getNotificationCount])
 
     const onNotificationOpen = useCallback(async () => {
         if (notificationList.length === 0) {
-            setLoading(true)
-            const resp = await apiGetNotificationList()
-            setLoading(false)
-            setNotificationList(resp.data)
+            await fetchNotifications()
         }
-    }, [notificationList, setLoading])
+    }, [notificationList, fetchNotifications])
 
-    const onMarkAllAsRead = useCallback(() => {
-        const list = notificationList.map((item: NotificationList) => {
-            if (!item.readed) {
-                item.readed = true
-            }
-            return item
-        })
-        setNotificationList(list)
-        setUnreadNotification(false)
-    }, [notificationList])
-
-    const onMarkAsRead = useCallback(
-        (id: string) => {
-            const list = notificationList.map((item) => {
-                if (item.id === id) {
-                    item.readed = true
+    const onMarkAllAsRead = useCallback(async () => {
+        try {
+            await apiMarkAllNotificationsAsRead()
+            const list = notificationList.map((item: NotificationList) => {
+                if (item.status !== 'READ') {
+                    item.status = 'READ'
                 }
                 return item
             })
             setNotificationList(list)
-            const hasUnread = notificationList.some((item) => !item.readed)
+            setUnreadNotification(false)
+        } catch (error) {
+            console.error('Failed to mark all as read', error)
+        }
+    }, [notificationList])
 
-            if (!hasUnread) {
-                setUnreadNotification(false)
+    const onMarkAsRead = useCallback(
+        async (id: number, e: React.MouseEvent) => {
+            e.stopPropagation() // Prevent click from bubbling to parent
+            try {
+                await apiMarkNotificationAsRead(id)
+                const list = notificationList.map((item) => {
+                    if (item.id === id) {
+                        item.status = 'READ'
+                    }
+                    return item
+                })
+                setNotificationList(list)
+                const hasUnread = list.some((item) => item.status !== 'READ')
+                setUnreadNotification(hasUnread)
+            } catch (error) {
+                console.error('Failed to mark as read', error)
             }
         },
         [notificationList]
     )
+
+    const onDeleteNotification = useCallback(
+        async (id: number, e: React.MouseEvent) => {
+            e.stopPropagation() // Prevent click from bubbling to parent
+            try {
+                await apiDeleteNotification(id)
+                const filteredList = notificationList.filter(
+                    (item) => item.id !== id
+                )
+                setNotificationList(filteredList)
+                if (filteredList.length === 0) {
+                    setNoResult(true)
+                }
+                const hasUnread = filteredList.some((item) => item.status !== 'READ')
+                setUnreadNotification(hasUnread)
+            } catch (error) {
+                console.error('Failed to delete notification', error)
+            }
+        },
+        [notificationList]
+    )
+
+    const onDeleteAllNotifications = useCallback(async () => {
+        try {
+            await apiDeleteAllNotifications()
+            setNotificationList([])
+            setNoResult(true)
+            setUnreadNotification(false)
+        } catch (error) {
+            console.error('Failed to delete all notifications', error)
+        }
+    }, [])
 
     return (
         <Dropdown
@@ -198,15 +190,27 @@ const _Notification = ({ className }: { className?: string }) => {
             <Dropdown.Item variant="header">
                 <div className="border-b border-gray-200 dark:border-gray-600 px-4 py-2 flex items-center justify-between">
                     <h6>Notifications</h6>
-                    <Tooltip title="Mark all as read">
-                        <Button
-                            variant="plain"
-                            shape="circle"
-                            size="sm"
-                            icon={<HiOutlineMailOpen className="text-xl" />}
-                            onClick={onMarkAllAsRead}
-                        />
-                    </Tooltip>
+                    <div className="flex">
+                        <Tooltip title="Mark all as read">
+                            <Button
+                                variant="plain"
+                                shape="circle"
+                                size="sm"
+                                icon={<HiOutlineMailOpen className="text-xl" />}
+                                onClick={onMarkAllAsRead}
+                                className="mr-1"
+                            />
+                        </Tooltip>
+                        <Tooltip title="Delete all notifications">
+                            <Button
+                                variant="plain"
+                                shape="circle"
+                                size="sm"
+                                icon={<HiOutlineTrash className="text-xl" />}
+                                onClick={onDeleteAllNotifications}
+                            />
+                        </Tooltip>
+                    </div>
                 </div>
             </Dropdown.Item>
             <div className={classNames('overflow-y-auto', notificationHeight)}>
@@ -215,29 +219,59 @@ const _Notification = ({ className }: { className?: string }) => {
                         notificationList.map((item, index) => (
                             <div
                                 key={item.id}
-                                className={`relative flex px-4 py-4 cursor-pointer hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-black dark:hover:bg-opacity-20  ${
+                                className={`relative flex px-4 py-4 cursor-pointer hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-black dark:hover:bg-opacity-20 ${
                                     !isLastChild(notificationList, index)
                                         ? 'border-b border-gray-200 dark:border-gray-600'
                                         : ''
                                 }`}
-                                onClick={() => onMarkAsRead(item.id)}
                             >
-                                <div>{notificationTypeAvatar(item)}</div>
-                                <div className="ltr:ml-3 rtl:mr-3">
+                                <div className="ltr:ml-3 rtl:mr-3 flex-grow">
                                     <div>
-                                        {item.target && (
+                                        {item.title && (
                                             <span className="font-semibold heading-text">
-                                                {item.target}{' '}
+                                                {item.title}{' '}
                                             </span>
                                         )}
-                                        <span>{item.description}</span>
+                                        <span>{item.content}</span>
                                     </div>
-                                    <span className="text-xs">{item.date}</span>
+                                    <span className="text-xs">
+                                        {new Date(item.sentAt).toLocaleString('en-GB', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                        })}
+                                    </span>
+                                </div>
+                                <div className="flex items-center">
+                                    {item.status !== 'READ' && (
+                                        <Tooltip title="Mark as read">
+                                            <Button
+                                                variant="plain"
+                                                shape="circle"
+                                                size="xs"
+                                                icon={<HiOutlineMailOpen className="text-lg" />}
+                                                onClick={(e) => onMarkAsRead(item.id, e)}
+                                                className="mr-1"
+                                            />
+                                        </Tooltip>
+                                    )}
+                                    <Tooltip title="Delete notification">
+                                        <Button
+                                            variant="plain"
+                                            shape="circle"
+                                            size="xs"
+                                            icon={<HiOutlineTrash className="text-lg" />}
+                                            onClick={(e) => onDeleteNotification(item.id, e)}
+                                        />
+                                    </Tooltip>
                                 </div>
                                 <Badge
-                                    className="absolute top-4 ltr:right-4 rtl:left-4 mt-1.5"
+                                    className="absolute top-4 ltr:right-16 rtl:left-16 mt-1.5"
                                     innerClass={`${
-                                        item.readed ? 'bg-gray-300' : bgTheme
+                                        item.status === 'READ' ? 'bg-gray-300' : bgTheme
                                     } `}
                                 />
                             </div>
@@ -252,7 +286,7 @@ const _Notification = ({ className }: { className?: string }) => {
                             <Spinner size={40} />
                         </div>
                     )}
-                    {noResult && (
+                    {noResult && !loading && (
                         <div
                             className={classNames(
                                 'flex items-center justify-center',
@@ -274,16 +308,6 @@ const _Notification = ({ className }: { className?: string }) => {
                     )}
                 </ScrollBar>
             </div>
-            <Dropdown.Item variant="header">
-                <div className="flex justify-center border-t border-gray-200 dark:border-gray-600 px-4 py-2">
-                    <Link
-                        to="/app/account/activity-log"
-                        className="font-semibold cursor-pointer p-2 px-3 text-gray-600 hover:text-gray-900 dark:text-gray-200 dark:hover:text-white"
-                    >
-                        View All Activity
-                    </Link>
-                </div>
-            </Dropdown.Item>
         </Dropdown>
     )
 }
