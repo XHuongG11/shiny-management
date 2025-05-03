@@ -37,30 +37,6 @@ const PaymentMethodImage = ({
     className: string
 }) => {
     switch (paymentMethod.toLowerCase()) {
-        case 'visa':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-8.png"
-                    alt={paymentMethod}
-                />
-            )
-        case 'master':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-9.png"
-                    alt={paymentMethod}
-                />
-            )
-        case 'paypal':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-10.png"
-                    alt={paymentMethod}
-                />
-            )
         case 'vn-pay':
             return <span className={className}>VN-PAY</span>
         case 'cod':
@@ -175,7 +151,7 @@ const OrdersTable = () => {
     }, [dispatch, fetchData, page, size, sort])
 
     const tableData = useMemo(
-        () => ({ page, size, sort, title, total: totalPages * size }),
+        () => ({ page, size, sort, title, total: totalPages }),
         [page, size, sort, title, totalPages]
     )
 
@@ -290,12 +266,6 @@ const OrdersTable = () => {
         dispatch(setTableData(newTableData))
     }
 
-    const onSort = (sort: OnSortParam) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.sort = sort
-        dispatch(setTableData(newTableData))
-    }
-
     return (
         <DataTable
             ref={tableRef}
@@ -309,7 +279,6 @@ const OrdersTable = () => {
             }}
             onPaginationChange={onPaginationChange}
             onSelectChange={onSelectChange}
-            onSort={onSort}
         />
     )
 }

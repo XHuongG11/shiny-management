@@ -95,6 +95,12 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appsSales.reviews',
+        path: `${APP_PREFIX_PATH}/sales/reviews`,
+        component: lazy(() => import('@/views/sales/ReviewList')),
+        authority: [ADMIN, USER]
+    },
+    {
         key: 'appsknowledgeBase.helpCenter',
         path: `${APP_PREFIX_PATH}/knowledge-base/help-center`,
         component: lazy(() => import('@/views/knowledge-base/HelpCenter')),

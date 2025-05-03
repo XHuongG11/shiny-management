@@ -37,3 +37,5 @@ export type ForgotPassword = {
 export type ResetPassword = {
     password: string
 }
+
+

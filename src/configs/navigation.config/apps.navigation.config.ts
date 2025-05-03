@@ -107,6 +107,16 @@ const appsNavigationConfig: NavigationTree[] = [
                         authority: [ADMIN, USER],
                         subMenu: [],
                     },
+                    {
+                        key: 'appsSales.reviews',
+                        path: `${APP_PREFIX_PATH}/sales/reviews`,
+                        title: 'Reviews',
+                        translateKey: 'nav.sales.reviews',
+                        icon: '',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
                 ],
             },
             {
