@@ -35,20 +35,7 @@ const ProductColumn = ({ row }: { row: Product }) => {
         <div className="flex">
             <Avatar size={90} src={row.img} />
             <div className="ltr:ml-2 rtl:mr-2">
-                <h6 className="mb-2">{row.name}</h6>
-                {Object.keys(row.details).map((key, i) => (
-                    <div key={key + i} className="mb-1">
-                        <span className="capitalize">{key}: </span>
-                        {row.details[key].map((item, j) => (
-                            <Fragment key={item + j}>
-                                <span className="font-semibold">{item}</span>
-                                {!isLastChild(row.details[key], j) && (
-                                    <span>, </span>
-                                )}
-                            </Fragment>
-                        ))}
-                    </div>
-                ))}
+                <h6 className="mb-2">{row.name}</h6>                
             </div>
         </div>
     )
@@ -58,8 +45,8 @@ const PriceAmount = ({ amount }: { amount: number }) => {
     return (
         <NumericFormat
             displayType="text"
-            value={(Math.round(amount * 100) / 100).toFixed(2)}
-            prefix={'$'}
+            value={(Math.round(amount * 100) / 100).toFixed(0)}
+            suffix={'VNĐ'}
             thousandSeparator={true}
         />
     )
@@ -87,7 +74,7 @@ const columns = [
         header: 'Total',
         cell: (props) => {
             const row = props.row.original
-            return <PriceAmount amount={row.price} />
+            return <PriceAmount amount={row.total} />
         },
     }),
 ]

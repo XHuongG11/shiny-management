@@ -180,9 +180,22 @@ export async function apiGetSalesOrders<T, U extends Record<string, unknown>>(
     params: U,
 ) {
     return ApiService.fetchData<T>({
-        url: '/sales/orders',
+        url: '/orders/all',
         method: 'get',
         params,
+    })
+}
+
+export async function getOrderById<T>(id: string) {
+    return ApiService.fetchData<T>({
+        url: `/orders/${id}`,
+        method: 'get',
+    })
+}
+export async function updateOrderStatusById<T>(id: string, status: string) {
+    return ApiService.fetchData<T>({
+        url: `/orders/${id}/status?status=${status}`,
+        method: 'put',
     })
 }
 
@@ -191,7 +204,7 @@ export async function apiDeleteSalesOrders<
     U extends Record<string, unknown>,
 >(data: U) {
     return ApiService.fetchData<T>({
-        url: '/sales/orders/delete',
+        url: '/orders/delete',
         method: 'delete',
         data,
     })
@@ -202,7 +215,7 @@ export async function apiGetSalesOrderDetails<
     U extends Record<string, unknown>,
 >(params: U) {
     return ApiService.fetchData<T>({
-        url: '/sales/orders-details',
+        url: '/orders',
         method: 'get',
         params,
     })
@@ -231,6 +244,7 @@ export async function apiAddProductImage(data: FormData) {
         data,
     })
 }
+
 export async function apiUpdateProductImage(id: number, data: FormData) {
     return ApiService.fetchData({
         url: `/images/${id}`,
@@ -238,6 +252,7 @@ export async function apiUpdateProductImage(id: number, data: FormData) {
         data,
     })
 }
+
 export async function apiDeleteImageProduct(id: number) {
     return ApiService.fetchData({
         url: `/images/${id}`,

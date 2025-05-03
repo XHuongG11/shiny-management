@@ -35,28 +35,16 @@ const CustomerInfo = ({ data }: CustomerInfoProps) => {
                 to="/app/crm/customer-details?id=11"
             >
                 <div className="flex items-center">
-                    <Avatar shape="circle" src={data?.img} />
+                    <Avatar shape="circle" src="/img/avatars/thumb-12.jpg" />
                     <div className="ltr:ml-2 rtl:mr-2">
                         <div className="font-semibold group-hover:text-gray-900 group-hover:dark:text-gray-100">
                             {data?.name}
-                        </div>
-                        <span>
-                            <span className="font-semibold">
-                                {data?.previousOrder}{' '}
-                            </span>
-                            previous orders
-                        </span>
+                        </div>            
                     </div>
                 </div>
                 <HiExternalLink className="text-xl hidden group-hover:block" />
             </Link>
             <hr className="my-5" />
-            <IconText
-                className="mb-4"
-                icon={<HiMail className="text-xl opacity-70" />}
-            >
-                <span className="font-semibold">{data?.email}</span>
-            </IconText>
             <IconText icon={<HiPhone className="text-xl opacity-70" />}>
                 <span className="font-semibold">{data?.phone}</span>
             </IconText>

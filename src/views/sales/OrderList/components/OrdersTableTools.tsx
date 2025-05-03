@@ -1,14 +1,14 @@
 import Button from '@/components/ui/Button'
 import { HiDownload, HiOutlineTrash } from 'react-icons/hi'
 import OrderTableSearch from './OrderTableSearch'
-import { setDeleteMode, useAppDispatch, useAppSelector } from '../store'
+import { toggleDeleteConfirmation, useAppDispatch, useAppSelector } from '../store'
 import { Link } from 'react-router-dom'
 
-const BatchDeleteButton = () => {
+const DeleteButton = () => {
     const dispatch = useAppDispatch()
 
-    const onBatchDelete = () => {
-        dispatch(setDeleteMode('batch'))
+    const onDelete = () => {
+        dispatch(toggleDeleteConfirmation(true))
     }
 
     return (
@@ -17,20 +17,21 @@ const BatchDeleteButton = () => {
             color="red-600"
             size="sm"
             icon={<HiOutlineTrash />}
-            onClick={onBatchDelete}
+            onClick={onDelete}
         >
-            Batch Delete
+            Delete
         </Button>
     )
 }
 
 const OrdersTableTools = () => {
-    const selectedRows = useAppSelector(
-        (state) => state.salesOrderList.data.selectedRows
+    const selectedOrder = useAppSelector(
+        (state) => state.salesOrderList.data.selectedOrder
     )
+
     return (
         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-            {selectedRows.length > 0 && <BatchDeleteButton />}
+            {selectedOrder && <DeleteButton />}
             <Link download to="/data/order-list.csv" target="_blank">
                 <Button block size="sm" icon={<HiDownload />}>
                     Export

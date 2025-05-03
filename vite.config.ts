@@ -5,24 +5,24 @@ import dynamicImport from 'vite-plugin-dynamic-import'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [
-        react({
-            babel: {
-                plugins: ['babel-plugin-macros'],
-            },
-        }),
-        dynamicImport(),
-    ],
-    assetsInclude: ['**/*.md'],
-    resolve: {
-        alias: {
-            '@': path.join(__dirname, 'src'),
-        },
+  plugins: [react({
+    babel: {
+      plugins: [
+        'babel-plugin-macros'
+      ]
+    }
+  }),
+  dynamicImport()],
+  server: {
+    port: 5174,
+  },
+  assetsInclude: ['**/*.md'],
+  resolve: {
+    alias: {
+      '@': path.join(__dirname, 'src'),
     },
-    build: {
-        outDir: 'build',
-    },
-    server: {
-        port: 5174,
-    },
-})
+  },
+  build: {
+    outDir: 'build'
+  }
+});
