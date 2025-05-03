@@ -22,16 +22,18 @@ type FormModel = {
 }
 
 type ImageListProps = {
+    type: 'edit' | 'new' | 'view'
     images: Image[]
     onImageDelete: (img: Image) => void
 }
 
 type ProductImagesProps = {
+    type: 'edit' | 'new' | 'view'
     values: FormModel
 }
 
 const ImageList = (props: ImageListProps) => {
-    const { images, onImageDelete } = props
+    const { type, images, onImageDelete } = props
 
     const [selectedImg, setSelectedImg] = useState<Image>({} as Image)
     const [viewOpen, setViewOpen] = useState(false)
@@ -63,7 +65,7 @@ const ImageList = (props: ImageListProps) => {
         onImageDelete?.(selectedImg)
         setDeleteConfirmationOpen(false)
     }
-
+    console.log('Type,,,,', type)
     return (
         <>
             {images.map((img) => (
@@ -83,12 +85,23 @@ const ImageList = (props: ImageListProps) => {
                         >
                             <HiEye />
                         </span>
-                        <span
-                            className="text-gray-100 hover:text-gray-300 cursor-pointer p-1.5"
-                            onClick={() => onDeleteConfirmation(img)}
-                        >
-                            <HiTrash />
-                        </span>
+                        {type !== 'view' && (
+                            <>
+                                <span
+                                    className="text-gray-100 hover:text-gray-300 cursor-pointer p-1.5"
+                                    onClick={() => onImageDelete(img)}
+                                >
+                                    <HiTrash />
+                                </span>
+
+                                <span
+                                    className="text-gray-100 hover:text-gray-300 cursor-pointer p-1.5"
+                                    onClick={() => onDeleteConfirmation(img)}
+                                >
+                                    <HiTrash />
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
             ))}
@@ -121,8 +134,7 @@ const ImageList = (props: ImageListProps) => {
 }
 
 const ProductImages = (props: ProductImagesProps) => {
-    const { values } = props
-
+    const { type, values } = props
     const beforeUpload = (file: FileList | null) => {
         let valid: boolean | string = true
 
@@ -194,7 +206,11 @@ const ProductImages = (props: ProductImagesProps) => {
     return (
         <AdaptableCard className="mb-4">
             <h5>Product Image</h5>
-            <p className="mb-6">Add or change image for the product</p>
+            {type !== 'view' ? (
+                <p className="mb-6">Add or change image for the product</p>
+            ) : (
+                <p className="mb-6"></p>
+            )}
             <FormItem>
                 <Field name="images">
                     {({ field, form }: FieldProps) => {
@@ -202,62 +218,67 @@ const ProductImages = (props: ProductImagesProps) => {
                             return (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                                     <ImageList
+                                        type={type}
                                         images={values.images}
                                         onImageDelete={(img: Image) =>
                                             handleImageDelete(form, field, img)
                                         }
                                     />
-                                    <Upload
-                                        draggable
-                                        className="min-h-fit"
-                                        beforeUpload={beforeUpload}
-                                        showList={false}
-                                        onChange={(files) =>
-                                            onUpload(form, field, files)
-                                        }
-                                    >
-                                        <div className="max-w-full flex flex-col px-4 py-2 justify-center items-center">
-                                            <DoubleSidedImage
-                                                src="/img/others/upload.png"
-                                                darkModeSrc="/img/others/upload-dark.png"
-                                            />
-                                            <p className="font-semibold text-center text-gray-800 dark:text-white">
-                                                Upload
-                                            </p>
-                                        </div>
-                                    </Upload>
+                                    {type !== 'view' && (
+                                        <Upload
+                                            draggable
+                                            className="min-h-fit"
+                                            beforeUpload={beforeUpload}
+                                            showList={false}
+                                            onChange={(files) =>
+                                                onUpload(form, field, files)
+                                            }
+                                        >
+                                            <div className="max-w-full flex flex-col px-4 py-2 justify-center items-center">
+                                                <DoubleSidedImage
+                                                    src="/img/others/upload.png"
+                                                    darkModeSrc="/img/others/upload-dark.png"
+                                                />
+                                                <p className="font-semibold text-center text-gray-800 dark:text-white">
+                                                    Upload
+                                                </p>
+                                            </div>
+                                        </Upload>
+                                    )}
                                 </div>
                             )
                         }
 
                         return (
-                            <Upload
-                                draggable
-                                beforeUpload={beforeUpload}
-                                showList={false}
-                                onChange={(files) =>
-                                    onUpload(form, field, files)
-                                }
-                            >
-                                <div className="my-16 text-center">
-                                    <DoubleSidedImage
-                                        className="mx-auto"
-                                        src="/img/others/upload.png"
-                                        darkModeSrc="/img/others/upload-dark.png"
-                                    />
-                                    <p className="font-semibold">
-                                        <span className="text-gray-800 dark:text-white">
-                                            Drop your image here, or{' '}
-                                        </span>
-                                        <span className="text-blue-500">
-                                            browse
-                                        </span>
-                                    </p>
-                                    <p className="mt-1 opacity-60 dark:text-white">
-                                        Support: jpeg, png
-                                    </p>
-                                </div>
-                            </Upload>
+                            type !== 'view' && (
+                                <Upload
+                                    draggable
+                                    beforeUpload={beforeUpload}
+                                    showList={false}
+                                    onChange={(files) =>
+                                        onUpload(form, field, files)
+                                    }
+                                >
+                                    <div className="my-16 text-center">
+                                        <DoubleSidedImage
+                                            className="mx-auto"
+                                            src="/img/others/upload.png"
+                                            darkModeSrc="/img/others/upload-dark.png"
+                                        />
+                                        <p className="font-semibold">
+                                            <span className="text-gray-800 dark:text-white">
+                                                Drop your image here, or{' '}
+                                            </span>
+                                            <span className="text-blue-500">
+                                                browse
+                                            </span>
+                                        </p>
+                                        <p className="mt-1 opacity-60 dark:text-white">
+                                            Support: jpeg, png
+                                        </p>
+                                    </div>
+                                </Upload>
+                            )
                         )
                     }}
                 </Field>

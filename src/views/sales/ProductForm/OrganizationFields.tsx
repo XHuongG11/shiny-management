@@ -28,6 +28,7 @@ type FormFieldsName = {
 }
 
 type OrganizationFieldsProps = {
+    type: 'edit' | 'new' | 'view'
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
     values: {
@@ -42,7 +43,7 @@ type OrganizationFieldsProps = {
 }
 
 const OrganizationFields = (props: OrganizationFieldsProps) => {
-    const { values, touched, errors } = props
+    const { type, values, touched, errors } = props
     const [categories, setCategories] = useState<Category[]>([])
     const [collections, setCollections] = useState<Collection[]>([])
     const [loading, setLoading] = useState(false)
@@ -82,6 +83,7 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
             }
         }
         fetchCategories()
+        console.log('type', type)
     }, [])
 
     return (
@@ -127,6 +129,7 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                                         }
                                         placeholder="Category"
                                         isLoading={loading}
+                                        isDisabled={type === 'view'}
                                     />
                                 )
                             }}
@@ -172,6 +175,7 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                                             )
                                         }
                                         placeholder="Collection"
+                                        isDisabled={type === 'view'}
                                     />
                                 )
                             }}
@@ -187,80 +191,110 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                     <>
                         {values.attributes.map((_, index) => (
                             <div key={index}>
-                                <p className="mb-6">Attribute {index + 1}</p>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="col-span-1">
-                                        <FormItem
-                                            label="Name"
-                                            invalid={
-                                                (errors.attributes?.name &&
-                                                    touched.attributes
-                                                        ?.name) as boolean
-                                            }
-                                            errorMessage={
-                                                errors.attributes?.name
-                                            }
-                                        >
-                                            <Field
-                                                type="text"
-                                                autoComplete="off"
-                                                name={`attributes[${index}].name`}
-                                                placeholder="Name"
-                                                component={Input}
-                                            />
-                                        </FormItem>
-                                    </div>
-                                    <div className="col-span-1">
-                                        <FormItem
-                                            label="Value"
-                                            invalid={
-                                                (errors.attributes?.value &&
-                                                    touched.attributes
-                                                        ?.value) as boolean
-                                            }
-                                            errorMessage={
-                                                errors.attributes?.value
-                                            }
-                                        >
-                                            <Field
-                                                type="text"
-                                                autoComplete="off"
-                                                name={`attributes[${index}].value`}
-                                                placeholder="Value"
-                                                component={Input}
-                                            />
-                                        </FormItem>
-                                    </div>
-                                    {values.attributes.length > 1 && (
-                                        <div className="col-span-1 flex items-center">
-                                            <Button
-                                                size="sm"
-                                                variant="solid"
-                                                color="orange-500"
-                                                icon={<FiTrash />}
-                                                type="button"
-                                                onClick={() => remove(index)}
-                                            ></Button>
+                                {type === 'view' ? (
+                                    <div className="grid gap-4">
+                                        <div>
+                                            <ul className="mb-6 list-disc list-inside">
+                                                <li className="ml-6">
+                                                    {
+                                                        values.attributes[index]
+                                                            .name
+                                                    }{' '}
+                                                    :{' '}
+                                                    {
+                                                        values.attributes[index]
+                                                            .value
+                                                    }
+                                                </li>
+                                            </ul>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <p className="mb-6">
+                                            Attribute {index + 1}
+                                        </p>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="col-span-1">
+                                                <FormItem
+                                                    label="Name"
+                                                    invalid={
+                                                        (errors.attributes
+                                                            ?.name &&
+                                                            touched.attributes
+                                                                ?.name) as boolean
+                                                    }
+                                                    errorMessage={
+                                                        errors.attributes?.name
+                                                    }
+                                                >
+                                                    <Field
+                                                        type="text"
+                                                        autoComplete="off"
+                                                        name={`attributes[${index}].name`}
+                                                        placeholder="Name"
+                                                        component={Input}
+                                                    />
+                                                </FormItem>
+                                            </div>
+                                            <div className="col-span-1">
+                                                <FormItem
+                                                    label="Value"
+                                                    invalid={
+                                                        (errors.attributes
+                                                            ?.value &&
+                                                            touched.attributes
+                                                                ?.value) as boolean
+                                                    }
+                                                    errorMessage={
+                                                        errors.attributes?.value
+                                                    }
+                                                >
+                                                    <Field
+                                                        type="text"
+                                                        autoComplete="off"
+                                                        name={`attributes[${index}].value`}
+                                                        placeholder="Value"
+                                                        component={Input}
+                                                    />
+                                                </FormItem>
+                                            </div>
+                                            {values.attributes.length > 1 && (
+                                                <div className="col-span-1 flex items-center">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="solid"
+                                                        color="orange-500"
+                                                        icon={<FiTrash />}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            remove(index)
+                                                        }
+                                                    ></Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
-                        <div className="col-span-1">
-                            <Button
-                                size="sm"
-                                variant="solid"
-                                color="green-500"
-                                icon={<IoIosAddCircle />}
-                                type="button"
-                                onClick={() =>
-                                    push({
-                                        name: '',
-                                        value: '',
-                                    })
-                                }
-                            ></Button>
-                        </div>
+                        {type !== 'view' && (
+                            <div className="col-span-1">
+                                <Button
+                                    size="sm"
+                                    variant="solid"
+                                    color="green-500"
+                                    icon={<IoIosAddCircle />}
+                                    type="button"
+                                    onClick={() =>
+                                        push({
+                                            name: '',
+                                            value: '',
+                                        })
+                                    }
+                                ></Button>
+                            </div>
+                        )}
                     </>
                 )}
             </FieldArray>

@@ -23,7 +23,7 @@ import isEmpty from 'lodash/isEmpty'
 
 injectReducer('salesProductEdit', reducer)
 
-const ProductEdit = () => {
+const ProductDetail = () => {
     const dispatch = useAppDispatch()
 
     const location = useLocation()
@@ -140,7 +140,7 @@ const ProductEdit = () => {
                 {!isEmpty(productData) && (
                     <>
                         <ProductForm
-                            type="edit"
+                            type="view"
                             initialData={productData}
                             onFormSubmit={handleFormSubmit}
                             onDiscard={handleDiscard}
@@ -163,4 +163,4 @@ const ProductEdit = () => {
     )
 }
 
-export default ProductEdit
+export default ProductDetail

@@ -1,41 +1,30 @@
 import Card from '@/components/ui/Card'
 import { NumericFormat } from 'react-number-format'
-import GrowShrinkTag from '@/components/shared/GrowShrinkTag'
 import { useAppSelector } from '../store'
-import dayjs from 'dayjs'
 
 type StatisticCardProps = {
-    data?: {
-        value: number
-        growShrink: number
-    }
+    data?: number
     label: string
     valuePrefix?: string
-    date: number
+    month: number
+    year: number
 }
 
 type StatisticProps = {
     data?: {
-        revenue?: {
-            value: number
-            growShrink: number
-        }
-        orders?: {
-            value: number
-            growShrink: number
-        }
-        purchases?: {
-            value: number
-            growShrink: number
-        }
+        revenue?: number
+        orders?: number
+        customers?: number
+        returnOrders?: number
     }
 }
 
 const StatisticCard = ({
-    data = { value: 0, growShrink: 0 },
+    data = 0,
     label,
     valuePrefix,
-    date,
+    month,
+    year,
 }: StatisticCardProps) => {
     return (
         <Card>
@@ -46,42 +35,54 @@ const StatisticCard = ({
                         <NumericFormat
                             thousandSeparator
                             displayType="text"
-                            value={data.value}
+                            value={
+                                typeof data === 'number' ||
+                                typeof data === 'string'
+                                    ? data
+                                    : ''
+                            }
                             prefix={valuePrefix}
                         />
                     </h3>
                     <p>
-                        vs. 3 months prior to{' '}
-                        <span className="font-semibold">
-                            {dayjs(date).format('DD MMM')}
-                        </span>
+                        {month}/{year}
                     </p>
                 </div>
-                <GrowShrinkTag value={data.growShrink} suffix="%" />
             </div>
         </Card>
     )
 }
 
 const Statistic = ({ data = {} }: StatisticProps) => {
-    const startDate = useAppSelector(
-        (state) => state.salesDashboard.data.startDate
-    )
-
+    const month = useAppSelector((state) => state.salesDashboard.data.month)
+    const year = useAppSelector((state) => state.salesDashboard.data.year)
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             <StatisticCard
                 data={data.revenue}
-                valuePrefix="$"
+                valuePrefix="VND "
                 label="Revenue"
-                date={startDate}
+                month={month}
+                year={year}
             />
-            <StatisticCard data={data.orders} label="Orders" date={startDate} />
             <StatisticCard
-                data={data.purchases}
-                valuePrefix="$"
-                label="Purchases"
-                date={startDate}
+                data={data.orders}
+                label="Orders"
+                month={month}
+                year={year}
+            />
+            <StatisticCard
+                data={data.customers}
+                valuePrefix="VND "
+                label="New Customers"
+                month={month}
+                year={year}
+            />
+            <StatisticCard
+                data={data.returnOrders}
+                label="Return Orders"
+                month={month}
+                year={year}
             />
         </div>
     )

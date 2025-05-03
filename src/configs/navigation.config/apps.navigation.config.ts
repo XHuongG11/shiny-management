@@ -97,6 +97,16 @@ const appsNavigationConfig: NavigationTree[] = [
                         authority: [ADMIN, USER],
                         subMenu: [],
                     },
+                    {
+                        key: 'appsSales.orderList',
+                        path: `${APP_PREFIX_PATH}/sales/order-list`,
+                        title: 'Quản lý danh mục ',
+                        translateKey: 'nav.appsSales.managerCategory',
+                        icon: '',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
                 ],
             },
             {
