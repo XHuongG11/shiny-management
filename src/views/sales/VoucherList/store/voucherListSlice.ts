@@ -33,8 +33,11 @@ export const searchVouchers = createAsyncThunk(
 export const deleteVoucher = createAsyncThunk(
     SLICE_NAME + '/deleteVoucher',
     async (id: number) => {
-        await apiDeleteVoucher(id)
-        return id
+        const response = await apiDeleteVoucher(id) as unknown as ApiResponse<Voucher>
+        if (response.data.code === "200") {
+            return id
+        }
+        throw new Error(response.data.message || 'Unable to delete voucher')
     }
 )
 

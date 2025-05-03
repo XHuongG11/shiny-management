@@ -27,18 +27,15 @@ import {
     VoucherApplicability, 
     VoucherType 
 } from '@/@types/voucher'
+import debounce from 'lodash/debounce'
 import React from 'react'
+import { ApiResponse } from '@/@types/auth'
 
 type VoucherFormProps = {
     open: boolean
     onClose: () => void
     editMode: boolean
 }
-
-// type ProductOption = {
-//     value: number
-//     label: string
-// }
 
 type ApplicabilityOption = {
     value: string
@@ -123,6 +120,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
     const [customers, setCustomers] = useState<ApplicabilityOption[]>([])
     const [submitting, setSubmitting] = useState(false)
     const [applicableObjects, setApplicableObjects] = useState<ApplicabilityOption[]>([])
+    const [applicabilitySearch, setApplicabilitySearch] = useState('')
 
     useEffect(() => {
         if (open) {
@@ -142,7 +140,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
         onClose()
     }
     
-    const fetchApplicableObjects = async (applicabilityType: string) => {
+    const fetchApplicableObjects = async (applicabilityType: string, searchTerm: string = '') => {
         if (applicabilityType === 'ALL') {
             setApplicableObjects([])
             return
@@ -150,10 +148,11 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
 
         try {
             let response: any
+            let params = searchTerm ? { search: searchTerm } : undefined
             
             switch (applicabilityType) {
                 case 'PRODUCT':
-                    response = await apiGetProducts<any>('')
+                    response = await apiGetProducts<any>(searchTerm || '')
                     if (response.data && response.data.data) {
                         setApplicableObjects(response.data.data.content.map((p: any) => ({ 
                             value: p.id, 
@@ -163,7 +162,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                     break
                     
                 case 'CATEGORY':
-                    response = await apiGetCategories<any>('')
+                    response = await apiGetCategories<any>(searchTerm ? searchTerm as string : '')
                     if (response.data && response.data.data) {
                         setApplicableObjects(response.data.data.map((c: any) => ({ 
                             value: c.id, 
@@ -173,7 +172,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                     break
                     
                 case 'COLLECTION':
-                    response = await apiGetCollections<any>('')
+                    response = await apiGetCollections<any>(searchTerm ?  searchTerm as string : '')
                     if (response.data && response.data.data) {
                         setApplicableObjects(response.data.data.map((c: any) => ({ 
                             value: c.id, 
@@ -183,7 +182,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                     break
                     
                 case 'CUSTOMER':
-                    response = await apiGetCustomers<any>('')
+                    response = await apiGetCustomers<any>(searchTerm || '')
                     if (response.data && response.data.data) {
                         setApplicableObjects(response.data.data.content.map((c: any) => ({ 
                             value: c.id, 
@@ -199,6 +198,15 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
             console.error('Error fetching applicable objects:', error)
             setApplicableObjects([])
         }
+    }
+
+    const debouncedSearch = debounce((applicabilityType, searchTerm) => {
+        fetchApplicableObjects(applicabilityType, searchTerm)
+    }, 300)
+
+    const handleApplicabilitySearch = (applicabilityType: string, searchTerm: string) => {
+        setApplicabilitySearch(searchTerm)
+        debouncedSearch(applicabilityType, searchTerm)
     }
 
     const getApplicabilityType = (applicabilities: VoucherApplicability[] | undefined): string => {
@@ -281,28 +289,67 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
             }
             
             if (editMode && selectedVoucher?.id) {
-                await apiUpdateVoucher(selectedVoucher.id, voucherData)
-                toast.push(
-                    <Notification title="Success" type="success">
-                        Voucher updated successfully
-                    </Notification>
-                )
+                const response = await apiUpdateVoucher(selectedVoucher.id, voucherData) as unknown as ApiResponse<Voucher>
+                if (response.data.code === "200") {
+                    toast.push(
+                        <Notification title="Success" type="success">
+                            Voucher updated successfully
+                        </Notification>
+                    )
+                    
+                    // Refresh voucher list
+                    dispatch(getVouchers({ page: 1, size: 10 }))
+                    handleDialogClose()
+                } else {
+                    toast.push(
+                        <Notification title="Error" type="danger">
+                            {response.data.message || 'Failed to update voucher'}
+                        </Notification>
+                    )
+                }
             } else {
-                await apiAddVoucher(voucherData)
-                toast.push(
-                    <Notification title="Success" type="success">
-                        Voucher created successfully
-                    </Notification>
-                )
+                const response = await apiAddVoucher(voucherData) as unknown as ApiResponse<Voucher>
+                if (response.data.code === "200") {
+                    toast.push(
+                        <Notification title="Success" type="success">
+                            Voucher created successfully
+                        </Notification>
+                    )
+                    
+                    // Refresh voucher list
+                    dispatch(getVouchers({ page: 1, size: 10 }))
+                    handleDialogClose()
+                } else {
+                    toast.push(
+                        <Notification title="Error" type="danger">
+                            {response.data.message || 'Failed to create voucher'}
+                        </Notification>
+                    )
+                }
+            }
+        } catch (error: any) {
+            const errorResponse = error.response?.data
+            let errorMessage = 'Failed to save voucher'
+            
+            if (errorResponse) {
+                switch (errorResponse.code) {
+                    case "400":
+                        errorMessage = errorResponse.message || 'Invalid voucher data'
+                        break
+                    case "409":
+                        errorMessage = errorResponse.message || 'Voucher code already exists'
+                        break
+                    case "1000":
+                        errorMessage = errorResponse.message || 'System error occurred'
+                        break
+                    default:
+                        errorMessage = errorResponse.message || 'An error occurred'
+                }
             }
             
-            // Refresh voucher list
-            dispatch(getVouchers({ page: 1, size: 10 }))
-            handleDialogClose()
-        } catch (error: any) {
             toast.push(
                 <Notification title="Error" type="danger">
-                    {error?.response?.data?.message || 'Failed to save voucher'}
+                    {errorMessage}
                 </Notification>
             )
         } finally {
@@ -346,6 +393,9 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                                     selections?.map(option => option.value) || []
                                 )
                             }}
+                            onInputChange={(value) => {
+                                handleApplicabilitySearch(applicabilityType, value)
+                            }}
                         />
                     )}
                 </Field>
@@ -359,6 +409,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
             onClose={handleDialogClose}
             onRequestClose={handleDialogClose}
             width={700}
+            //scrollable={true}
         >
             <h4>{editMode ? 'Edit Voucher' : 'Add New Voucher'}</h4>
             <div className="mt-4">

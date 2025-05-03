@@ -205,8 +205,11 @@ const VoucherTable = ({ onEdit }: VoucherTableProps) => {
                     }
                     
                     const onEditClick = () => {
+                        // Set the selected voucher first, then call onEdit in the next tick
                         dispatch(setSelectedVoucher(row))
-                        onEdit()
+                        setTimeout(() => {
+                            onEdit()
+                        }, 0)
                     }
                     
                     return (
