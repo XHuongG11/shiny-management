@@ -153,7 +153,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
             
             switch (applicabilityType) {
                 case 'PRODUCT':
-                    response = await apiGetProducts<any>(1, 10, '')
+                    response = await apiGetProducts<any>('')
                     if (response.data && response.data.data) {
                         setApplicableObjects(response.data.data.content.map((p: any) => ({ 
                             value: p.id, 
@@ -183,7 +183,7 @@ const VoucherForm = ({ open, onClose, editMode }: VoucherFormProps) => {
                     break
                     
                 case 'CUSTOMER':
-                    response = await apiGetCustomers<any>(1, 10)
+                    response = await apiGetCustomers<any>('')
                     if (response.data && response.data.data) {
                         setApplicableObjects(response.data.data.content.map((c: any) => ({ 
                             value: c.id, 

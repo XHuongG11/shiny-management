@@ -40,11 +40,11 @@ export async function apiDeleteVoucher<T>(id: number) {
     })
 }
 
-export async function apiGetProducts<T>(page: number, size: number, title: string) {
+export async function apiGetProducts<T>(title: string) {
     return ApiService.fetchData<T>({
         url: '/products/search-and-filter',
         method: 'get',
-        params : { page, size, title },
+        params : { page : 1, size : 10, title },
     })
 }
 
@@ -64,10 +64,10 @@ export async function apiGetCollections<T>(name : string) {
     })
 }
 
-export async function apiGetCustomers<T>(page: number, size: number) {
+export async function apiGetCustomers<T>(name: string) {
     return ApiService.fetchData<T>({
-        url: '/users/customers',
+        url: '/users/search-customers',
         method: 'get',
-        params: { page, size },
+        params: { page : 1, size : 10, name : name },
     })
 }
