@@ -35,21 +35,37 @@ const ProductNew = () => {
             FormModel
         >(cleanData)
         // thêm image
-        if (data.images?.length !== 0) {
-            const productId = response.data.data.id
-            const formData = new FormData()
-            formData.append('productId', String(productId))
-            data.images
-                ?.map((i) => i.file)
-                .forEach((file) => {
-                    if (file) {
-                        formData.append('files', file)
-                    }
-                })
-            const responseImage = await apiAddProductImage(formData)
-            console.log('img data', responseImage.data)
+        if (response.data.code === '200') {
+            if (data.images?.length !== 0) {
+                const productId = response.data.data.id
+                const formData = new FormData()
+                formData.append('productId', String(productId))
+                data.images
+                    ?.map((i) => i.file)
+                    .forEach((file) => {
+                        if (file) {
+                            formData.append('files', file)
+                        }
+                    })
+                const responseImage = await apiAddProductImage(formData)
+                console.log('img data', responseImage.data)
+            }
+            return response.data
+        } else if (response.data.code === '409') {
+            toast.push(
+                <Notification
+                    title={'Product title already exists please check again!'}
+                    type="danger"
+                    duration={2500}
+                >
+                    Product title already exists please check again!
+                </Notification>,
+                {
+                    placement: 'top-center',
+                },
+            )
+            return false
         }
-        return response.data
     }
 
     const handleFormSubmit = async (

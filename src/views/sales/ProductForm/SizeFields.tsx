@@ -17,11 +17,13 @@ import { IoIosAddCircle } from 'react-icons/io'
 import { FiTrash } from 'react-icons/fi'
 
 type FormFieldsName = {
-    size: number
-    stock: number
-    price: number
-    discountPrice: number
-    discountRate: number
+    productSizes: {
+        size: number
+        stock: number
+        price: number
+        discountPrice: number
+        discountRate: number
+    }[]
 }
 
 type PricingFieldsProps = {
@@ -70,7 +72,7 @@ const NumericFormatInput = ({
     )
 }
 
-const PricingFields = (props: PricingFieldsProps) => {
+const SizeFields = (props: PricingFieldsProps) => {
     const { type, values, touched, errors } = props
     return (
         <AdaptableCard divider className="mb-4">
@@ -165,6 +167,11 @@ const PricingFields = (props: PricingFieldsProps) => {
                             </div>
                         ) : (
                             <div>
+                                {typeof errors.productSizes === 'string' && (
+                                    <p className="text-red-500 text-sm mt-2">
+                                        {errors.productSizes}
+                                    </p>
+                                )}
                                 {values.productSizes.map((_, index) => (
                                     <div key={index}>
                                         <div>
@@ -176,11 +183,33 @@ const PricingFields = (props: PricingFieldsProps) => {
                                                     <FormItem
                                                         label="Size"
                                                         invalid={
-                                                            (errors.stock &&
-                                                                touched.stock) as boolean
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object' &&
+                                                            !!(
+                                                                errors
+                                                                    .productSizes[
+                                                                    index
+                                                                ] as any
+                                                            )?.size &&
+                                                            !!touched
+                                                                .productSizes?.[
+                                                                index
+                                                            ]?.size
                                                         }
                                                         errorMessage={
-                                                            errors.stock
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object'
+                                                                ? (
+                                                                      errors
+                                                                          .productSizes[
+                                                                          index
+                                                                      ] as any
+                                                                  )?.size
+                                                                : ''
                                                         }
                                                     >
                                                         <Field
@@ -220,11 +249,33 @@ const PricingFields = (props: PricingFieldsProps) => {
                                                     <FormItem
                                                         label="Stock"
                                                         invalid={
-                                                            (errors.stock &&
-                                                                touched.stock) as boolean
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object' &&
+                                                            !!(
+                                                                errors
+                                                                    .productSizes[
+                                                                    index
+                                                                ] as any
+                                                            )?.stock &&
+                                                            !!touched
+                                                                .productSizes?.[
+                                                                index
+                                                            ]?.stock
                                                         }
                                                         errorMessage={
-                                                            errors.stock
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object'
+                                                                ? (
+                                                                      errors
+                                                                          .productSizes[
+                                                                          index
+                                                                      ] as any
+                                                                  )?.stock
+                                                                : ''
                                                         }
                                                     >
                                                         <Field
@@ -266,11 +317,33 @@ const PricingFields = (props: PricingFieldsProps) => {
                                                     <FormItem
                                                         label="Price"
                                                         invalid={
-                                                            (errors.price &&
-                                                                touched.price) as boolean
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object' &&
+                                                            !!(
+                                                                errors
+                                                                    .productSizes[
+                                                                    index
+                                                                ] as any
+                                                            )?.price &&
+                                                            !!touched
+                                                                .productSizes?.[
+                                                                index
+                                                            ]?.price
                                                         }
                                                         errorMessage={
-                                                            errors.price
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object'
+                                                                ? (
+                                                                      errors
+                                                                          .productSizes[
+                                                                          index
+                                                                      ] as any
+                                                                  )?.price
+                                                                : ''
                                                         }
                                                     >
                                                         <Field
@@ -310,11 +383,34 @@ const PricingFields = (props: PricingFieldsProps) => {
                                                     <FormItem
                                                         label="Discount Price"
                                                         invalid={
-                                                            (errors.discountPrice &&
-                                                                touched.discountPrice) as boolean
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object' &&
+                                                            !!(
+                                                                errors
+                                                                    .productSizes[
+                                                                    index
+                                                                ] as any
+                                                            )?.discountPrice &&
+                                                            !!touched
+                                                                .productSizes?.[
+                                                                index
+                                                            ]?.discountPrice
                                                         }
                                                         errorMessage={
-                                                            errors.discountPrice
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object'
+                                                                ? (
+                                                                      errors
+                                                                          .productSizes[
+                                                                          index
+                                                                      ] as any
+                                                                  )
+                                                                      ?.discountPrice
+                                                                : ''
                                                         }
                                                     >
                                                         <Field
@@ -356,11 +452,34 @@ const PricingFields = (props: PricingFieldsProps) => {
                                                     <FormItem
                                                         label="Discount Rate %"
                                                         invalid={
-                                                            (errors.discountRate &&
-                                                                touched.discountRate) as boolean
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object' &&
+                                                            !!(
+                                                                errors
+                                                                    .productSizes[
+                                                                    index
+                                                                ] as any
+                                                            )?.discountRate &&
+                                                            !!touched
+                                                                .productSizes?.[
+                                                                index
+                                                            ]?.discountRate
                                                         }
                                                         errorMessage={
-                                                            errors.discountRate
+                                                            typeof errors
+                                                                .productSizes?.[
+                                                                index
+                                                            ] === 'object'
+                                                                ? (
+                                                                      errors
+                                                                          .productSizes[
+                                                                          index
+                                                                      ] as any
+                                                                  )
+                                                                      ?.discountRate
+                                                                : ''
                                                         }
                                                     >
                                                         <Field
@@ -448,4 +567,4 @@ const PricingFields = (props: PricingFieldsProps) => {
     )
 }
 
-export default PricingFields
+export default SizeFields

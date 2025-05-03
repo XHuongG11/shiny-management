@@ -3,7 +3,6 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import StickyFooter from '@/components/shared/StickyFooter'
 import Button from '@/components/ui/Button'
 import { FormContainer } from '@/components/ui/Form'
-import hooks from '@/components/ui/hooks'
 import { Form, Formik, FormikProps } from 'formik'
 import cloneDeep from 'lodash/cloneDeep'
 import { forwardRef, useState } from 'react'
@@ -12,8 +11,8 @@ import { HiOutlineTrash } from 'react-icons/hi'
 import * as Yup from 'yup'
 import BasicInformationFields from './BasicInformationFields'
 import OrganizationFields from './OrganizationFields'
-import PricingFields from './PricingFields'
 import ProductImages from './ProductImages'
+import SizeFields from './SizeFields'
 
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 type FormikRef = FormikProps<any>
@@ -36,27 +35,56 @@ type ProductForm = {
     onFormSubmit: (formData: FormModel, setSubmitting: SetSubmitting) => void
 }
 
-const { useUniqueId } = hooks
-
-const validationSchema = Yup.object().shape({
-    title: Yup.string().required('Product name Required'),
-    // category: Yup.string().required('Category Required'),
-    productSizes: Yup.array()
-        .of(
-            Yup.object().shape({
-                size: Yup.number().required('Size is required'),
-                stock: Yup.number().required('Stock is required'),
-                price: Yup.number().required('Price is required'),
-                discountPrice: Yup.number().required(
-                    'Discount price is required',
-                ),
-                discountRate: Yup.number()
-                    .required('Discount rate is required')
-                    .max(100, 'Discount rate cannot exceed 100%'),
+const getValidationSchema = () => {
+    return Yup.object().shape({
+        title: Yup.string().required('Product name Required'),
+        category: Yup.object()
+            .shape({
+                id: Yup.string().required('Category is required'),
+                name: Yup.string().required(),
+            })
+            .nullable()
+            .required('Category is required'),
+        collection: Yup.object()
+            .shape({
+                id: Yup.number(),
+                name: Yup.string(),
+            })
+            .notRequired(),
+        productSizes: Yup.array()
+            .of(
+                Yup.object().shape({
+                    size: Yup.number()
+                        .typeError('Size must be a number')
+                        .required('Size is required'),
+                    stock: Yup.number()
+                        .typeError('Stock must be a number')
+                        .required('Stock is required'),
+                    price: Yup.number()
+                        .typeError('Price must be a number')
+                        .required('Price is required'),
+                    discountPrice: Yup.number()
+                        .typeError('Discount price must be a number')
+                        .required('Discount price is required'),
+                    discountRate: Yup.number()
+                        .typeError('Discount rate must be a number')
+                        .required('Discount rate is required')
+                        .max(100, 'Discount rate cannot exceed 100%'),
+                }),
+            )
+            .min(1, 'At least one product size is required')
+            .test('unique-size', 'Sizes must be unique', (productSizes) => {
+                if (!productSizes) return true
+                const seen = new Set()
+                for (const item of productSizes) {
+                    if (item?.size == null) continue // Bỏ qua giá trị chưa nhập
+                    if (seen.has(item.size)) return false
+                    seen.add(item.size)
+                }
+                return true
             }),
-        )
-        .min(1, 'At least one product size is required'),
-})
+    })
+}
 
 const DeleteProductButton = ({ onDelete }: { onDelete: OnDelete }) => {
     const [dialogOpen, setDialogOpen] = useState(false)
@@ -127,8 +155,6 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
         onDelete,
     } = props
 
-    const newId = useUniqueId('product-')
-
     return (
         <>
             <Formik
@@ -136,16 +162,10 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
                 initialValues={{
                     ...initialData,
                 }}
-                validationSchema={validationSchema}
+                validationSchema={getValidationSchema()}
                 onSubmit={(values: FormModel, { setSubmitting }) => {
                     console.log('onSubmit triggered! values:', values)
                     const formData = cloneDeep(values)
-                    // if (type === 'new') {
-                    //     // formData.id = newId
-                    //     // if (formData.imgList && formData.imgList.length > 0) {
-                    //     //     formData.img = formData.imgList[0].img
-                    //     // }
-                    // }
                     onFormSubmit?.(formData, setSubmitting)
                 }}
             >
@@ -165,7 +185,7 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
                                         errors={errors}
                                         values={values}
                                     />
-                                    <PricingFields
+                                    <SizeFields
                                         type={type}
                                         touched={touched}
                                         errors={errors}

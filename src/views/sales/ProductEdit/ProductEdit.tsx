@@ -58,13 +58,6 @@ const ProductEdit = () => {
                         const responseImage = await apiAddProductImage(formData)
                         console.log('img data', responseImage.data)
                     }
-                    // } else {
-                    //     const responseImage = await apiUpdateProductImage(
-                    //         i?.id,
-                    //         formData,
-                    //     )
-                    //     console.log('img data', responseImage.data)
-                    // }
                 })
             }
             setSubmitting(false)

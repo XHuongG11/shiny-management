@@ -3,7 +3,6 @@ import type {
     SignInCredential,
     SignUpCredential,
     ForgotPassword,
-    ResetPassword,
     SignInResponse,
     SignUpResponse,
     ApiResponse,
@@ -32,24 +31,20 @@ export async function apiSignUp(data: SignUpCredential) {
     })
 }
 
-// export async function apiSignOut() {
-//     return ApiService.fetchData({
-//         url: '/sign-out',
-//         method: 'post',
-//     })
-// }
-
-export async function apiForgotPassword(data: ForgotPassword) {
-    return ApiService.fetchData({
-        url: '/forgot-password',
+export async function apiSendEmailResetPassword<
+    T extends Record<string, unknown>,
+>(data: ForgotPassword) {
+    return ApiService.fetchData<T>({
+        url: '/auth/reset-password/send-email',
         method: 'post',
-        data,
+        params: data,
     })
 }
-
-export async function apiResetPassword(data: ResetPassword) {
-    return ApiService.fetchData({
-        url: '/reset-password',
+export async function apiVerifyResetPassword<T extends Record<string, unknown>>(
+    data: ForgotPassword,
+) {
+    return ApiService.fetchData<T>({
+        url: '/auth/reset-password/verify',
         method: 'post',
         data,
     })
