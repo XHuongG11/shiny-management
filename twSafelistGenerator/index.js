@@ -1,7 +1,7 @@
-const fs = require('fs')
-const plugin = require('tailwindcss/plugin')
-const generator = require('./generator')
-const crypto = require('crypto')
+const fs = require('fs');
+const plugin = require('tailwindcss/plugin');
+const generator = require('./generator');
+const crypto = require('crypto');
 
 module.exports = plugin.withOptions(({ path = 'safelist.txt', patterns = [] }) => ({ theme }) => {
 

@@ -207,6 +207,7 @@ const ProductTable = () => {
         dispatch(setTableData(newTableData))
     }
 
+    console.log('data', data)
     return (
         <>
             <DataTable
@@ -225,6 +226,7 @@ const ProductTable = () => {
                 onSelectChange={onSelectChange}
                 onSort={onSort}
             />
+            {data.length === 0 && <h5>Không tìm thấy sản phẩm phù hợp.</h5>}
             <ProductDeleteConfirmation />
         </>
     )

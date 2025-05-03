@@ -1,16 +1,15 @@
-import Input from '@/components/ui/Input'
-import Button from '@/components/ui/Button'
-import Checkbox from '@/components/ui/Checkbox'
-import { FormItem, FormContainer } from '@/components/ui/Form'
-import Alert from '@/components/ui/Alert'
-import PasswordInput from '@/components/shared/PasswordInput'
+import type { CommonProps } from '@/@types/common'
 import ActionLink from '@/components/shared/ActionLink'
-import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
+import PasswordInput from '@/components/shared/PasswordInput'
+import { Select } from '@/components/ui'
+import Alert from '@/components/ui/Alert'
+import Button from '@/components/ui/Button'
+import { FormContainer, FormItem } from '@/components/ui/Form'
+import Input from '@/components/ui/Input'
 import useAuth from '@/utils/hooks/useAuth'
+import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
 import { Field, FieldProps, Form, Formik } from 'formik'
 import * as Yup from 'yup'
-import type { CommonProps } from '@/@types/common'
-import { Select } from '@/components/ui'
 
 interface SignInFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -145,14 +144,7 @@ const SignInForm = (props: SignInFormProps) => {
                                     }}
                                 </Field>
                             </FormItem>
-                            <div className="flex justify-between mb-6">
-                                <Field
-                                    className="mb-0"
-                                    name="rememberMe"
-                                    component={Checkbox}
-                                >
-                                    Remember Me
-                                </Field>
+                            <div className="flex justify-center mb-6">
                                 <ActionLink to={forgotPasswordUrl}>
                                     Forgot Password?
                                 </ActionLink>
