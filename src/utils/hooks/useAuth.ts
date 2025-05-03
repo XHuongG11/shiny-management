@@ -60,7 +60,7 @@ function useAuth() {
                     status: 'success',
                     message: '',
                 }
-            } else if (resp?.data?.code === '1000') {
+            } else if (resp?.data?.code === '400') {
                 return {
                     status: 'failed',
                     message: 'Invalid username or password',

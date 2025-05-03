@@ -32,6 +32,7 @@ export type SignUpCredential = {
 
 export type ForgotPassword = {
     email: string
+    role: string
 }
 
 export type ResetPassword = {

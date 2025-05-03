@@ -95,15 +95,14 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                     <FormItem
                         label="Category"
                         invalid={
-                            (errors.collection &&
-                                touched.collection) as unknown as boolean
+                            (errors.category &&
+                                touched.category) as unknown as boolean
                         }
-                        errorMessage={errors.collection as string}
+                        errorMessage={errors.category?.id as string}
                     >
                         <Field name="category">
                             {({ field, form }: FieldProps) => {
                                 const selectedOption = field.value
-
                                 return (
                                     <Select
                                         componentAs={CreatableSelect}
@@ -114,7 +113,7 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                                             value: category,
                                         }))}
                                         value={
-                                            selectedOption
+                                            selectedOption?.id
                                                 ? {
                                                       label: selectedOption.name,
                                                       value: selectedOption,
@@ -122,10 +121,10 @@ const OrganizationFields = (props: OrganizationFieldsProps) => {
                                                 : null
                                         }
                                         onChange={(option) =>
-                                            form.setFieldValue(
-                                                field.name,
-                                                option?.value,
-                                            )
+                                            form.setFieldValue(field.name, {
+                                                id: option?.value?.id,
+                                                name: option?.value?.name,
+                                            })
                                         }
                                         placeholder="Category"
                                         isLoading={loading}
