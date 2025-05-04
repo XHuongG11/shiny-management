@@ -5,6 +5,7 @@ import AdaptableCard from '@/components/shared/AdaptableCard';
 import StaffTable from './components/StaffTable';
 import StaffTableTools from './components/StaffTableTools';
 import StaffForm from './components/StaffForm';
+import StaffDeleteConfirmation from './components/StaffDeleteConfirmation';
 import { useAppSelector } from './store';
 
 injectReducer('staff', reducer);
@@ -13,22 +14,22 @@ const StaffManagement: React.FC = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
 
-    const selectedStaff = useAppSelector((state) => state.staff.selectedStaff);
+    const selectedStaff = useAppSelector((state) => state.staff.data.selectedStaff);
 
     const handleAddStaff = () => {
-        setEditMode(false); // Chế độ thêm mới
-        setIsFormOpen(true); // Mở form
+        setEditMode(false);
+        setIsFormOpen(true);
     };
 
     const handleEditStaff = () => {
         if (selectedStaff) {
-            setEditMode(true); // Chế độ chỉnh sửa
-            setIsFormOpen(true); // Mở form
+            setEditMode(true);
+            setIsFormOpen(true);
         }
     };
 
     const handleCloseForm = () => {
-        setIsFormOpen(false); // Đóng form
+        setIsFormOpen(false);
     };
 
     return (
@@ -39,6 +40,7 @@ const StaffManagement: React.FC = () => {
             </div>
             <StaffTable onEdit={handleEditStaff} />
             <StaffForm open={isFormOpen} onClose={handleCloseForm} editMode={editMode} />
+            <StaffDeleteConfirmation />
         </AdaptableCard>
     );
 };

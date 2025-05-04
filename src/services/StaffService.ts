@@ -55,7 +55,7 @@ export async function apiActivateStaff<ApiResponse>(id: number) {
 }
 
 // Vô hiệu hóa nhân viên
-export async function apiDeactivateStaff<ApiResponse>(id: number) {
+export async function apiBanStaff<ApiResponse>(id: number) {
     return ApiService.fetchData<ApiResponse>({
         url: `/users/deactivate-staff/${id}`,
         method: 'put',

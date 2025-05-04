@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import DataTable from '@/components/shared/DataTable';
-import { HiOutlineTrash, HiOutlinePencil } from 'react-icons/hi';
+import { HiOutlineTrash, HiOutlinePencil, HiOutlineCheckCircle, HiOutlineXCircle } from 'react-icons/hi';
 import Tooltip from '@/components/ui/Tooltip';
 import dayjs from 'dayjs';
 import {
@@ -8,22 +8,18 @@ import {
     setTableData,
     setSelectedStaff,
     toggleDeleteConfirmation,
+    setSearchQuery,
+    activateStaff,
+    banStaff,
     useAppDispatch,
     useAppSelector,
 } from '../store';
 import cloneDeep from 'lodash/cloneDeep';
 import type { DataTableResetHandle, OnSortParam, ColumnDef } from '@/components/shared/DataTable';
-
-type Staff = {
-    id: number;
-    join_at: string;
-    email: string;
-    fullName: string;
-    phone: string;
-    username: string;
-    gender: string;
-    status: string;
-};
+import { Staff } from '@/@types/staff';
+import StaffTableSearch from './StaffTableSearch';
+import toast from '@/components/ui/toast';
+import Notification from '@/components/ui/Notification';
 
 type StaffTableProps = {
     onEdit: () => void;
@@ -33,24 +29,37 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
     const tableRef = useRef<DataTableResetHandle>(null);
     const dispatch = useAppDispatch();
 
-    const staffState = useAppSelector((state) => state.staff);
+    const staffState = useAppSelector((state) => state.staff.data);
 
-    const { page = 1, size = 10, sort = null, totalPages = 0 } = staffState.data.tableData || {};
-    const loading = staffState.data.loading || false;
-    const data = staffState.data.staffList || [];
-    const error = staffState.data.error || null;
+    // Kiểm tra an toàn nếu staffState là undefined
+    if (!staffState) {
+        return (
+            <div className="text-red-500 p-4">
+                Error: Staff state is not initialized. Please ensure the staff reducer is registered in the Redux store.
+            </div>
+        );
+    }
+
+    const { page = 1, size = 10, sort = null, totalPages = 0, query = '' } = staffState.tableData || {};
+    const loading = staffState.loading || false;
+    const data = staffState.staffList || [];
+    const error = staffState.error || null;
 
     useEffect(() => {
         fetchData();
-    }, [page, size, sort]);
+    }, [page, size, sort, query]);
 
     const tableData = useMemo(
-        () => ({ page, size, sort, totalPages }),
-        [page, size, sort, totalPages]
+        () => ({ page, size, sort, totalPages, query }),
+        [page, size, sort, totalPages, query]
     );
 
     const fetchData = () => {
-        dispatch(getStaffs({ page: page ?? 1, size: size ?? 10 }));
+        dispatch(getStaffs({ page: page ?? 1, size: size ?? 10, query }));
+    };
+
+    const handleSearch = (searchQuery: string) => {
+        dispatch(setSearchQuery(searchQuery));
     };
 
     const columns: ColumnDef<Staff>[] = useMemo(
@@ -58,13 +67,13 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
             {
                 header: 'ID',
                 accessorKey: 'id',
-                cell: (props) => <span>{props.row.original.id}</span>,
+                cell: (props) => <span>{props.row.original.id ?? 'N/A'}</span>,
             },
             {
                 header: 'Join Date',
-                accessorKey: 'join_at',
+                accessorKey: 'joinAt',
                 cell: (props) => (
-                    <span>{dayjs(props.row.original.join_at).format('DD/MM/YYYY')}</span>
+                    <span>{dayjs(props.row.original.joinAt).format('DD/MM/YYYY')}</span>
                 ),
             },
             {
@@ -74,7 +83,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
             },
             {
                 header: 'Full Name',
-                accessorKey: 'full_name',
+                accessorKey: 'fullName',
                 cell: (props) => <span>{props.row.original.fullName}</span>,
             },
             {
@@ -91,29 +100,41 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
                 header: 'Gender',
                 accessorKey: 'gender',
                 cell: (props) => (
-                    <span>{props.row.original.gender === 'M' ? 'Male' : 'Female'}</span>
+                    <span>
+                        {props.row.original.gender === 'MALE'
+                            ? 'Male'
+                            : props.row.original.gender === 'FEMALE'
+                            ? 'Female'
+                            : 'Other'}
+                    </span>
                 ),
             },
             {
                 header: 'Status',
                 accessorKey: 'status',
-                cell: (props) => (
-                    <span
-                        className={`${
-                            props.row.original.status === 'active'
-                                ? 'text-green-500'
-                                : 'text-red-500'
-                        }`}
-                    >
-                        {props.row.original.status}
-                    </span>
-                ),
+                cell: (props) => {
+                    const status = props.row.original.status || 'Unknown';
+                    return (
+                        <span
+                            className={`${
+                                status === 'ACTIVE'
+                                    ? 'text-green-500'
+                                    : status === 'BANNED'
+                                    ? 'text-red-500'
+                                    : 'text-gray-500'
+                            }`}
+                        >
+                            {status}
+                        </span>
+                    );
+                },
             },
             {
                 header: 'Actions',
                 id: 'actions',
                 cell: (props) => {
                     const staff = props.row.original;
+                    console.log(`Staff ID: ${staff.id}, Status: ${staff.status}`); // Debug log
 
                     const onDeleteClick = () => {
                         dispatch(toggleDeleteConfirmation(true));
@@ -127,6 +148,39 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
                         }, 0);
                     };
 
+                    const onToggleStatusClick = async () => {
+                        if (!staff.id) {
+                            console.error('No staff ID provided');
+                            return;
+                        }
+                        console.log(`Toggling status for ID: ${staff.id} from ${staff.status}`); // Debug log
+                        try {
+                            if (staff.status === 'ACTIVE') {
+                                await dispatch(banStaff(staff.id)).unwrap();
+                                toast.push(
+                                    <Notification title="Success" type="success">
+                                        Staff banned successfully
+                                    </Notification>
+                                );
+                            } else if (staff.status === 'BANNED') {
+                                await dispatch(activateStaff(staff.id)).unwrap();
+                                toast.push(
+                                    <Notification title="Success" type="success">
+                                        Staff activated successfully
+                                    </Notification>
+                                );
+                            }
+                            dispatch(getStaffs({ page: 1, size: 10, query }));
+                        } catch (error: any) {
+                            console.error('Toggle status error:', error); // Debug log
+                            toast.push(
+                                <Notification title="Error" type="danger">
+                                    {error.message || 'Failed to update status'}
+                                </Notification>
+                            );
+                        }
+                    };
+
                     return (
                         <div className="flex justify-end space-x-2">
                             <Tooltip title="Edit">
@@ -137,6 +191,20 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
                                     <HiOutlinePencil />
                                 </button>
                             </Tooltip>
+                            {staff.status !== 'REMOVED' ? (
+                                <Tooltip title={staff.status === 'ACTIVE' ? 'Ban' : 'Activate'}>
+                                    <button
+                                        className={
+                                            staff.status === 'ACTIVE'
+                                                ? 'text-orange-500 hover:text-orange-700'
+                                                : 'text-green-500 hover:text-green-700'
+                                        }
+                                        onClick={onToggleStatusClick}
+                                    >
+                                        {staff.status === 'ACTIVE' ? <HiOutlineXCircle /> : <HiOutlineCheckCircle />}
+                                    </button>
+                                </Tooltip>
+                            ) : null}
                             <Tooltip title="Delete">
                                 <button
                                     className="text-red-500 hover:text-red-700"
@@ -186,27 +254,32 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
         );
     }
 
-    if (!loading && data.length === 0) {
-        return <div className="p-4">No staff members found.</div>;
-    }
-
     return (
-        <DataTable
-            ref={tableRef}
-            columns={columns}
-            data={data}
-            skeletonAvatarColumns={[0]}
-            skeletonAvatarProps={{ className: 'rounded-md' }}
-            loading={loading}
-            pagingData={{
-                total: tableData.totalPages * tableData.size,
-                pageIndex: tableData.page as number,
-                pageSize: tableData.size as number,
-            }}
-            onPaginationChange={onPaginationChange}
-            onSelectChange={onSelectChange}
-            onSort={onSort}
-        />
+        <div>
+            <StaffTableSearch onSearch={handleSearch} />
+            {loading && data.length === 0 ? (
+                <div className="p-4">Loading...</div>
+            ) : !loading && data.length === 0 ? (
+                <div className="p-4">No staff members found.</div>
+            ) : (
+                <DataTable
+                    ref={tableRef}
+                    columns={columns}
+                    data={ data }
+                    skeletonAvatarColumns={[0]}
+                    skeletonAvatarProps={{ className: 'rounded-md' }}
+                    loading={loading}
+                    pagingData={{
+                        total: tableData.totalPages * tableData.size,
+                        pageIndex: tableData.page as number,
+                        pageSize: tableData.size as number,
+                    }}
+                    onPaginationChange={onPaginationChange}
+                    onSelectChange={onSelectChange}
+                    onSort={onSort}
+                />
+            )}
+        </div>
     );
 };
 
