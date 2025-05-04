@@ -44,6 +44,15 @@ const appsRoute: Routes = [
         },
     },
     {
+        key: 'appsCrm.staffList',
+        path: `${APP_PREFIX_PATH}/crm/staff-list`,
+        component: lazy(() => import('@/views/crm/StaffManagement/StaffManagement')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Staff Management',
+        },
+    },
+    {
         key: 'appsSales.dashboard',
         path: `${APP_PREFIX_PATH}/sales/dashboard`,
         component: lazy(() => import('@/views/sales/SalesDashboard')),
@@ -99,6 +108,15 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/sales/reviews`,
         component: lazy(() => import('@/views/sales/ReviewList')),
         authority: [ADMIN, USER]
+    },
+    {
+        key: 'appsSales.vouchers',
+        path: `${APP_PREFIX_PATH}/sales/vouchers`,
+        component: lazy(() => import('@/views/sales/VoucherList')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Voucher Management',
+        },
     },
     {
         key: 'appsknowledgeBase.helpCenter',

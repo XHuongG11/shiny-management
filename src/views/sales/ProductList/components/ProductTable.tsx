@@ -30,11 +30,6 @@ const inventoryStatusColors = [
         textClass: 'text-emerald-500',
     },
     {
-        label: 'COMMING_SOON',
-        dotClass: 'bg-amber-500',
-        textClass: 'text-amber-500',
-    },
-    {
         label: 'OUT_OF_STOCK',
         dotClass: 'bg-red-500',
         textClass: 'text-red-500',

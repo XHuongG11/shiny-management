@@ -14,7 +14,8 @@
             "calendar": "Calendar",
             "customers": "Customers",
             "customerDetails": "Customer Details",
-            "mail": "Mail"
+            "mail": "Mail",
+            "staffList": "Staff List"
         },
         "appsSales": {
             "sales": "Sales",
