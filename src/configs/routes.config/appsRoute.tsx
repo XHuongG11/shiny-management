@@ -86,6 +86,15 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appsSales.returnProcessing',
+        path: `${APP_PREFIX_PATH}/sales/order-details/return/:orderId`,
+        component: lazy(() => import('@/views/sales/OrderDetails/components/ReturnProcessingPage')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Process Return',
+        },
+    },
+    {
         key: 'appsknowledgeBase.helpCenter',
         path: `${APP_PREFIX_PATH}/knowledge-base/help-center`,
         component: lazy(() => import('@/views/knowledge-base/HelpCenter')),

@@ -1,40 +1,42 @@
-import { useEffect, useCallback, useMemo, useRef } from 'react'
-import DataTable from '@/components/shared/DataTable'
-import { NumericFormat } from 'react-number-format'
-import { HiOutlineEye } from 'react-icons/hi'
-import Tooltip from '@/components/ui/Tooltip'
-import Badge from '@/components/ui/Badge'
+import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
+import DataTable from '@/components/shared/DataTable';
+import { NumericFormat } from 'react-number-format';
+import { HiOutlineEye } from 'react-icons/hi';
+import Tooltip from '@/components/ui/Tooltip';
+import Badge from '@/components/ui/Badge';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import {
     getOrders,
     setTableData,
     useAppDispatch,
     useAppSelector,
-} from '../store'
-import useThemeClass from '@/utils/hooks/useThemeClass'
-import { useNavigate } from 'react-router-dom'
-import cloneDeep from 'lodash/cloneDeep'
-import dayjs from 'dayjs'
+} from '../store';
+import useThemeClass from '@/utils/hooks/useThemeClass';
+import { useNavigate } from 'react-router-dom';
+import cloneDeep from 'lodash/cloneDeep';
+import dayjs from 'dayjs';
 import type {
     DataTableResetHandle,
     OnSortParam,
     ColumnDef,
-} from '@/components/shared/DataTable'
+} from '@/components/shared/DataTable';
 
 type Order = {
-    id: string
-    orderDate: string
-    shippingAddress: { recipientName: string }
-    paymentMethod: string
-    status: string
-    totalPrice: number
-}
+    id: string;
+    orderDate: string;
+    shippingAddress: { recipientName: string };
+    paymentMethod: string;
+    status: string;
+    totalPrice: number;
+};
 
 const PaymentMethodImage = ({
     paymentMethod,
     className,
 }: {
-    paymentMethod: string
-    className: string
+    paymentMethod: string;
+    className: string;
 }) => {
     switch (paymentMethod.toLowerCase()) {
         case 'visa':
@@ -44,7 +46,7 @@ const PaymentMethodImage = ({
                     src="/img/others/img-8.png"
                     alt={paymentMethod}
                 />
-            )
+            );
         case 'master':
             return (
                 <img
@@ -52,7 +54,7 @@ const PaymentMethodImage = ({
                     src="/img/others/img-9.png"
                     alt={paymentMethod}
                 />
-            )
+            );
         case 'paypal':
             return (
                 <img
@@ -60,15 +62,15 @@ const PaymentMethodImage = ({
                     src="/img/others/img-10.png"
                     alt={paymentMethod}
                 />
-            )
+            );
         case 'vn-pay':
-            return <span className={className}>VN-PAY</span>
+            return <span className={className}>VN-PAY</span>;
         case 'cod':
-            return <span className={className}>COD</span>
+            return <span className={className}>COD</span>;
         default:
-            return <span className={className}>{paymentMethod}</span>
+            return <span className={className}>{paymentMethod}</span>;
     }
-}
+};
 
 const statusDisplayMap: Record<
     string,
@@ -124,20 +126,20 @@ const statusDisplayMap: Record<
         dotClass: 'bg-neutral-400',
         textClass: 'text-neutral-400',
     },
-}
+};
 
 const ActionColumn = ({ row }: { row: Order }) => {
-    const { textTheme } = useThemeClass()
-    const navigate = useNavigate()
+    const { textTheme } = useThemeClass();
+    const navigate = useNavigate();
 
     const onView = useCallback(() => {
         if (row.id) {
-            console.log('Navigating to:', `/app/sales/order-details/${row.id}`)
-            navigate(`/app/sales/order-details/${row.id}`)
+            console.log('Navigating to:', `/app/sales/order-details/${row.id}`);
+            navigate(`/app/sales/order-details/${row.id}`);
         } else {
-            console.error('Order ID is undefined or invalid')
+            console.error('Order ID is undefined or invalid');
         }
-    }, [navigate, row])
+    }, [navigate, row]);
 
     return (
         <div className="flex justify-end text-lg">
@@ -150,34 +152,74 @@ const ActionColumn = ({ row }: { row: Order }) => {
                 </span>
             </Tooltip>
         </div>
-    )
-}
+    );
+};
 
 const OrdersTable = () => {
-    const tableRef = useRef<DataTableResetHandle>(null)
-    const dispatch = useAppDispatch()
-    const navigate = useNavigate()
+    const tableRef = useRef<DataTableResetHandle>(null);
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
 
-    const { page, size, sort, title, totalPages } = useAppSelector(
+    const { page, size, sort, title, totalPages, query } = useAppSelector(
         (state) => state.salesOrderList.data.tableData
-    )
-    const loading = useAppSelector((state) => state.salesOrderList.data.loading)
-    const data = useAppSelector((state) => state.salesOrderList.data.orderList)
+    );
+    const loading = useAppSelector((state) => state.salesOrderList.data.loading);
+    const data = useAppSelector((state) => state.salesOrderList.data.orderList);
+
+    const [currentTab, setCurrentTab] = useState('ALL');
+
+    // Kiểm tra dữ liệu từ Redux store
+    useEffect(() => {
+        console.log('Order List Data:', data);
+        console.log('Unique Statuses in Data:', [...new Set(data.map(order => order.status))]);
+        console.log('Current Query:', query); // Thêm log để kiểm tra query
+    }, [data, query]);
+
+    const tabs = [
+        { key: 'ALL', label: 'All' },
+        { key: 'PENDING', label: 'Pending' },
+        { key: 'CONFIRMED', label: 'Confirmed' },
+        { key: 'SHIPPING', label: 'Shipping' },
+        { key: 'COMPLETED', label: 'Completed' },
+        { key: 'DELIVERED', label: 'Delivered' },
+        { key: 'CANCELLED', label: 'Cancelled' },
+        { key: 'RETURNED', label: 'Returned' },
+        { key: 'RETURN_REQUESTED', label: 'Return Requested' },
+        { key: 'RETURN_REJECTED', label: 'Return Rejected' },
+    ];
+
+    const filteredData = useMemo(() => {
+        let result = [...data]; // Bắt đầu với toàn bộ dữ liệu
+
+        // Lọc theo trạng thái (currentTab)
+        if (currentTab !== 'ALL') {
+            result = result.filter((order) => order.status === currentTab);
+        }
+
+        // Lọc theo query (id) không phân biệt chữ hoa chữ thường nếu có
+        if (query && typeof query === 'string' && query.length > 0) {
+            const searchQuery = query.toLowerCase(); // Chuẩn hóa query
+            result = result.filter((order) => order.id.toLowerCase().includes(searchQuery));
+            console.log('Filtered by Query:', result); // Log để kiểm tra kết quả lọc
+        }
+
+        return result;
+    }, [data, currentTab, query]);
 
     const fetchData = useCallback(() => {
-        console.log('{ page, size, sort, title }', { page, size, sort, title })
-        dispatch(getOrders({ page, size, sort, title }))
-    }, [dispatch, page, size, sort, title])
+        console.log('Fetching with:', { page, size, sort, title, query });
+        dispatch(getOrders({ page, size, sort, title, query }));
+    }, [dispatch, page, size, sort, title, query]);
 
     useEffect(() => {
-        console.log('orderList:', data)
-        fetchData()
-    }, [dispatch, fetchData, page, size, sort])
+        console.log('orderList:', data);
+        fetchData();
+    }, [dispatch, fetchData, page, size, sort, query]);
 
     const tableData = useMemo(
-        () => ({ page, size, sort, title, total: totalPages * size }),
-        [page, size, sort, title, totalPages]
-    )
+        () => ({ page, size, sort, title, total: filteredData.length }),
+        [page, size, sort, title, filteredData]
+    );
 
     const columns: ColumnDef<Order>[] = useMemo(
         () => [
@@ -185,7 +227,7 @@ const OrdersTable = () => {
                 header: 'Order',
                 accessorKey: 'id',
                 cell: (props) => {
-                    const { id } = props.row.original
+                    const { id } = props.row.original;
                     return (
                         <span
                             className="cursor-pointer select-none font-semibold hover:text-blue-600"
@@ -195,34 +237,34 @@ const OrdersTable = () => {
                         >
                             #{id}
                         </span>
-                    )
+                    );
                 },
             },
             {
                 header: 'Date',
                 accessorKey: 'orderDate',
                 cell: (props) => {
-                    const { orderDate } = props.row.original
+                    const { orderDate } = props.row.original;
                     return (
                         <span>
                             {dayjs(orderDate).format('DD/MM/YYYY HH:mm')}
                         </span>
-                    )
+                    );
                 },
             },
             {
                 header: 'Customer',
                 accessorKey: 'shippingAddress.recipientName',
                 cell: (props) => {
-                    const { shippingAddress } = props.row.original
-                    return <span>{shippingAddress.recipientName}</span>
+                    const { shippingAddress } = props.row.original;
+                    return <span>{shippingAddress.recipientName}</span>;
                 },
             },
             {
                 header: 'Payment Method',
                 accessorKey: 'paymentMethod',
                 cell: (props) => {
-                    const { paymentMethod } = props.row.original
+                    const { paymentMethod } = props.row.original;
                     return (
                         <span className="flex items-center">
                             <PaymentMethodImage
@@ -230,15 +272,15 @@ const OrdersTable = () => {
                                 paymentMethod={paymentMethod}
                             />
                         </span>
-                    )
+                    );
                 },
             },
             {
                 header: 'Status',
                 accessorKey: 'status',
                 cell: (props) => {
-                    const { status } = props.row.original
-                    const statusKey = status in statusDisplayMap ? status : 'UNKNOWN'
+                    const { status } = props.row.original;
+                    const statusKey = status in statusDisplayMap ? status : 'UNKNOWN';
                     return (
                         <div className="flex items-center">
                             <Badge className={statusDisplayMap[statusKey].dotClass} />
@@ -248,24 +290,22 @@ const OrdersTable = () => {
                                 {statusDisplayMap[statusKey].label}
                             </span>
                         </div>
-                    )
+                    );
                 },
             },
             {
                 header: 'Total',
                 accessorKey: 'totalPrice',
                 cell: (props) => {
-                    const { totalPrice } = props.row.original
+                    const { totalPrice } = props.row.original;
                     return (
                         <NumericFormat
                             displayType="text"
-                            value={(Math.round(totalPrice * 100) / 100).toFixed(
-                                2
-                            )}
+                            value={(Math.round(totalPrice * 100) / 100).toFixed(2)}
                             suffix={' VNĐ'}
                             thousandSeparator={true}
                         />
-                    )
+                    );
                 },
             },
             {
@@ -275,43 +315,93 @@ const OrdersTable = () => {
             },
         ],
         [navigate]
-    )
+    );
 
     const onPaginationChange = (page: number) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.page = page
-        dispatch(setTableData(newTableData))
-    }
+        const newTableData = cloneDeep(tableData);
+        newTableData.page = page;
+        dispatch(setTableData(newTableData));
+    };
 
     const onSelectChange = (value: number) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.size = Number(value)
-        newTableData.page = 1
-        dispatch(setTableData(newTableData))
-    }
+        const newTableData = cloneDeep(tableData);
+        newTableData.size = Number(value);
+        newTableData.page = 1;
+        dispatch(setTableData(newTableData));
+    };
 
     const onSort = (sort: OnSortParam) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.sort = sort
-        dispatch(setTableData(newTableData))
-    }
+        const newTableData = cloneDeep(tableData);
+        newTableData.sort = sort;
+        dispatch(setTableData(newTableData));
+    };
 
     return (
-        <DataTable
-            ref={tableRef}
-            columns={columns}
-            data={data}
-            loading={loading}
-            pagingData={{
-                total: tableData.total as number,
-                pageIndex: tableData.page as number,
-                pageSize: tableData.size as number,
-            }}
-            onPaginationChange={onPaginationChange}
-            onSelectChange={onSelectChange}
-            onSort={onSort}
-        />
-    )
-}
+        <div>
+            <Tabs
+                value={currentTab}
+                onChange={(event, newValue) => setCurrentTab(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                    backgroundColor: '#fff',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    padding: '4px 8px',
+                    marginBottom: '16px',
+                    '& .MuiTabs-flexContainer': {
+                        justifyContent: 'flex-start',
+                        gap: '8px',
+                    },
+                    '& .MuiTab-root': {
+                        textTransform: 'none',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        padding: '8px 16px',
+                        color: '#4b5563',
+                        minHeight: 'auto',
+                        minWidth: '100px',
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                            backgroundColor: '#f3f4f6',
+                            borderRadius: '6px',
+                        },
+                    },
+                    '& .Mui-selected': {
+                        color: '#1e40af',
+                        fontWeight: 600,
+                        backgroundColor: '#e0e7ff',
+                        borderRadius: '6px',
+                    },
+                    '& .MuiTabs-indicator': {
+                        backgroundColor: '#1e40af',
+                        height: '3px',
+                        borderRadius: '2px',
+                        width: '100%',
+                    },
+                }}
+            >
+                {tabs.map((tab) => (
+                    <Tab key={tab.key} label={tab.label} value={tab.key} />
+                ))}
+            </Tabs>
 
-export default OrdersTable
+            <DataTable
+                ref={tableRef}
+                columns={columns}
+                data={filteredData}
+                loading={loading}
+                pagingData={{
+                    total: tableData.total as number,
+                    pageIndex: tableData.page as number,
+                    pageSize: tableData.size as number,
+                }}
+                onPaginationChange={onPaginationChange}
+                onSelectChange={onSelectChange}
+                onSort={onSort}
+            />
+        </div>
+    );
+};
+
+export default OrdersTable;

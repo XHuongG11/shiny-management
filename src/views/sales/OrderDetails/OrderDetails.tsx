@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react'
-import classNames from 'classnames'
-import Tag from '@/components/ui/Tag'
-import Badge from '@/components/ui/Badge'
-import Loading from '@/components/shared/Loading'
-import Container from '@/components/shared/Container'
-import DoubleSidedImage from '@/components/shared/DoubleSidedImage'
-import OrderProducts from './components/OrderProducts'
-import CustomerInfo from './components/CustomerInfo'
-import { HiOutlineCalendar } from 'react-icons/hi'
-import { getOrderById, updateOrderStatusById } from '@/services/SalesService'
-import { useLocation } from 'react-router-dom'
-import isEmpty from 'lodash/isEmpty'
-import dayjs from 'dayjs'
-import { OrderResponse, OrderItem } from '@/@types/order'
+import { useState, useEffect } from 'react';
+import classNames from 'classnames';
+import Tag from '@/components/ui/Tag';
+import Badge from '@/components/ui/Badge';
+import Loading from '@/components/shared/Loading';
+import Container from '@/components/shared/Container';
+import DoubleSidedImage from '@/components/shared/DoubleSidedImage';
+import OrderProducts from './components/OrderProducts';
+import CustomerInfo from './components/CustomerInfo';
+import { HiOutlineCalendar } from 'react-icons/hi';
+import { getOrderById, updateOrderStatusById } from '@/services/SalesService';
+import { useLocation, useNavigate } from 'react-router-dom'; // Add useNavigate
+import isEmpty from 'lodash/isEmpty';
+import dayjs from 'dayjs';
+import { OrderResponse, OrderItem } from '@/@types/order';
 
 const statusDisplayMap: Record<
     string,
@@ -68,7 +68,7 @@ const statusDisplayMap: Record<
         dotClass: 'bg-neutral-400',
         textClass: 'text-neutral-400',
     },
-}
+};
 
 const paymentMethodDisplay: Record<
     string,
@@ -90,46 +90,46 @@ const paymentMethodDisplay: Record<
         label: 'Unknown',
         class: 'bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-100',
     },
-}
+};
 
 const OrderDetails = () => {
-    const location = useLocation()
-
-    const [loading, setLoading] = useState(true)
-    const [data, setData] = useState<OrderResponse | null>(null)
-    const [error, setError] = useState<string | null>(null)
-    const [showNotification, setShowNotification] = useState(false)
-    const [notificationMessage, setNotificationMessage] = useState<string | null>(null)
-    const [notificationType, setNotificationType] = useState<'success' | 'error'>('success')
+    const location = useLocation();
+    const navigate = useNavigate(); // Initialize useNavigate
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState<OrderResponse | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [showNotification, setShowNotification] = useState(false);
+    const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
+    const [notificationType, setNotificationType] = useState<'success' | 'error'>('success');
 
     useEffect(() => {
-        fetchData()
+        fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, []);
 
     const fetchData = async () => {
         const id = location.pathname.substring(
             location.pathname.lastIndexOf('/') + 1
-        )
+        );
         if (id) {
-            setLoading(true)
+            setLoading(true);
             try {
-                const response = await getOrderById<OrderResponse>(id)
-                console.log('Fetched order details:', response.data)
-                setData(response.data.data || null)
-                setError(null)
+                const response = await getOrderById<OrderResponse>(id);
+                console.log('Fetched order details:', response.data);
+                setData(response.data.data || null);
+                setError(null);
             } catch (error: any) {
-                console.error('Failed to fetch order details:', error)
-                setData(null)
-                setError(error.response?.data?.message || 'Failed to fetch order details')
+                console.error('Failed to fetch order details:', error);
+                setData(null);
+                setError(error.response?.data?.message || 'Failed to fetch order details');
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
         }
-    }
+    };
 
     const transformOrderItems = (orderItems: OrderItem[] | undefined) => {
-        if (!orderItems) return []
+        if (!orderItems) return [];
         return orderItems.map(item => ({
             id: String(item.id || item.product?.id || ''),
             name: item.product?.title || 'N/A',
@@ -139,14 +139,14 @@ const OrderDetails = () => {
             quantity: item.quantity || 0,
             total: item.totalPrice || 0,
             details: item.product?.attributes?.reduce((acc, attr) => {
-                acc[attr.name] = [attr.value]
-                return acc
-            }, {} as Record<string, string[]>) || {}
-        }))
-    }
+                acc[attr.name] = [attr.value];
+                return acc;
+            }, {} as Record<string, string[]>) || {},
+        }));
+    };
 
     const getCustomerData = (order: OrderResponse | null) => {
-        if (!order || !order.shippingAddress) return undefined
+        if (!order || !order.shippingAddress) return undefined;
         return {
             name: order.shippingAddress.recipientName || 'N/A',
             email: 'customer@example.com',
@@ -165,8 +165,8 @@ const OrderDetails = () => {
                 line3: order.shippingAddress.district || 'N/A',
                 line4: order.shippingAddress.province || 'N/A',
             },
-        }
-    }
+        };
+    };
 
     const formatNumber = (value: number | undefined, fallback: string = '0') => {
         return value !== undefined
@@ -174,66 +174,73 @@ const OrderDetails = () => {
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0,
               })
-            : fallback
-    }
+            : fallback;
+    };
 
     const handleConfirmOrder = async () => {
-        if (!data?.id) return
-        setLoading(true)
+        if (!data?.id) return;
+        setLoading(true);
         try {
-            const response = await updateOrderStatusById<{ success: boolean }>(data.id, 'CONFIRMED')
-            console.log('Update status response:', response)
-            await fetchData() // Refresh the order details
-            setNotificationType('success')
-            setNotificationMessage('Order confirmed successfully!')
-            setShowNotification(true)
+            const response = await updateOrderStatusById<{ success: boolean }>(data.id, 'CONFIRMED');
+            console.log('Update status response:', response);
+            await fetchData();
+            setNotificationType('success');
+            setNotificationMessage('Order confirmed successfully!');
+            setShowNotification(true);
             setTimeout(() => {
-                setShowNotification(false)
-                setNotificationMessage(null)
-            }, 3000)
+                setShowNotification(false);
+                setNotificationMessage(null);
+            }, 3000);
         } catch (error: any) {
-            console.error('Failed to confirm order:', error)
-            setNotificationType('error')
-            setNotificationMessage(error.response?.data?.message || 'Failed to confirm order')
-            setShowNotification(true)
+            console.error('Failed to confirm order:', error);
+            setNotificationType('error');
+            setNotificationMessage(error.response?.data?.message || 'Failed to confirm order');
+            setShowNotification(true);
             setTimeout(() => {
-                setShowNotification(false)
-                setNotificationMessage(null)
-            }, 3000)
+                setShowNotification(false);
+                setNotificationMessage(null);
+            }, 3000);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const handleCancelOrder = async () => {
-        if (!data?.id) return
-        setLoading(true)
+        if (!data?.id) return;
+        setLoading(true);
         try {
-            const response = await updateOrderStatusById<{ success: boolean }>(data.id, 'CANCELLED')
-            console.log('Cancel order response:', response)
-            await fetchData() // Refresh the order details
-            setNotificationType('success')
-            setNotificationMessage('Order cancelled successfully!')
-            setShowNotification(true)
+            const response = await updateOrderStatusById<{ success: boolean }>(data.id, 'CANCELLED');
+            console.log('Cancel order response:', response);
+            await fetchData();
+            setNotificationType('success');
+            setNotificationMessage('Order cancelled successfully!');
+            setShowNotification(true);
             setTimeout(() => {
-                setShowNotification(false)
-                setNotificationMessage(null)
-            }, 3000)
+                setShowNotification(false);
+                setNotificationMessage(null);
+            }, 3000);
         } catch (error: any) {
-            console.error('Failed to cancel order:', error)
-            setNotificationType('error')
-            setNotificationMessage(error.response?.data?.message || 'Failed to cancel order')
-            setShowNotification(true)
+            console.error('Failed to cancel order:', error);
+            setNotificationType('error');
+            setNotificationMessage(error.response?.data?.message || 'Failed to cancel order');
+            setShowNotification(true);
             setTimeout(() => {
-                setShowNotification(false)
-                setNotificationMessage(null)
-            }, 3000)
+                setShowNotification(false);
+                setNotificationMessage(null);
+            }, 3000);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
-    console.log('Current data state:', data)
+    // New handler for processing return request
+    const handleProcessReturn = () => {
+        if (!data?.id) return;
+        // Navigate to the return processing page with the order ID
+        navigate(`/app/sales/order-details/return/${data.id}`);
+    };
+
+    console.log('Current data state:', data);
 
     return (
         <Container className="h-full relative">
@@ -303,6 +310,14 @@ const OrderDetails = () => {
                                         Confirm Order
                                     </button>
                                 )}
+                                {data.status === 'RETURN_REQUESTED' && (
+                                    <button
+                                        onClick={handleProcessReturn} // Use the new handler
+                                        className="ltr:ml-4 rtl:mr-4 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-400 font-bold"
+                                    >
+                                        Process Request
+                                    </button>
+                                )}
                             </div>
                             <span className="flex items-center">
                                 <HiOutlineCalendar className="text-lg" />
@@ -362,7 +377,7 @@ const OrderDetails = () => {
                                 <CustomerInfo data={getCustomerData(data)} />
                             </div>
                         </div>
-                        {(data.status === 'PENDING' || data.status === 'CONFIRMED') && (
+                        {data.status === 'PENDING' && (
                             <div className="mt-6 flex justify-center">
                                 <button
                                     onClick={handleCancelOrder}
@@ -382,27 +397,21 @@ const OrderDetails = () => {
                         darkModeSrc="/img/others/img-2-dark.png"
                         alt="Error loading order"
                     />
-                    <h3 className="mt-8">
-                        {error || 'No order found!'}
-                    </h3>
+                    <h3 className="mt-8">{error || 'No order found!'}</h3>
                 </div>
             )}
             {showNotification && notificationMessage && (
-                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50 transition-opacity duration-300"
-                    style={{ display: showNotification ? 'block' : 'none' }}
-                >
-                    {notificationMessage}
-                </div>
-            )}
-            {showNotification && notificationType === 'error' && notificationMessage && (
-                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg z-50 transition-opacity duration-300"
+                <div
+                    className={`fixed top-4 left-1/2 transform -translate-x-1/2 ${
+                        notificationType === 'success' ? 'bg-green-500' : 'bg-red-500'
+                    } text-white px-4 py-2 rounded-md shadow-lg z-50 transition-opacity duration-300`}
                     style={{ display: showNotification ? 'block' : 'none' }}
                 >
                     {notificationMessage}
                 </div>
             )}
         </Container>
-    )
-}
+    );
+};
 
-export default OrderDetails
+export default OrderDetails;
