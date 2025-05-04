@@ -32,10 +32,10 @@ const Pagination = (props: PaginationProps) => {
 
     const getInternalPageCount = useMemo(() => {
         if (typeof paginationTotal === 'number') {
-            return Math.ceil(paginationTotal / internalPageSize)
+            return paginationTotal
         }
         return null
-    }, [paginationTotal, internalPageSize])
+    }, [paginationTotal])
 
     const getValidCurrentPage = useCallback(
         (count: number | string) => {
@@ -64,11 +64,11 @@ const Pagination = (props: PaginationProps) => {
 
             return resetValue === undefined ? value : resetValue
         },
-        [getInternalPageCount]
+        [getInternalPageCount],
     )
 
     const [internalCurrentPage, setInternalCurrentPage] = useState(
-        currentPage ? getValidCurrentPage(currentPage) : 1
+        currentPage ? getValidCurrentPage(currentPage) : 1,
     )
 
     useEffect(() => {

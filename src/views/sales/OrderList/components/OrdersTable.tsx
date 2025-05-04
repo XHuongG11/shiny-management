@@ -39,6 +39,7 @@ const PaymentMethodImage = ({
     className: string;
 }) => {
     switch (paymentMethod.toLowerCase()) {
+<<<<<<< HEAD
         case 'visa':
             return (
                 <img
@@ -63,6 +64,8 @@ const PaymentMethodImage = ({
                     alt={paymentMethod}
                 />
             );
+=======
+>>>>>>> e9f5a9eb3a5f78805957532ad310f744ad5c8331
         case 'vn-pay':
             return <span className={className}>VN-PAY</span>;
         case 'cod':
@@ -217,9 +220,15 @@ const OrdersTable = () => {
     }, [dispatch, fetchData, page, size, sort, query]);
 
     const tableData = useMemo(
+<<<<<<< HEAD
         () => ({ page, size, sort, title, total: filteredData.length }),
         [page, size, sort, title, filteredData]
     );
+=======
+        () => ({ page, size, sort, title, total: totalPages }),
+        [page, size, sort, title, totalPages]
+    )
+>>>>>>> e9f5a9eb3a5f78805957532ad310f744ad5c8331
 
     const columns: ColumnDef<Order>[] = useMemo(
         () => [
@@ -330,6 +339,7 @@ const OrdersTable = () => {
         dispatch(setTableData(newTableData));
     };
 
+<<<<<<< HEAD
     const onSort = (sort: OnSortParam) => {
         const newTableData = cloneDeep(tableData);
         newTableData.sort = sort;
@@ -385,6 +395,24 @@ const OrdersTable = () => {
                     <Tab key={tab.key} label={tab.label} value={tab.key} />
                 ))}
             </Tabs>
+=======
+    return (
+        <DataTable
+            ref={tableRef}
+            columns={columns}
+            data={data}
+            loading={loading}
+            pagingData={{
+                total: tableData.total as number,
+                pageIndex: tableData.page as number,
+                pageSize: tableData.size as number,
+            }}
+            onPaginationChange={onPaginationChange}
+            onSelectChange={onSelectChange}
+        />
+    )
+}
+>>>>>>> e9f5a9eb3a5f78805957532ad310f744ad5c8331
 
             <DataTable
                 ref={tableRef}

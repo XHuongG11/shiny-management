@@ -1,12 +1,11 @@
-import Button from '@/components/ui/Button'
+import Avatar from '@/components/ui/Avatar'
 import Card from '@/components/ui/Card'
 import Table from '@/components/ui/Table'
-import Avatar from '@/components/ui/Avatar'
 import {
-    useReactTable,
-    getCoreRowModel,
-    flexRender,
     createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    useReactTable,
 } from '@tanstack/react-table'
 import { FiPackage } from 'react-icons/fi'
 
@@ -60,12 +59,12 @@ const TopProduct = ({ data = [], className }: TopProductProps) => {
         columns,
         getCoreRowModel: getCoreRowModel(),
     })
-
+    console.log('data', data)
     return (
         <Card className={className}>
             <div className="flex items-center justify-between mb-4">
                 <h4>Top Selling</h4>
-                <Button size="sm">View Products</Button>
+                {/* <Button size="sm">View Products</Button> */}
             </div>
             <Table>
                 <THead>
@@ -79,7 +78,7 @@ const TopProduct = ({ data = [], className }: TopProductProps) => {
                                     >
                                         {flexRender(
                                             header.column.columnDef.header,
-                                            header.getContext()
+                                            header.getContext(),
                                         )}
                                     </Th>
                                 )
@@ -96,7 +95,7 @@ const TopProduct = ({ data = [], className }: TopProductProps) => {
                                         <Td key={cell.id}>
                                             {flexRender(
                                                 cell.column.columnDef.cell,
-                                                cell.getContext()
+                                                cell.getContext(),
                                             )}
                                         </Td>
                                     )

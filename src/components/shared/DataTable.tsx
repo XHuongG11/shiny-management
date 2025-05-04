@@ -126,7 +126,7 @@ function _DataTable<T>(
     } = props
 
     const { pageSize, pageIndex, total } = pagingData
-
+    console.log('pagingData', pagingData)
     const [sorting, setSorting] = useState<ColumnSort[] | null>(null)
 
     const pageSizeOption = useMemo(

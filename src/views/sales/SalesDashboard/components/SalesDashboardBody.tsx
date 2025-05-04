@@ -12,9 +12,10 @@ const SalesDashboardBody = () => {
     const dispatch = useAppDispatch()
 
     const dashboardData = useAppSelector(
-        (state) => state.salesDashboard.data.dashboardData
+        (state) => state.salesDashboard.data.dashboardData,
     )
-
+    const month = useAppSelector((state) => state.salesDashboard.data.month)
+    const year = useAppSelector((state) => state.salesDashboard.data.year)
     const loading = useAppSelector((state) => state.salesDashboard.data.loading)
 
     useEffect(() => {
@@ -23,12 +24,12 @@ const SalesDashboardBody = () => {
     }, [])
 
     const fetchData = () => {
-        dispatch(getSalesDashboardData())
+        dispatch(getSalesDashboardData({ month, year }))
     }
 
     return (
         <Loading loading={loading}>
-            <Statistic data={dashboardData?.statisticData} />
+            <Statistic data={dashboardData?.salesTotal} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <SalesReport
                     data={dashboardData?.salesReportData}
@@ -39,11 +40,16 @@ const SalesDashboardBody = () => {
                 />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <TopProduct
+                    data={dashboardData?.topProductsData}
+                    className="lg:col-span-3"
+                />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <LatestOrder
                     data={dashboardData?.latestOrderData}
-                    className="lg:col-span-2"
+                    className="lg:col-span-3"
                 />
-                <TopProduct data={dashboardData?.topProductsData} />
             </div>
         </Loading>
     )

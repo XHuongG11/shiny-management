@@ -11,12 +11,13 @@ type FormFieldsName = {
 }
 
 type BasicInformationFields = {
+    type: 'edit' | 'new' | 'view'
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
 }
 
 const BasicInformationFields = (props: BasicInformationFields) => {
-    const { touched, errors } = props
+    const { type, touched, errors } = props
 
     return (
         <AdaptableCard divider className="mb-4">
@@ -33,6 +34,7 @@ const BasicInformationFields = (props: BasicInformationFields) => {
                     name="title"
                     placeholder="Name"
                     component={Input}
+                    disabled={type === 'view'}
                 />
             </FormItem>
             <FormItem
@@ -46,6 +48,7 @@ const BasicInformationFields = (props: BasicInformationFields) => {
                     name="material"
                     placeholder="Material"
                     component={Input}
+                    disabled={type === 'view'}
                 />
             </FormItem>
             <FormItem
@@ -61,6 +64,7 @@ const BasicInformationFields = (props: BasicInformationFields) => {
                             onChange={(val) =>
                                 form.setFieldValue(field.name, val)
                             }
+                            readOnly={type === 'view'}
                         />
                     )}
                 </Field>

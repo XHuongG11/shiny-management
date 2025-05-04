@@ -1,26 +1,24 @@
-import { useCallback } from 'react'
-import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
-import Table from '@/components/ui/Table'
 import Badge from '@/components/ui/Badge'
+import Card from '@/components/ui/Card'
+import Table from '@/components/ui/Table'
 import useThemeClass from '@/utils/hooks/useThemeClass'
 import {
-    useReactTable,
-    getCoreRowModel,
-    flexRender,
     createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    useReactTable,
 } from '@tanstack/react-table'
-import { useNavigate } from 'react-router-dom'
-import { NumericFormat } from 'react-number-format'
 import dayjs from 'dayjs'
+import { useCallback } from 'react'
+import { NumericFormat } from 'react-number-format'
+import { useNavigate } from 'react-router-dom'
 
 type Order = {
     id: string
     date: number
     customer: string
-    status: number
-    paymentMehod: string
-    paymentIdendifier: string
+    status: string
+    paymentMethod: string
     totalAmount: number
 }
 
@@ -36,24 +34,58 @@ type OrderColumnPros = {
 const { Tr, Td, TBody, THead, Th } = Table
 
 const orderStatusColor: Record<
-    number,
+    string,
     {
         label: string
         dotClass: string
         textClass: string
     }
 > = {
-    0: {
-        label: 'Paid',
-        dotClass: 'bg-emerald-500',
-        textClass: 'text-emerald-500',
+    CANCELLED: {
+        label: 'Cancelled',
+        dotClass: 'bg-gray-500',
+        textClass: 'text-gray-500',
     },
-    1: {
+    COMPLETED: {
+        label: 'Completed',
+        dotClass: 'bg-emerald-600',
+        textClass: 'text-emerald-600',
+    },
+    CONFIRMED: {
+        label: 'Confirmed',
+        dotClass: 'bg-blue-500',
+        textClass: 'text-blue-500',
+    },
+    DELIVERED: {
+        label: 'Delivered',
+        dotClass: 'bg-green-500',
+        textClass: 'text-green-500',
+    },
+    PENDING: {
         label: 'Pending',
-        dotClass: 'bg-amber-500',
-        textClass: 'text-amber-500',
+        dotClass: 'bg-yellow-500',
+        textClass: 'text-yellow-500',
     },
-    2: { label: 'Failed', dotClass: 'bg-red-500', textClass: 'text-red-500' },
+    RETURNED: {
+        label: 'Returned',
+        dotClass: 'bg-purple-500',
+        textClass: 'text-purple-500',
+    },
+    RETURN_REQUESTED: {
+        label: 'Return Requested',
+        dotClass: 'bg-orange-400',
+        textClass: 'text-orange-400',
+    },
+    RETURN_REJECTED: {
+        label: 'Return Rejected',
+        dotClass: 'bg-red-500',
+        textClass: 'text-red-500',
+    },
+    SHIPPING: {
+        label: 'Shipping',
+        dotClass: 'bg-cyan-500',
+        textClass: 'text-cyan-500',
+    },
 }
 
 const OrderColumn = ({ row }: OrderColumnPros) => {
@@ -107,15 +139,18 @@ const columns = [
     columnHelper.accessor('customer', {
         header: 'Customer',
     }),
+    columnHelper.accessor('paymentMethod', {
+        header: 'Payment Method',
+    }),
     columnHelper.accessor('totalAmount', {
-        header: 'Profile Progress',
+        header: 'Total Price',
         cell: (props) => {
             const { totalAmount } = props.row.original
             return (
                 <NumericFormat
                     displayType="text"
                     value={(Math.round(totalAmount * 100) / 100).toFixed(2)}
-                    prefix={'$'}
+                    prefix={'VND '}
                     thousandSeparator={true}
                 />
             )
@@ -134,7 +169,7 @@ const LatestOrder = ({ data = [], className }: LatestOrderProps) => {
         <Card className={className}>
             <div className="flex items-center justify-between mb-6">
                 <h4>Latest Orders</h4>
-                <Button size="sm">View Orders</Button>
+                {/* <Button size="sm">View Orders</Button> */}
             </div>
             <Table>
                 <THead>
@@ -148,7 +183,7 @@ const LatestOrder = ({ data = [], className }: LatestOrderProps) => {
                                     >
                                         {flexRender(
                                             header.column.columnDef.header,
-                                            header.getContext()
+                                            header.getContext(),
                                         )}
                                     </Th>
                                 )
@@ -165,7 +200,7 @@ const LatestOrder = ({ data = [], className }: LatestOrderProps) => {
                                         <Td key={cell.id}>
                                             {flexRender(
                                                 cell.column.columnDef.cell,
-                                                cell.getContext()
+                                                cell.getContext(),
                                             )}
                                         </Td>
                                     )

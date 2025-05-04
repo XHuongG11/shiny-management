@@ -13,10 +13,7 @@ import reducer, {
     useAppSelector,
 } from './store'
 
-import {
-    apiAddProductImage,
-    apiUpdateProductImage,
-} from '@/services/SalesService'
+import { apiAddProductImage } from '@/services/SalesService'
 import ProductForm, {
     FormModel,
     OnDeleteCallback,
@@ -61,13 +58,6 @@ const ProductEdit = () => {
                         const responseImage = await apiAddProductImage(formData)
                         console.log('img data', responseImage.data)
                     }
-                    // } else {
-                    //     const responseImage = await apiUpdateProductImage(
-                    //         i?.id,
-                    //         formData,
-                    //     )
-                    //     console.log('img data', responseImage.data)
-                    // }
                 })
             }
             setSubmitting(false)

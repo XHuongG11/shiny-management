@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Input from '@/components/ui/Input'
 import { HiOutlineSearch } from 'react-icons/hi'
 import {
@@ -14,13 +14,12 @@ import type { ChangeEvent } from 'react'
 
 const ProductTableSearch = () => {
     const dispatch = useAppDispatch()
-
     const searchInput = useRef(null)
 
     const tableData = useAppSelector(
         (state) => state.salesProductList.data.tableData,
     )
-
+    const [searchValue, setSearchValue] = useState(tableData.title || '')
     const debounceFn = debounce(handleDebounceFn, 500)
 
     function handleDebounceFn(val: string) {
@@ -42,6 +41,9 @@ const ProductTableSearch = () => {
     }
 
     const onEdit = (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value
+        console.log('value', value)
+        setSearchValue(value)
         debounceFn(e.target.value)
     }
 
@@ -52,6 +54,7 @@ const ProductTableSearch = () => {
             size="sm"
             placeholder="Search product"
             prefix={<HiOutlineSearch className="text-lg" />}
+            value={searchValue}
             onChange={onEdit}
         />
     )

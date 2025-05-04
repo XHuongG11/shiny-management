@@ -6,46 +6,13 @@ export async function apiGetAccountSettingData<T>() {
         method: 'get',
     })
 }
-
-export async function apiGetAccountSettingIntegrationData<T>() {
+export async function apiChangePassword<T>(data: {
+    oldPassword: string
+    newPassword: string
+}) {
     return ApiService.fetchData<T>({
-        url: '/account/setting/integration',
-        method: 'get',
-    })
-}
-
-export async function apiGetAccountSettingBillingData<T>() {
-    return ApiService.fetchData<T>({
-        url: '/account/setting/billing',
-        method: 'get',
-    })
-}
-
-export async function apiGetAccountInvoiceData<
-    T,
-    U extends Record<string, unknown>
->(params: U) {
-    return ApiService.fetchData<T>({
-        url: '/account/invoice',
-        method: 'get',
-        params,
-    })
-}
-
-export async function apiGetAccountLogData<
-    T,
-    U extends Record<string, unknown>
->(data: U) {
-    return ApiService.fetchData<T>({
-        url: '/account/log',
+        url: '/users/change-password',
         method: 'post',
-        data,
-    })
-}
-
-export async function apiGetAccountFormData<T>() {
-    return ApiService.fetchData<T>({
-        url: '/account/form',
-        method: 'get',
+        params: data,
     })
 }
