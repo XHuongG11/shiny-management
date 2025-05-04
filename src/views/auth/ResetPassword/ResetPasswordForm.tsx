@@ -1,100 +1,170 @@
 import { useState } from 'react'
 import { FormItem, FormContainer } from '@/components/ui/Form'
+import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Alert from '@/components/ui/Alert'
-import PasswordInput from '@/components/shared/PasswordInput'
 import ActionLink from '@/components/shared/ActionLink'
-import { apiResetPassword } from '@/services/AuthService'
+import {
+    apiSendEmailResetPassword,
+    apiVerifyResetPassword,
+} from '@/services/AuthService'
 import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
-import { useNavigate } from 'react-router-dom'
-import { Field, Form, Formik } from 'formik'
+import { Field, Form, Formik, FieldInputProps, FormikProps } from 'formik'
 import * as Yup from 'yup'
 import type { CommonProps } from '@/@types/common'
 import type { AxiosError } from 'axios'
+import { Select } from '@/components/ui'
+import { ApiResponse } from '@/@types/auth'
 
-interface ResetPasswordFormProps extends CommonProps {
+interface ForgotPasswordFormProps extends CommonProps {
     disableSubmit?: boolean
     signInUrl?: string
 }
 
-type ResetPasswordFormSchema = {
-    password: string
+type ForgotPasswordFormSchema = {
+    email: string
+    role: string
+    newPassword: string
     confirmPassword: string
+    code: string
 }
 
-const validationSchema = Yup.object().shape({
-    password: Yup.string().required('Please enter your password'),
-    confirmPassword: Yup.string().oneOf(
-        [Yup.ref('password')],
-        'Your passwords do not match'
-    ),
-})
+const getValidationSchema = (emailSent: boolean) => {
+    return Yup.object().shape({
+        email: Yup.string()
+            .required('Please enter your email')
+            .email('Please enter a valid email'),
+        role: Yup.string()
+            .required('Please select a role')
+            .oneOf(['STAFF', 'MANAGER'], 'Invalid role selected'),
+        ...(emailSent && {
+            code: Yup.string()
+                .required('Please enter your code')
+                .length(4, 'Code must be 6 characters'),
+            newPassword: Yup.string()
+                .required('Please enter your new password')
+                .min(8, 'Password must be at least 8 characters')
+                .matches(
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$#!%*?&])[A-Za-z\d@$#!%*?&]/,
+                    'Password not strong enough',
+                ),
+            confirmPassword: Yup.string()
+                .required('Please enter your confirm password')
+                .oneOf([Yup.ref('newPassword')], 'Passwords must match'),
+        }),
+    })
+}
 
-const ResetPasswordForm = (props: ResetPasswordFormProps) => {
+const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
     const { disableSubmit = false, className, signInUrl = '/sign-in' } = props
 
-    const [resetComplete, setResetComplete] = useState(false)
-
+    const [emailSent, setEmailSent] = useState(false)
+    const [type, setType] = useState<'success' | 'info' | 'warning' | 'danger'>(
+        'danger',
+    )
     const [message, setMessage] = useTimeOutMessage()
 
-    const navigate = useNavigate()
+    const roleOptions = [
+        { label: 'Staff', value: 'STAFF' },
+        { label: 'Manager', value: 'MANAGER' },
+    ]
 
-    const onSubmit = async (
-        values: ResetPasswordFormSchema,
-        setSubmitting: (isSubmitting: boolean) => void
+    const onSendMail = async (
+        values: ForgotPasswordFormSchema,
+        setSubmitting: (isSubmitting: boolean) => void,
     ) => {
-        const { password } = values
         setSubmitting(true)
         try {
-            const resp = await apiResetPassword({ password })
-            if (resp.data) {
-                setSubmitting(false)
-                setResetComplete(true)
+            console.log('values', values)
+            if (emailSent === false) {
+                const requestData = {
+                    email: values.email,
+                    role: values.role,
+                }
+                console.log('values', values)
+                const resp =
+                    await apiSendEmailResetPassword<ApiResponse<unknown>>(
+                        requestData,
+                    )
+                console.log('resp', resp)
+                if (resp.data?.code === '1000') {
+                    setMessage('Email không tồn tại.')
+                    setSubmitting(false)
+                } else if (resp.data?.code === '200') {
+                    setSubmitting(false)
+                    setEmailSent(true)
+                }
+            } else {
+                const requestData = {
+                    email: values.email,
+                    role: values.role,
+                    code: values.code,
+                    newPassword: values.newPassword,
+                }
+                const resp =
+                    await apiVerifyResetPassword<ApiResponse<unknown>>(
+                        requestData,
+                    )
+                console.log('resp', resp)
+                if (resp.data?.code === '400') {
+                    setMessage('Code không đúng.')
+                    setSubmitting(false)
+                } else if (resp.data?.code === '200') {
+                    setType('success')
+                    setMessage('Đổi mật khẩu thành công')
+                    setSubmitting(false)
+                    setEmailSent(false)
+                }
             }
         } catch (errors) {
             setMessage(
                 (errors as AxiosError<{ message: string }>)?.response?.data
-                    ?.message || (errors as Error).toString()
+                    ?.message || (errors as Error).toString(),
             )
             setSubmitting(false)
         }
     }
 
-    const onContinue = () => {
-        navigate('/sign-in')
-    }
-
     return (
         <div className={className}>
             <div className="mb-6">
-                {resetComplete ? (
+                {emailSent ? (
                     <>
-                        <h3 className="mb-1">Reset done</h3>
-                        <p>Your password has been successfully reset</p>
+                        <h3 className="mb-1">Check your email</h3>
+                        <p>Please enter the code we just sent to your email.</p>
+                        <p className="text-red-600">
+                            Password must contain at least one uppercase letter,
+                            one lowercase letter, one number and one special
+                            character
+                        </p>
                     </>
                 ) : (
                     <>
-                        <h3 className="mb-1">Set new password</h3>
+                        <h3 className="mb-1">Forgot Password</h3>
                         <p>
-                            Your new password must different to previos password
+                            Please enter your email address to receive a
+                            verification code.
                         </p>
                     </>
                 )}
             </div>
             {message && (
-                <Alert showIcon className="mb-4" type="danger">
+                <Alert showIcon className="mb-4" type={type}>
                     {message}
                 </Alert>
             )}
             <Formik
                 initialValues={{
-                    password: '123Qwe1',
-                    confirmPassword: '123Qwe1',
+                    email: 'admin@mail.com',
+                    role: 'STAFF',
+                    code: '',
+                    newPassword: '',
+                    confirmPassword: '',
                 }}
-                validationSchema={validationSchema}
+                validationSchema={getValidationSchema(emailSent)}
                 onSubmit={(values, { setSubmitting }) => {
                     if (!disableSubmit) {
-                        onSubmit(values, setSubmitting)
+                        onSendMail(values, setSubmitting)
                     } else {
                         setSubmitting(false)
                     }
@@ -103,59 +173,112 @@ const ResetPasswordForm = (props: ResetPasswordFormProps) => {
                 {({ touched, errors, isSubmitting }) => (
                     <Form>
                         <FormContainer>
-                            {!resetComplete ? (
-                                <>
-                                    <FormItem
-                                        label="Password"
-                                        invalid={
-                                            errors.password && touched.password
-                                        }
-                                        errorMessage={errors.password}
-                                    >
-                                        <Field
-                                            autoComplete="off"
-                                            name="password"
-                                            placeholder="Password"
-                                            component={PasswordInput}
-                                        />
-                                    </FormItem>
-                                    <FormItem
-                                        label="Confirm Password"
-                                        invalid={
-                                            errors.confirmPassword &&
-                                            touched.confirmPassword
-                                        }
-                                        errorMessage={errors.confirmPassword}
-                                    >
-                                        <Field
-                                            autoComplete="off"
-                                            name="confirmPassword"
-                                            placeholder="Confirm Password"
-                                            component={PasswordInput}
-                                        />
-                                    </FormItem>
-                                    <Button
-                                        block
-                                        loading={isSubmitting}
-                                        variant="solid"
-                                        type="submit"
-                                    >
-                                        {isSubmitting
-                                            ? 'Submiting...'
-                                            : 'Submit'}
-                                    </Button>
-                                </>
-                            ) : (
-                                <Button
-                                    block
-                                    variant="solid"
-                                    type="button"
-                                    onClick={onContinue}
+                            <div>
+                                <FormItem
+                                    invalid={errors.email && touched.email}
+                                    errorMessage={errors.email}
                                 >
-                                    Continue
-                                </Button>
-                            )}
-
+                                    <Field
+                                        type="email"
+                                        autoComplete="off"
+                                        name="email"
+                                        placeholder="Email"
+                                        component={Input}
+                                    />
+                                </FormItem>
+                            </div>
+                            <div>
+                                <FormItem
+                                    invalid={errors.role && touched.role}
+                                    errorMessage={errors.role}
+                                >
+                                    <Field name="role">
+                                        {({
+                                            field,
+                                            form,
+                                        }: {
+                                            field: FieldInputProps<string>
+                                            form: FormikProps<ForgotPasswordFormSchema>
+                                        }) => (
+                                            <Select
+                                                value={
+                                                    roleOptions.find(
+                                                        (opt) =>
+                                                            opt.value ===
+                                                            form.values.role,
+                                                    ) || null
+                                                }
+                                                onChange={(option) =>
+                                                    form.setFieldValue(
+                                                        field.name,
+                                                        option?.value,
+                                                    )
+                                                }
+                                                options={roleOptions}
+                                                placeholder="Select Role"
+                                                classNamePrefix="react-select"
+                                                className="react-select-container"
+                                            />
+                                        )}
+                                    </Field>
+                                </FormItem>
+                            </div>
+                            <div className={!emailSent ? 'hidden' : ''}>
+                                <FormItem
+                                    invalid={errors.code && touched.code}
+                                    errorMessage={errors.code}
+                                >
+                                    <Field
+                                        type="text"
+                                        autoComplete="off"
+                                        name="code"
+                                        placeholder="Code"
+                                        component={Input}
+                                    />
+                                </FormItem>
+                            </div>
+                            <div className={!emailSent ? 'hidden' : ''}>
+                                <FormItem
+                                    invalid={
+                                        errors.newPassword &&
+                                        touched.newPassword
+                                    }
+                                    errorMessage={errors.newPassword}
+                                >
+                                    <Field
+                                        type="password"
+                                        autoComplete="off"
+                                        name="newPassword"
+                                        placeholder="New Password"
+                                        component={Input}
+                                    />
+                                </FormItem>
+                            </div>
+                            <div className={!emailSent ? 'hidden' : ''}>
+                                <FormItem
+                                    invalid={
+                                        errors.confirmPassword &&
+                                        touched.confirmPassword
+                                    }
+                                    errorMessage={errors.confirmPassword}
+                                >
+                                    <Field
+                                        type="password"
+                                        autoComplete="off"
+                                        name="confirmPassword"
+                                        placeholder="Confirm Password"
+                                        component={Input}
+                                    />
+                                </FormItem>
+                            </div>
+                            <Button
+                                block
+                                loading={isSubmitting}
+                                variant="solid"
+                                type="submit"
+                            >
+                                {emailSent ? 'Resend Email' : 'Send Email'}
+                            </Button>
                             <div className="mt-4 text-center">
                                 <span>Back to </span>
                                 <ActionLink to={signInUrl}>Sign in</ActionLink>
@@ -168,4 +291,4 @@ const ResetPasswordForm = (props: ResetPasswordFormProps) => {
     )
 }
 
-export default ResetPasswordForm
+export default ForgotPasswordForm

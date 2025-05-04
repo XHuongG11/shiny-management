@@ -166,7 +166,6 @@ const OrdersTable = () => {
         dispatch(setStatusFilter(newTab));
         newTableData.page = 1;
         dispatch(setTableData(newTableData));
-        dispatch(getOrders(newTableData));
     };
 
     const fetchData = () => {

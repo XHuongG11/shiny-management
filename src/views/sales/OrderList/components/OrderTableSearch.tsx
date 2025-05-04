@@ -36,7 +36,7 @@ const OrderTableSearch = () => {
 
     const fetchData = (data: TableQueries & { status?: string, query?: string }) => {
         dispatch(setTableData(data))
-        dispatch(getOrders(data))
+        //dispatch(getOrders(data))
     }
 
     const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
