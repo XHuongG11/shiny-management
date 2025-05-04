@@ -40,30 +40,6 @@ const PaymentMethodImage = ({
     className: string;
 }) => {
     switch (paymentMethod.toLowerCase()) {
-        case 'visa':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-8.png"
-                    alt={paymentMethod}
-                />
-            );
-        case 'master':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-9.png"
-                    alt={paymentMethod}
-                />
-            );
-        case 'paypal':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-10.png"
-                    alt={paymentMethod}
-                />
-            );
         case 'vn-pay':
             return <span className={className}>VN-PAY</span>;
         case 'cod':
