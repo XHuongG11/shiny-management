@@ -95,6 +95,15 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appsSales.returnProcessing',
+        path: `${APP_PREFIX_PATH}/sales/order-details/return/:orderId`,
+        component: lazy(() => import('@/views/sales/OrderDetails/components/ReturnProcessingPage')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Process Return',
+        },
+    },
+    {
         key: 'appsSales.reviews',
         path: `${APP_PREFIX_PATH}/sales/reviews`,
         component: lazy(() => import('@/views/sales/ReviewList')),
@@ -107,6 +116,26 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
         meta: {
             header: 'Voucher Management',
+        },
+    },
+    {
+        key: 'appsSales.voucherAdd',
+        path: `${APP_PREFIX_PATH}/sales/vouchers/add`,
+        component: lazy(() => import('@/views/sales/VoucherAdd')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Add New Voucher',
+            headerContainer: true,
+        },
+    },
+    {
+        key: 'appsSales.voucherEdit',
+        path: `${APP_PREFIX_PATH}/sales/vouchers/:voucherId`,
+        component: lazy(() => import('@/views/sales/VoucherEdit')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Edit Voucher',
+            headerContainer: true,
         },
     },
     {

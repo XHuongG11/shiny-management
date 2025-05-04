@@ -15,11 +15,17 @@ export type SalesOrderListState = {
     loading: boolean
     deleteConfirmation: boolean
     selectedOrder?: string
-    tableData: TableQueries
+    tableData: TableQueries & {
+        status?: string
+        query?: string
+    }
     orderList: OrderResponse[]
 }
 
-type GetSalesOrdersRequest = TableQueries
+type GetSalesOrdersRequest = TableQueries & {
+    status?: string
+    query?: string
+}
 
 export const SLICE_NAME = 'salesOrderList'
 
@@ -43,11 +49,13 @@ export const deleteOrders = async (id: string) => {
     return response.data
 }
 
-export const initialTableData: TableQueries = {
+export const initialTableData: TableQueries & { status?: string; query?: string } = {
     totalPages: 0,
     page: 1,
     size: 10,
     title: '',
+    status: undefined,
+    query: '',
 }
 
 const initialState: SalesOrderListState = {
@@ -74,6 +82,12 @@ const orderListSlice = createSlice({
         setSelectedOrder: (state, action) => {
             state.selectedOrder = action.payload
         },
+        setStatusFilter: (state, action) => {
+            state.tableData.status = action.payload === 'ALL' ? undefined : action.payload
+        },
+        setSearchQuery: (state, action) => {
+            state.tableData.query = action.payload
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -93,6 +107,8 @@ export const {
     setTableData,
     toggleDeleteConfirmation,
     setSelectedOrder,
+    setStatusFilter,
+    setSearchQuery
 } = orderListSlice.actions
 
 export default orderListSlice.reducer
