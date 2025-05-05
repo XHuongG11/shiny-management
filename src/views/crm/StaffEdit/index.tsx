@@ -1,68 +1,68 @@
+import StaffForm from "../StaffForm/StaffForm";
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import VoucherForm from '../VoucherForm/VoucherForm'
-import { apiGetVoucher } from '@/services/VoucherService'
-import { Voucher } from '@/@types/voucher'
 import Loading from '@/components/shared/Loading'
 import toast from '@/components/ui/toast'
 import Notification from '@/components/ui/Notification'
 import { APP_PREFIX_PATH } from '@/constants/route.constant'
+import { Staff } from "@/@types/staff";
+import { apiGetStaffById } from "@/services/StaffService";
 
-const VoucherEdit = () => {
-    const { voucherId } = useParams()
+const StaffEdit = () => {
+    const { sid } = useParams()
     const navigate = useNavigate()
-    const [voucher, setVoucher] = useState<Voucher | null>(null)
+    const [staff, setStaff] = useState<Staff | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const fetchVoucher = async () => {
+        const fetchStaff = async () => {
             try {
-                const id = parseInt(voucherId as string)
+                const id = parseInt(sid as string)
                 if (isNaN(id)) {
                     toast.push(
                         <Notification title="Error" type="danger">
-                            Invalid voucher ID
+                            Invalid staff ID
                         </Notification>
                     )
-                    navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
+                    navigate(`${APP_PREFIX_PATH}/crm/staffs`)
                     return
                 }
                 
-                const response = await apiGetVoucher<{ code: string; message: string; data: Voucher }>(id)
+                const response = await apiGetStaffById<{ code: string; message: string; data: Staff }>(id)
                 
                 if (response.data && response.data.code === "200") {
-                    setVoucher(response.data.data)
+                    setStaff(response.data.data)
                 } else {
                     toast.push(
                         <Notification title="Error" type="danger">
-                            {response.data?.message || 'Failed to load voucher'}
+                            {response.data?.message || 'Failed to load staff'}
                         </Notification>
                     )
-                    navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
+                    navigate(`${APP_PREFIX_PATH}/crm/staffs`)
                 }
             } catch (error: any) {
                 toast.push(
                     <Notification title="Error" type="danger">
-                        {error.response?.data?.message || 'Failed to load voucher'}
+                        {error.response?.data?.message || 'Failed to load staff'}
                     </Notification>
                 )
-                navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
+                navigate(`${APP_PREFIX_PATH}/crm/staffs`)
             } finally {
                 setLoading(false)
             }
         }
-        fetchVoucher()
-    }, [voucherId, navigate])
+        fetchStaff()
+    }, [sid, navigate])
 
     if (loading) {
         return <Loading loading={true} />
     }
 
     return (
-        <div>
-            {voucher && <VoucherForm data={voucher} isEdit={true} />}
+        <div className="staff-edit">
+            {staff && <StaffForm isEdit={true} staff={staff} />}
         </div>
-    )
-}
+    );
+};
 
-export default VoucherEdit
+export default StaffEdit;

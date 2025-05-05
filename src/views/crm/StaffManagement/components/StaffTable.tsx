@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import DataTable from '@/components/shared/DataTable';
-import { HiOutlineTrash, HiOutlinePencil } from 'react-icons/hi';
+import { HiOutlineTrash, HiOutlinePencil, HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
 import Tooltip from '@/components/ui/Tooltip';
 import dayjs from 'dayjs';
 import {
@@ -10,47 +10,72 @@ import {
     toggleDeleteConfirmation,
     useAppDispatch,
     useAppSelector,
+    searchStaffs,
+    toggleBanConfirmation,
 } from '../store';
 import cloneDeep from 'lodash/cloneDeep';
-import type { DataTableResetHandle, OnSortParam, ColumnDef } from '@/components/shared/DataTable';
-
-type Staff = {
-    id: number;
-    join_at: string;
-    email: string;
-    fullName: string;
-    phone: string;
-    username: string;
-    gender: string;
-    status: string;
-};
+import type { DataTableResetHandle, ColumnDef } from '@/components/shared/DataTable';
+import { Staff } from '@/@types/staff';
+import { t } from 'i18next';
 
 type StaffTableProps = {
-    onEdit: () => void;
+    onEdit: (id: number) => void;
 };
 
-const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
+const StaffStatusColumn = ({ status }: { status: string }) => {
+    let color = ''
+    let label = status
+    
+    switch(status) {
+        case 'ACTIVE':
+            color = 'bg-emerald-500'
+            label = 'ACTIVE'
+            break
+        case 'BANNED':
+            color = 'bg-red-500'
+            label = 'BANNED'
+            break
+        default:
+            color = 'bg-gray-500'
+            break
+    }
+    
+    return (
+        <div className="flex items-center">
+            <span className={`${color} w-2.5 h-2.5 rounded-full mr-2`}></span>
+            <span>{label}</span>
+        </div>
+    )
+}
+
+const StaffTable = ({ onEdit } : StaffTableProps) => {
     const tableRef = useRef<DataTableResetHandle>(null);
     const dispatch = useAppDispatch();
 
-    const staffState = useAppSelector((state) => state.staff);
+    const { page, size, sort, totalPages, title } = useAppSelector(
+        (state) => state.staffManagement.data.tableData
+    );
 
-    const { page = 1, size = 10, sort = null, totalPages = 0 } = staffState.data.tableData || {};
-    const loading = staffState.data.loading || false;
-    const data = staffState.data.staffList || [];
-    const error = staffState.data.error || null;
+    const loading = useAppSelector((state) => state.staffManagement.data.loading);
+    const data = useAppSelector((state) => state.staffManagement.data.staffList);
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, size, sort]);
 
     const tableData = useMemo(
-        () => ({ page, size, sort, totalPages }),
-        [page, size, sort, totalPages]
+        () => ({ page, size, sort, totalPages, title }),
+        [page, size, sort, totalPages, title]
     );
 
     const fetchData = () => {
-        dispatch(getStaffs({ page: page ?? 1, size: size ?? 10 }));
+        if (tableData.title && tableData.title.length > 1) {
+            dispatch(searchStaffs({ page: tableData.page as number, size: tableData.size as number, name: tableData.title as string }));
+        }
+        else {
+            dispatch(getStaffs({ page: tableData.page as number, size: tableData.size as number}));
+        }
     };
 
     const columns: ColumnDef<Staff>[] = useMemo(
@@ -64,7 +89,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
                 header: 'Join Date',
                 accessorKey: 'join_at',
                 cell: (props) => (
-                    <span>{dayjs(props.row.original.join_at).format('DD/MM/YYYY')}</span>
+                    <span>{dayjs(props.row.original.joinAt).format('DD/MM/YYYY')}</span>
                 ),
             },
             {
@@ -75,7 +100,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
             {
                 header: 'Full Name',
                 accessorKey: 'full_name',
-                cell: (props) => <span>{props.row.original.fullName}</span>,
+                cell: (props) => <span className="font-semibold">{props.row.original.fullName}</span>,
             },
             {
                 header: 'Phone',
@@ -91,59 +116,60 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
                 header: 'Gender',
                 accessorKey: 'gender',
                 cell: (props) => (
-                    <span>{props.row.original.gender === 'M' ? 'Male' : 'Female'}</span>
+                    <span>{props.row.original.gender === 'MALE' ? 'Male' : 'Female'}</span>
                 ),
             },
             {
                 header: 'Status',
                 accessorKey: 'status',
-                cell: (props) => (
-                    <span
-                        className={`${
-                            props.row.original.status === 'active'
-                                ? 'text-green-500'
-                                : 'text-red-500'
-                        }`}
-                    >
-                        {props.row.original.status}
-                    </span>
-                ),
+                cell: (props) => <StaffStatusColumn status={props.row.original.status as string} />,
             },
             {
-                header: 'Actions',
-                id: 'actions',
+                header: '',
+                id: 'action',
                 cell: (props) => {
                     const staff = props.row.original;
+                    const isActive = staff.status === 'ACTIVE';
 
                     const onDeleteClick = () => {
-                        dispatch(toggleDeleteConfirmation(true));
-                        dispatch(setSelectedStaff(staff));
+                        dispatch(toggleDeleteConfirmation(true))
+                        dispatch(setSelectedStaff(staff))
                     };
 
                     const onEditClick = () => {
+                        onEdit(staff.id as number);
+                    };
+
+                    const onBanUnbanClick = () => {
+                        dispatch(toggleBanConfirmation(true));
                         dispatch(setSelectedStaff(staff));
-                        setTimeout(() => {
-                            onEdit();
-                        }, 0);
                     };
 
                     return (
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end">
                             <Tooltip title="Edit">
-                                <button
-                                    className="text-blue-500 hover:text-blue-700"
+                                <span
+                                    className="cursor-pointer p-2 hover:text-blue-500"
                                     onClick={onEditClick}
                                 >
                                     <HiOutlinePencil />
-                                </button>
+                                </span>
                             </Tooltip>
                             <Tooltip title="Delete">
-                                <button
-                                    className="text-red-500 hover:text-red-700"
+                                <span
+                                    className="cursor-pointer p-2 hover:text-red-500"
                                     onClick={onDeleteClick}
                                 >
                                     <HiOutlineTrash />
-                                </button>
+                                </span>
+                            </Tooltip>
+                            <Tooltip title={isActive ? "Ban Staff" : "Unban Staff"}>
+                                <span
+                                    className={`cursor-pointer p-2 ${isActive ? 'hover:text-amber-500' : 'hover:text-emerald-500'}`}
+                                    onClick={onBanUnbanClick}
+                                >
+                                    {isActive ? <HiOutlineBan /> : <HiOutlineCheckCircle />}
+                                </span>
                             </Tooltip>
                         </div>
                     );
@@ -166,30 +192,6 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
         dispatch(setTableData(newTableData));
     };
 
-    const onSort = (sort: OnSortParam) => {
-        const newTableData = cloneDeep(tableData);
-        newTableData.sort = sort;
-        dispatch(setTableData(newTableData));
-    };
-
-    if (error) {
-        return (
-            <div className="text-red-500 p-4">
-                Error: {error}
-                <button
-                    className="ml-4 text-blue-500 hover:text-blue-700"
-                    onClick={fetchData}
-                >
-                    Retry
-                </button>
-            </div>
-        );
-    }
-
-    if (!loading && data.length === 0) {
-        return <div className="p-4">No staff members found.</div>;
-    }
-
     return (
         <DataTable
             ref={tableRef}
@@ -199,13 +201,12 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
             skeletonAvatarProps={{ className: 'rounded-md' }}
             loading={loading}
             pagingData={{
-                total: tableData.totalPages * tableData.size,
+                total: tableData.totalPages as number,
                 pageIndex: tableData.page as number,
                 pageSize: tableData.size as number,
             }}
             onPaginationChange={onPaginationChange}
             onSelectChange={onSelectChange}
-            onSort={onSort}
         />
     );
 };

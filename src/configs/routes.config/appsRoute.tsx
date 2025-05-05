@@ -44,12 +44,33 @@ const appsRoute: Routes = [
         },
     },
     {
-        key: 'appsCrm.staffList',
-        path: `${APP_PREFIX_PATH}/crm/staff-list`,
-        component: lazy(() => import('@/views/crm/StaffManagement/StaffManagement')),
+        key: 'appsCrm.staffManagement',
+        path: `${APP_PREFIX_PATH}/crm/staffs`,
+        component: lazy(() => import('@/views/crm/StaffManagement')),
         authority: [ADMIN, USER],
         meta: {
             header: 'Staff Management',
+            headerContainer: true,
+        },
+    },
+    {
+        key: 'appsCrm.staffManagement',
+        path: `${APP_PREFIX_PATH}/crm/staffs/:sid`,
+        component: lazy(() => import('@/views/crm/StaffEdit')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Staff Management',
+            headerContainer: true,
+        },
+    },
+    {
+        key: 'appsCrm.staffManagement',
+        path: `${APP_PREFIX_PATH}/crm/staffs/add`,
+        component: lazy(() => import('@/views/crm/StaffAdd')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Staff Management',
+            headerContainer: true,
         },
     },
     {
@@ -63,6 +84,10 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/sales/product-list`,
         component: lazy(() => import('@/views/sales/ProductList')),
         authority: [ADMIN, USER],
+        meta: {
+            header: 'Product Management',
+            headerContainer: true,
+        },
     },
     {
         key: 'appsSales.productEdit',
@@ -96,6 +121,9 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/sales/order-list`,
         component: lazy(() => import('@/views/sales/OrderList')),
         authority: [ADMIN, USER],
+        meta: {
+            header: 'Order Management',
+        },
     },
     {
         key: 'appsSales.orderDetails',
@@ -116,7 +144,10 @@ const appsRoute: Routes = [
         key: 'appsSales.reviews',
         path: `${APP_PREFIX_PATH}/sales/reviews`,
         component: lazy(() => import('@/views/sales/ReviewList')),
-        authority: [ADMIN, USER]
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Reviews',
+        },
     },
     {
         key: 'appsSales.vouchers',

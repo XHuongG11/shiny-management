@@ -265,8 +265,7 @@ const VoucherForm = ({ data, isEdit }: VoucherFormProps) => {
                         {isEdit ? 'Voucher updated successfully' : 'Voucher created successfully'}
                     </Notification>
                 )
-                
-                // Navigate back to list page
+
                 navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
             } else {
                 toast.push(

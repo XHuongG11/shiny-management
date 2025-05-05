@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import reducer from './store'
 import { injectReducer } from '@/store'
 import AdaptableCard from '@/components/shared/AdaptableCard'

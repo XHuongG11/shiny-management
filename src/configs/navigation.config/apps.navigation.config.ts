@@ -47,10 +47,10 @@ const appsNavigationConfig: NavigationTree[] = [
                         subMenu: [],
                     },
                     {
-                        key: 'appsCrm.staffList',
-                        path: `${APP_PREFIX_PATH}/crm/staff-list`,
+                        key: 'appsCrm.staffManagement',
+                        path: `${APP_PREFIX_PATH}/crm/staffs`,
                         title: 'Staff Management',
-                        translateKey: 'nav.appsCrm.staffList',
+                        translateKey: 'nav.appsCrm.staffs',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
