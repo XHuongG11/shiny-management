@@ -9,49 +9,30 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/customers`,
         component: lazy(() => import('@/views/crm/Customers')),
         authority: [MANAGER, STAFF],
-        meta: {
-            header: 'Customers',
-        },
     },
     {
         key: 'appsCrm.staffManagement',
         path: `${APP_PREFIX_PATH}/staffs`,
         component: lazy(() => import('@/views/crm/StaffManagement')),
         authority: [MANAGER, STAFF],
-        meta: {
-            header: 'Staffs',
-            headerContainer: true,
-        },
     },
     {
         key: 'appsCrm.staffManagement',
         path: `${APP_PREFIX_PATH}/staffs/:sid`,
         component: lazy(() => import('@/views/crm/StaffEdit')),
         authority: [MANAGER, STAFF],
-        meta: {
-            header: 'Staffs',
-            headerContainer: true,
-        },
     },
     {
         key: 'appsCrm.staffManagement',
         path: `${APP_PREFIX_PATH}/staffs/add`,
         component: lazy(() => import('@/views/crm/StaffAdd')),
         authority: [MANAGER, STAFF],
-        meta: {
-            header: 'Staffs',
-            headerContainer: true,
-        },
     },
     {
         key: 'appsSales.dashboard',
         path: `${APP_PREFIX_PATH}/dashboard`,
         component: lazy(() => import('@/views/sales/SalesDashboard')),
         authority: [MANAGER],
-        meta: {
-            header: 'Dashboard',
-            headerContainer: true,
-        },
     },
     {
         key: 'appsSales.productList',
@@ -91,10 +72,6 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/orders`,
         component: lazy(() => import('@/views/sales/OrderList')),
         authority: [STAFF],
-        meta: {
-            header: 'Orders',
-            headerContainer: true,
-        },
     },
     {
         key: 'appsSales.orderDetails',
@@ -121,19 +98,12 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/reviews`,
         component: lazy(() => import('@/views/sales/ReviewList')),
         authority: [STAFF],
-        meta: {
-            header: 'Reviews',
-            headerContainer: true,
-        },
     },
     {
         key: 'appsSales.vouchers',
         path: `${APP_PREFIX_PATH}/vouchers`,
         component: lazy(() => import('@/views/sales/VoucherList')),
         authority: [MANAGER],
-        meta: {
-            header: 'Vouchers',
-        },
     },
     {
         key: 'appsSales.voucherAdd',

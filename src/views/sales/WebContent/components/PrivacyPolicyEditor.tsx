@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Button, Form, message, Spin } from 'antd'
+import { Card, Form, message, Spin } from 'antd'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import { useAppDispatch, useAppSelector } from '../store'
 import { updatePrivacyPolicy } from '../store/catalogSlice'
+import { Button } from '@/components/ui'
 
 const PrivacyPolicyEditor: React.FC = () => {
     const dispatch = useAppDispatch()
@@ -73,7 +74,8 @@ const PrivacyPolicyEditor: React.FC = () => {
                 
                 <Form.Item>
                     <Button 
-                        type="primary" 
+                        type="submit" 
+                        variant="solid"
                         onClick={handleSubmit}
                         loading={loading}
                     >

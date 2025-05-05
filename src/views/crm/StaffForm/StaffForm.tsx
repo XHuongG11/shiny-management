@@ -149,20 +149,7 @@ const StaffForm = ({staff, isEdit} : StaffFormProps) => {
                                 <Form>
                                     <FormContainer>
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                            <FormItem
-                                                label="Full Name"
-                                                invalid={errors.fullName && touched.fullName}
-                                                errorMessage={errors.fullName}
-                                            >
-                                                <Field
-                                                    type="text"
-                                                    autoComplete="off"
-                                                    name="fullName"
-                                                    placeholder="Enter full name"
-                                                    component={Input}
-                                                />
-                                            </FormItem>
-                                            <FormItem
+                                        <FormItem
                                                 label="Email"
                                                 invalid={errors.email && touched.email}
                                                 errorMessage={errors.email}
@@ -170,6 +157,7 @@ const StaffForm = ({staff, isEdit} : StaffFormProps) => {
                                                 <Field
                                                     type="email"
                                                     autoComplete="off"
+                                                    disabled={isEdit}
                                                     name="email"
                                                     placeholder="Enter email"
                                                     component={Input}
@@ -184,7 +172,21 @@ const StaffForm = ({staff, isEdit} : StaffFormProps) => {
                                                     type="text"
                                                     autoComplete="off"
                                                     name="phone"
+                                                    disabled={isEdit}
                                                     placeholder="Enter phone number"
+                                                    component={Input}
+                                                />
+                                            </FormItem>
+                                            <FormItem
+                                                label="Full Name"
+                                                invalid={errors.fullName && touched.fullName}
+                                                errorMessage={errors.fullName}
+                                            >
+                                                <Field
+                                                    type="text"
+                                                    autoComplete="off"
+                                                    name="fullName"
+                                                    placeholder="Enter full name"
                                                     component={Input}
                                                 />
                                             </FormItem>
