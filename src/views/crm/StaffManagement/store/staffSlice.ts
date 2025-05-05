@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiGetAllStaffs, apiDeleteStaff, apiActivateStaff, apiBanStaff } from '@/services/StaffService';
+import { apiGetAllStaffs, apiDeleteStaff, apiActivateStaff, apiBanStaff, apiSearchStaffs } from '@/services/StaffService';
 import { Staff, StaffListResponse } from '@/@types/staff';
 
 interface StaffState {
@@ -35,7 +35,6 @@ const initialState: StaffState = {
 export const getStaffs = createAsyncThunk('staff/getStaffs', async (params: { page: number; size: number; query?: string }, { rejectWithValue }) => {
     try {
         const response = await apiGetAllStaffs(params);
-        console.log('API response:', response);
         return response.data as StaffListResponse;
     } catch (error: any) {
         return rejectWithValue(error.message || 'Failed to fetch staffs');
@@ -68,6 +67,18 @@ export const banStaff = createAsyncThunk('staff/banStaff', async (id: number, { 
         return rejectWithValue(error.message || 'Failed to ban staff');
     }
 });
+
+export const findStaffs = createAsyncThunk('staff/findStaffs',
+    async (params: { page: number; size: number; name: string }, { rejectWithValue }) => {
+        try {
+            const response = await apiSearchStaffs(params);  
+            console.log('API search response:', response);
+            return response.data as StaffListResponse;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to search staffs');
+        }
+    }
+);
 
 const staffSlice = createSlice({
     name: 'staff',

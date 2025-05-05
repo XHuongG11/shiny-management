@@ -58,9 +58,9 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
         dispatch(getStaffs({ page: page ?? 1, size: size ?? 10, query }));
     };
 
-    const handleSearch = (searchQuery: string) => {
-        dispatch(setSearchQuery(searchQuery));
-    };
+    // const handleSearch = (searchQuery: string) => {
+    //     dispatch(setSearchQuery(searchQuery));
+    // };
 
     const columns: ColumnDef<Staff>[] = useMemo(
         () => [
@@ -134,7 +134,6 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
                 id: 'actions',
                 cell: (props) => {
                     const staff = props.row.original;
-                    console.log(`Staff ID: ${staff.id}, Status: ${staff.status}`); // Debug log
 
                     const onDeleteClick = () => {
                         dispatch(toggleDeleteConfirmation(true));
@@ -256,7 +255,7 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
 
     return (
         <div>
-            <StaffTableSearch onSearch={handleSearch} />
+            {/* <StaffTableSearch onSearch={handleSearch} /> */}
             {loading && data.length === 0 ? (
                 <div className="p-4">Loading...</div>
             ) : !loading && data.length === 0 ? (

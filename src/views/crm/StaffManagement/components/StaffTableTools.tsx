@@ -1,15 +1,18 @@
+// StaffTableTools.tsx
+import React from 'react';
 import Button from '@/components/ui/Button';
 import { HiPlusCircle } from 'react-icons/hi';
 import StaffTableSearch from './StaffTableSearch';
 
 type StaffTableToolsProps = {
     onAddStaff: () => void;
+    onSearch: (query: string) => void; // Nhận prop `onSearch`
 };
 
-const StaffTableTools = ({ onAddStaff }: StaffTableToolsProps) => {
+const StaffTableTools = ({ onAddStaff, onSearch }: StaffTableToolsProps) => {
     return (
         <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <StaffTableSearch />
+            <StaffTableSearch onSearch={onSearch} />
             <Button
                 size="sm"
                 variant="solid"

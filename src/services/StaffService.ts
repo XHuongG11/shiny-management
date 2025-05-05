@@ -12,8 +12,8 @@ export async function apiGetAllStaffs<T>(data: { page: number; size: number }) {
 }
 
 // Tìm kiếm nhân viên theo tên
-export async function apiSearchStaffs<T>(data: { page: number; size: number; name: string }) {
-    return ApiService.fetchData<T>({
+export async function apiSearchStaffs<ApiResponse>(data: { page: number; size: number; name: string }) {
+    return ApiService.fetchData<ApiResponse>({
         url: '/users/search-staffs',
         method: 'get',
         params: data,
