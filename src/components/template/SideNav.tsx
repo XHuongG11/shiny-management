@@ -14,6 +14,7 @@ import navigationConfig from '@/configs/navigation.config'
 import VerticalMenuContent from '@/components/template/VerticalMenuContent'
 import useResponsive from '@/utils/hooks/useResponsive'
 import { useAppSelector } from '@/store'
+import { useEffect } from 'react'
 
 const sideNavStyle = {
     width: SIDE_NAV_WIDTH,
@@ -39,13 +40,11 @@ const SideNav = () => {
     const sideNavCollapse = useAppSelector(
         (state) => state.theme.layout.sideNavCollapse,
     )
-    let userAuthority = [] as string[]
-    const role = useAppSelector((state) => state.auth.user.role)
-    if (role === 'Manager') {
-        userAuthority = ['admin', 'user']
-    } else if (role === 'Staff') {
-        userAuthority = ['user']
-    }
+    const userAuthority = useAppSelector((state) => state.auth.user.role)
+
+    useEffect(() => {
+        console.log('Updated UserRole:', userAuthority)
+    }, [userAuthority])
 
     const { larger } = useResponsive()
 
@@ -74,7 +73,7 @@ const SideNav = () => {
             collapsed={sideNavCollapse}
             navigationTree={navigationConfig}
             routeKey={currentRouteKey}
-            userAuthority={userAuthority}
+            userAuthority={[userAuthority]}
             direction={direction}
         />
     )

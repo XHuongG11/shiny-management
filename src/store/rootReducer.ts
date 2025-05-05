@@ -10,6 +10,11 @@ export type RootState = CombinedState<{
     base: CombinedState<BaseState>
     locale: LocaleState
     theme: ThemeState
+    salesCatalog: {
+        catalog: {
+            type: string
+        }
+    }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     [RtkQueryService.reducerPath]: any
 }>

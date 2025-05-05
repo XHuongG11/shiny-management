@@ -4,7 +4,7 @@ import {
     NAV_ITEM_TYPE_COLLAPSE,
     NAV_ITEM_TYPE_ITEM,
 } from '@/constants/navigation.constant'
-import { ADMIN, USER } from '@/constants/roles.constant'
+import { MANAGER, STAFF } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
 const appsNavigationConfig: NavigationTree[] = [
@@ -15,7 +15,7 @@ const appsNavigationConfig: NavigationTree[] = [
         translateKey: 'nav.apps',
         icon: 'apps',
         type: NAV_ITEM_TYPE_TITLE,
-        authority: [ADMIN, USER],
+        authority: [MANAGER, STAFF],
         subMenu: [
             {
                 key: 'apps.hrm',
@@ -24,7 +24,7 @@ const appsNavigationConfig: NavigationTree[] = [
                 translateKey: 'nav.appsHrm.hrm',
                 icon: 'crm',
                 type: NAV_ITEM_TYPE_COLLAPSE,
-                authority: [ADMIN, USER],
+                authority: [MANAGER],
                 subMenu: [
                     {
                         key: 'appsCrm.customers',
@@ -33,7 +33,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.appsCrm.customers',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                     {
@@ -43,7 +43,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.appsCrm.mail',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                     {
@@ -53,7 +53,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.appsCrm.staffs',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                 ],
@@ -65,7 +65,7 @@ const appsNavigationConfig: NavigationTree[] = [
                 translateKey: 'nav.appsSales.sales',
                 icon: 'sales',
                 type: NAV_ITEM_TYPE_COLLAPSE,
-                authority: [ADMIN, USER],
+                authority: [MANAGER, STAFF],
                 subMenu: [
                     {
                         key: 'appsSales.dashboard',
@@ -74,47 +74,38 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.appsSales.dashboard',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                     {
                         key: 'appsSales.productList',
                         path: `${APP_PREFIX_PATH}/sales/product-list`,
-                        title: 'Product List',
-                        translateKey: 'nav.appsSales.productList',
+                        title: 'Products',
+                        translateKey: 'nav.appsSales.products',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
-                    {
-                        key: 'appsSales.productNew',
-                        path: `${APP_PREFIX_PATH}/sales/product-new`,
-                        title: 'New Product',
-                        translateKey: 'nav.appsSales.productNew',
-                        icon: '',
-                        type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
-                        subMenu: [],
-                    },
+
                     {
                         key: 'appsSales.orderList',
                         path: `${APP_PREFIX_PATH}/sales/order-list`,
-                        title: 'Order List',
-                        translateKey: 'nav.appsSales.orderList',
+                        title: 'Orders',
+                        translateKey: 'nav.appsSales.orders',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [ STAFF],
                         subMenu: [],
                     },
                     {
-                        key: 'appsSales.orderList',
-                        path: `${APP_PREFIX_PATH}/sales/order-list`,
-                        title: 'Quản lý danh mục ',
-                        translateKey: 'nav.appsSales.managerCategory',
+                        key: 'appsSales.catalogManagement',
+                        path: `${APP_PREFIX_PATH}/sales/catalog-management`,
+                        title: 'Catalog',
+                        translateKey: 'nav.appsSales.catalogManagement',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                     {
@@ -124,7 +115,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.sales.reviews',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [ STAFF],
                         subMenu: [],
                     },
                     {
@@ -134,7 +125,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.sales.vouchers',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                 ],
@@ -146,7 +137,7 @@ const appsNavigationConfig: NavigationTree[] = [
                 translateKey: 'nav.appsknowledgeBase.knowledgeBase',
                 icon: 'knowledgeBase',
                 type: NAV_ITEM_TYPE_COLLAPSE,
-                authority: [ADMIN, USER],
+                authority: [MANAGER],
                 subMenu: [
                     {
                         key: 'appsknowledgeBase.helpCenter',
@@ -155,7 +146,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.appsknowledgeBase.helpCenter',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                     {
@@ -165,7 +156,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.appsknowledgeBase.article',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                     {
@@ -175,7 +166,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.appsknowledgeBase.manageArticles',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
+                        authority: [MANAGER],
                         subMenu: [],
                     },
                 ],
@@ -187,7 +178,7 @@ const appsNavigationConfig: NavigationTree[] = [
                 translateKey: 'nav.appsAccount.account',
                 icon: 'account',
                 type: NAV_ITEM_TYPE_COLLAPSE,
-                authority: [ADMIN, USER],
+                authority: [MANAGER, STAFF],
                 subMenu: [],
             },
         ],
