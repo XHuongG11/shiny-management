@@ -95,7 +95,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.appsSales.orders',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [MANAGER, STAFF],
+                        authority: [ STAFF],
                         subMenu: [],
                     },
                     {
@@ -115,7 +115,7 @@ const appsNavigationConfig: NavigationTree[] = [
                         translateKey: 'nav.sales.reviews',
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
-                        authority: [MANAGER, STAFF],
+                        authority: [ STAFF],
                         subMenu: [],
                     },
                     {
