@@ -10,6 +10,13 @@ export async function apiGetAllVouchers<T>(data: { page: number; size: number })
     })
 }
 
+export async function apiGetVoucher<T>(id: number) {
+    return ApiService.fetchData<T>({
+        url: `/vouchers/${id}`,
+        method: 'get',
+    })
+}
+
 export async function apiSearchVouchers<T>(data: { page: number; size: number; query: string }) {
     return ApiService.fetchData<T>({
         url: `/vouchers/search`,

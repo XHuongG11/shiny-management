@@ -28,7 +28,7 @@ const VoucherTableSearch = () => {
         const newTableData = cloneDeep(tableData)
         newTableData.title = val
         newTableData.page = 1
-        if (typeof val === 'string' && val.length > 1) {
+        if (typeof val === 'string' && val.length >= 1) {
             fetchDataWithSearch(newTableData)
         }
 
