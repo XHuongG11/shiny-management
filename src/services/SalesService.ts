@@ -264,3 +264,72 @@ export async function apiDeleteImageProduct(id: number) {
         method: 'delete',
     })
 }
+
+export async function apiGetAllCategories<T extends Record<string, unknown>>() {
+    return ApiService.fetchData<T>({
+        url: '/categories/all',
+        method: 'get',
+    })
+}
+
+export async function apiGetAllCollections<
+    T extends Record<string, unknown>,
+>() {
+    return ApiService.fetchData<T>({
+        url: '/collections/all',
+        method: 'get',
+    })
+}
+export async function apiCreateCollection<T, U extends Record<string, unknown>>(
+    data: U,
+) {
+    return ApiService.fetchData<T>({
+        url: '/collections/add',
+        method: 'post',
+        data,
+    })
+}
+export async function apiUpdateCollection<T, U extends Record<string, unknown>>(
+    id: number,
+    data: U,
+) {
+    return ApiService.fetchData<T>({
+        url: `/collections/collection/${id}`,
+        method: 'put',
+        data,
+    })
+}
+
+export async function apiDeleteCollection<T>(id: number) {
+    return ApiService.fetchData<T>({
+        url: `/collections/collection/${id}`,
+        method: 'delete',
+    })
+}
+
+export async function apiCreateCategory<T, U extends Record<string, unknown>>(
+    data: U,
+) {
+    return ApiService.fetchData<T>({
+        url: '/categories/add',
+        method: 'post',
+        data,
+    })
+}
+export async function apiUpdateCategory<T, U extends Record<string, unknown>>(
+    id: number,
+    data: U,
+) {
+    return ApiService.fetchData<T>({
+        url: `/categories/category/${id}`,
+        method: 'put',
+        data,
+    })
+}
+
+export async function apiDeleteCategory<T>(id: number) {
+    return ApiService.fetchData<T>({
+        url: `/categories/category/${id}`,
+        method: 'delete',
+    })
+}

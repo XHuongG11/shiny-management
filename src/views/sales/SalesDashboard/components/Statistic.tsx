@@ -73,7 +73,6 @@ const Statistic = ({ data = {} }: StatisticProps) => {
             />
             <StatisticCard
                 data={data.customers}
-                valuePrefix="VND "
                 label="New Customers"
                 month={month}
                 year={year}

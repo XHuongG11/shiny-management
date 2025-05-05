@@ -51,11 +51,17 @@ function useAuth() {
                 dispatch(setUser(resp.data.data.user || defaultUser))
 
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
-                navigate(
-                    redirectUrl
-                        ? redirectUrl
-                        : appConfig.authenticatedEntryPath,
-                )
+                if (values.role === 'STAFF') {
+                    navigate(
+                        redirectUrl ? redirectUrl : '/app/sales/order-list',
+                    )
+                } else if (values.role === 'MANAGER') {
+                    navigate(
+                        redirectUrl
+                            ? redirectUrl
+                            : appConfig.authenticatedEntryPath,
+                    )
+                }
                 return {
                     status: 'success',
                     message: '',

@@ -25,6 +25,8 @@ const SalesDashboardHeader = () => {
     useEffect(() => {
         const month = selectedDate.month() + 1
         const year = selectedDate.year()
+        dispatch(setMonth(month))
+        dispatch(setYear(year))
         dispatch(getSalesDashboardData({ month, year }))
     }, [])
     return (

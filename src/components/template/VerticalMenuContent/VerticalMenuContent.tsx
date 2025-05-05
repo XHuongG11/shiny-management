@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import Menu from '@/components/ui/Menu'
-import AuthorityCheck from '@/components/shared/AuthorityCheck'
 import VerticalSingleMenuItem from './VerticalSingleMenuItem'
 import VerticalCollapsedMenuItem from './VerticalCollapsedMenuItem'
 import { themeConfig } from '@/configs/theme.config'
@@ -55,6 +54,16 @@ const VerticalMenuContent = (props: VerticalMenuContentProps) => {
     }
 
     const getNavItem = (nav: NavigationTree) => {
+        // Check if user has required authority or if no authority is required
+        if (nav.authority && nav.authority.length > 0) {
+            const hasAuthority = userAuthority.some((auth) =>
+                nav.authority.includes(auth),
+            )
+            if (!hasAuthority) {
+                return null
+            }
+        }
+
         if (nav.subMenu.length === 0 && nav.type === NAV_ITEM_TYPE_ITEM) {
             return (
                 <VerticalSingleMenuItem
@@ -69,10 +78,23 @@ const VerticalMenuContent = (props: VerticalMenuContentProps) => {
         }
 
         if (nav.subMenu.length > 0 && nav.type === NAV_ITEM_TYPE_COLLAPSE) {
+            // Filter out unauthorized submenu items
+            const authorizedSubMenu = nav.subMenu.filter((subNav) => {
+                if (!subNav.authority || subNav.authority.length === 0)
+                    return true
+                return userAuthority.some(
+                    (auth) => subNav.authority?.includes(auth),
+                )
+            })
+
+            if (authorizedSubMenu.length === 0) {
+                return null
+            }
+
             return (
                 <VerticalCollapsedMenuItem
                     key={nav.key}
-                    nav={nav}
+                    nav={{ ...nav, subMenu: authorizedSubMenu }}
                     sideCollapsed={collapsed}
                     userAuthority={userAuthority}
                     direction={direction}
@@ -83,41 +105,51 @@ const VerticalMenuContent = (props: VerticalMenuContentProps) => {
 
         if (nav.type === NAV_ITEM_TYPE_TITLE) {
             if (nav.subMenu.length > 0) {
-                return (
-                    <AuthorityCheck
-                        key={nav.key}
-                        userAuthority={userAuthority}
-                        authority={nav.authority}
-                    >
-                        <MenuGroup label={t(nav.translateKey) || nav.title}>
-                            {nav.subMenu.map((subNav) =>
-                                subNav.subMenu.length > 0 ? (
-                                    <VerticalCollapsedMenuItem
-                                        key={subNav.key}
-                                        nav={subNav}
-                                        sideCollapsed={collapsed}
-                                        userAuthority={userAuthority}
-                                        direction={direction}
-                                        onLinkClick={onMenuItemClick}
-                                    />
-                                ) : (
-                                    <VerticalSingleMenuItem
-                                        key={subNav.key}
-                                        nav={subNav}
-                                        sideCollapsed={collapsed}
-                                        userAuthority={userAuthority}
-                                        direction={direction}
-                                        onLinkClick={onMenuItemClick}
-                                    />
-                                )
-                            )}
-                        </MenuGroup>
-                    </AuthorityCheck>
+                const authorizedSubMenu = nav.subMenu.filter(
+                    (subNav) =>
+                        !subNav.authority ||
+                        userAuthority.some(
+                            (auth) => subNav.authority?.includes(auth),
+                        ),
                 )
-            } else {
-                ;<MenuGroup label={nav.title} />
+
+                // Don't render menu group if all submenu items are unauthorized
+                if (authorizedSubMenu.length === 0) {
+                    return null
+                }
+
+                return (
+                    <MenuGroup
+                        key={nav.key}
+                        label={t(nav.translateKey) || nav.title}
+                    >
+                        {authorizedSubMenu.map((subNav) =>
+                            subNav.subMenu.length > 0 ? (
+                                <VerticalCollapsedMenuItem
+                                    key={subNav.key}
+                                    nav={subNav}
+                                    sideCollapsed={collapsed}
+                                    userAuthority={userAuthority}
+                                    direction={direction}
+                                    onLinkClick={onMenuItemClick}
+                                />
+                            ) : (
+                                <VerticalSingleMenuItem
+                                    key={subNav.key}
+                                    nav={subNav}
+                                    sideCollapsed={collapsed}
+                                    userAuthority={userAuthority}
+                                    direction={direction}
+                                    onLinkClick={onMenuItemClick}
+                                />
+                            ),
+                        )}
+                    </MenuGroup>
+                )
             }
+            return <MenuGroup key={nav.key} label={nav.title} />
         }
+        return null
     }
 
     return (

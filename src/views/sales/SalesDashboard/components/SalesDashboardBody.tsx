@@ -24,6 +24,7 @@ const SalesDashboardBody = () => {
     }, [])
 
     const fetchData = () => {
+        console.log('month2', month, 'year2', year)
         dispatch(getSalesDashboardData({ month, year }))
     }
 

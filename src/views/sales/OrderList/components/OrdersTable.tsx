@@ -19,7 +19,6 @@ import cloneDeep from 'lodash/cloneDeep';
 import dayjs from 'dayjs';
 import type {
     DataTableResetHandle,
-    OnSortParam,
     ColumnDef,
 } from '@/components/shared/DataTable';
 
@@ -243,7 +242,9 @@ const OrdersTable = () => {
                     const statusKey = status in statusDisplayMap ? status : 'UNKNOWN';
                     return (
                         <div className="flex items-center">
-                            <Badge className={statusDisplayMap[statusKey].dotClass} />
+                            <Badge
+                                className={statusDisplayMap[statusKey].dotClass}
+                            />
                             <span
                                 className={`ml-2 rtl:mr-2 capitalize font-semibold ${statusDisplayMap[statusKey].textClass}`}
                             >

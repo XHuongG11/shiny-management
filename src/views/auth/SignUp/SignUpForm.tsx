@@ -29,7 +29,7 @@ const validationSchema = Yup.object().shape({
     password: Yup.string().required('Please enter your password'),
     confirmPassword: Yup.string().oneOf(
         [Yup.ref('password')],
-        'Your passwords do not match'
+        'Your passwords do not match',
     ),
 })
 
@@ -42,7 +42,7 @@ const SignUpForm = (props: SignUpFormProps) => {
 
     const onSignUp = async (
         values: SignUpFormSchema,
-        setSubmitting: (isSubmitting: boolean) => void
+        setSubmitting: (isSubmitting: boolean) => void,
     ) => {
         const { userName, password, email } = values
         setSubmitting(true)
