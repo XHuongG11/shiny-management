@@ -97,13 +97,13 @@ const appsRoute: Routes = [
         key: 'appsSales.orderList',
         path: `${APP_PREFIX_PATH}/sales/order-list`,
         component: lazy(() => import('@/views/sales/OrderList')),
-        authority: [MANAGER, STAFF],
+        authority: [STAFF],
     },
     {
         key: 'appsSales.orderDetails',
         path: `${APP_PREFIX_PATH}/sales/order-details/:orderId`,
         component: lazy(() => import('@/views/sales/OrderDetails')),
-        authority: [MANAGER, STAFF],
+        authority: [STAFF],
     },
     {
         key: 'appsSales.returnProcessing',
@@ -114,7 +114,7 @@ const appsRoute: Routes = [
                     '@/views/sales/OrderDetails/components/ReturnProcessingPage'
                 ),
         ),
-        authority: [MANAGER, STAFF],
+        authority: [STAFF],
         meta: {
             header: 'Process Return',
         },
@@ -123,7 +123,7 @@ const appsRoute: Routes = [
         key: 'appsSales.reviews',
         path: `${APP_PREFIX_PATH}/sales/reviews`,
         component: lazy(() => import('@/views/sales/ReviewList')),
-        authority: [MANAGER, STAFF],
+        authority: [STAFF],
     },
     {
         key: 'appsSales.vouchers',

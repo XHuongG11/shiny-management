@@ -11,6 +11,7 @@ import { REDIRECT_URL_KEY } from '@/constants/app.constant'
 import { useNavigate } from 'react-router-dom'
 import useQuery from './useQuery'
 import type { SignInCredential, SignUpCredential } from '@/@types/auth'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 
 type Status = 'success' | 'failed'
 
@@ -47,19 +48,24 @@ function useAuth() {
             if (resp?.data?.data) {
                 const token = resp.data.data.token
                 dispatch(signInSuccess(token))
-                console.log('user', resp.data.data.user)
                 dispatch(setUser(resp.data.data.user || defaultUser))
 
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
-                if (values.role === 'STAFF') {
-                    navigate(
-                        redirectUrl ? redirectUrl : '/app/sales/order-list',
-                    )
-                } else if (values.role === 'MANAGER') {
+                console.log('role user', resp.data?.data?.user?.role)
+
+                if (resp.data?.data?.user?.role === 'MANAGER') {
+                    console.log('redirect role MANAGER')
                     navigate(
                         redirectUrl
                             ? redirectUrl
                             : appConfig.authenticatedEntryPath,
+                    )
+                } else {
+                    console.log('redirect role STAFF')
+                    navigate(
+                        redirectUrl
+                            ? redirectUrl
+                            : `${APP_PREFIX_PATH}/sales/order-list`,
                     )
                 }
                 return {
@@ -91,11 +97,21 @@ function useAuth() {
                     dispatch(setUser(defaultUser))
                 }
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
-                navigate(
-                    redirectUrl
-                        ? redirectUrl
-                        : appConfig.authenticatedEntryPath,
-                )
+                if (resp.data?.user?.role === 'MANAGER') {
+                    console.log('redirect role MANAGER')
+                    navigate(
+                        redirectUrl
+                            ? redirectUrl
+                            : appConfig.authenticatedEntryPath,
+                    )
+                } else {
+                    console.log('redirect role STAFF')
+                    navigate(
+                        redirectUrl
+                            ? redirectUrl
+                            : `${APP_PREFIX_PATH}/sales/order-list`,
+                    )
+                }
                 return {
                     status: 'success',
                     message: '',
