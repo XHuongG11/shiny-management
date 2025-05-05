@@ -11,18 +11,14 @@ import {
 import type { MouseEvent } from 'react'
 
 type DrawerFooterProps = {
-    onSaveClick: (event: MouseEvent<HTMLButtonElement>) => void
     onCancel: (event: MouseEvent<HTMLButtonElement>) => void
 }
 
-const DrawerFooter = ({ onSaveClick, onCancel }: DrawerFooterProps) => {
+const DrawerFooter = ({ onCancel }: DrawerFooterProps) => {
     return (
         <div className="text-right w-full">
-            <Button size="sm" className="mr-2" onClick={onCancel}>
-                Cancel
-            </Button>
-            <Button size="sm" variant="solid" onClick={onSaveClick}>
-                Save
+            <Button size="sm" onClick={onCancel}>
+                Close
             </Button>
         </div>
     )
@@ -41,21 +37,13 @@ const CustomerEditDialog = () => {
 
     const formikRef = useRef<FormikRef>(null)
 
-    const formSubmit = () => {
-        formikRef.current?.submitForm()
-    }
-
     return (
         <Drawer
             isOpen={drawerOpen}
-            closable={false}
+            closable={true}
+            title="Customer Details"
             bodyClass="p-0"
-            footer={
-                <DrawerFooter
-                    onCancel={onDrawerClose}
-                    onSaveClick={formSubmit}
-                />
-            }
+            footer={<DrawerFooter onCancel={onDrawerClose} />}
             onClose={onDrawerClose}
             onRequestClose={onDrawerClose}
         >

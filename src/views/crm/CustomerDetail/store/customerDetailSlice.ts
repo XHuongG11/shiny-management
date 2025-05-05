@@ -3,7 +3,7 @@ import {
     apiGetCrmCustomerDetails,
     apiDeleteCrmCustomer,
     apPutCrmCustomer,
-} from '@/services/CrmService'
+} from '@/services/CustomerService'
 
 export const SLICE_NAME = 'crmCustomerDetails'
 

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
 import DataTable from '@/components/shared/DataTable'
@@ -9,25 +9,29 @@ import {
     setDrawerOpen,
     useAppDispatch,
     useAppSelector,
-    Customer,
 } from '../store'
 import useThemeClass from '@/utils/hooks/useThemeClass'
 import CustomerEditDialog from './CustomerEditDialog'
 import { Link } from 'react-router-dom'
 import dayjs from 'dayjs'
 import cloneDeep from 'lodash/cloneDeep'
-import type { OnSortParam, ColumnDef } from '@/components/shared/DataTable'
+import type {
+    DataTableResetHandle,
+    OnSortParam,
+    ColumnDef,
+} from '@/components/shared/DataTable'
+import { Customer, EUserStatus } from '@/@types/customer'
 
 const statusColor: Record<string, string> = {
-    active: 'bg-emerald-500',
-    blocked: 'bg-red-500',
+    [EUserStatus.ACTIVE]: 'bg-emerald-500',
+    [EUserStatus.INACTIVE]: 'bg-red-500',
 }
 
 const ActionColumn = ({ row }: { row: Customer }) => {
     const { textTheme } = useThemeClass()
     const dispatch = useAppDispatch()
 
-    const onEdit = () => {
+    const onDetail = () => {
         dispatch(setDrawerOpen())
         dispatch(setSelectedCustomer(row))
     }
@@ -35,9 +39,9 @@ const ActionColumn = ({ row }: { row: Customer }) => {
     return (
         <div
             className={`${textTheme} cursor-pointer select-none font-semibold`}
-            onClick={onEdit}
+            onClick={onDetail}
         >
-            Edit
+            Detail
         </div>
     )
 }
@@ -47,47 +51,54 @@ const NameColumn = ({ row }: { row: Customer }) => {
 
     return (
         <div className="flex items-center">
-            <Avatar size={28} shape="circle" src={row.img} />
+            {/* <Avatar size={28} shape="circle" src={row.avatar || '/img/default-avatar.png'} /> */}
             <Link
                 className={`hover:${textTheme} ml-2 rtl:mr-2 font-semibold`}
                 to={`/app/crm/customer-details?id=${row.id}`}
             >
-                {row.name}
+                {row.fullName}
             </Link>
         </div>
     )
 }
 
-const Customers = () => {
-    const dispatch = useAppDispatch()
-    const data = useAppSelector((state) => state.crmCustomers.data.customerList)
-    const loading = useAppSelector((state) => state.crmCustomers.data.loading)
-    const filterData = useAppSelector(
-        (state) => state.crmCustomers.data.filterData
-    )
+const CustomersTable = () => {
+    const tableRef = useRef<DataTableResetHandle>(null)
 
-    const { pageIndex, pageSize, sort, query, total } = useAppSelector(
+    const dispatch = useAppDispatch()
+
+    const { page, size, sort, title, totalPages } = useAppSelector(
         (state) => state.crmCustomers.data.tableData
     )
 
-    const fetchData = useCallback(() => {
-        dispatch(getCustomers({ pageIndex, pageSize, sort, query, filterData }))
-    }, [pageIndex, pageSize, sort, query, filterData, dispatch])
+    const loading = useAppSelector(
+        (state) => state.crmCustomers.data.loading
+    )
+
+    const data = useAppSelector(
+        (state) => state.crmCustomers.data.customerList
+    )
 
     useEffect(() => {
+        console.log('Fetching customers with params:', { page, size, title, sort })
         fetchData()
-    }, [fetchData, pageIndex, pageSize, sort, filterData])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, size, sort, title])
+
+    const fetchData = () => {
+        dispatch(getCustomers({ page, size }))
+    }
 
     const tableData = useMemo(
-        () => ({ pageIndex, pageSize, sort, query, total }),
-        [pageIndex, pageSize, sort, query, total]
+        () => ({ page, size, sort, title, totalPages }),
+        [page, size, sort, title, totalPages]
     )
 
     const columns: ColumnDef<Customer>[] = useMemo(
         () => [
             {
                 header: 'Name',
-                accessorKey: 'name',
+                accessorKey: 'fullName',
                 cell: (props) => {
                     const row = props.row.original
                     return <NameColumn row={row} />
@@ -113,13 +124,13 @@ const Customers = () => {
                 },
             },
             {
-                header: 'Last online',
-                accessorKey: 'lastOnline',
+                header: 'Join Date',
+                accessorKey: 'dob',
                 cell: (props) => {
                     const row = props.row.original
                     return (
                         <div className="flex items-center">
-                            {dayjs.unix(row.lastOnline).format('MM/DD/YYYY')}
+                            {row.dob ? dayjs(row.dob).format('MM/DD/YYYY') : 'N/A'}
                         </div>
                     )
                 },
@@ -135,14 +146,14 @@ const Customers = () => {
 
     const onPaginationChange = (page: number) => {
         const newTableData = cloneDeep(tableData)
-        newTableData.pageIndex = page
+        newTableData.page = page
         dispatch(setTableData(newTableData))
     }
 
     const onSelectChange = (value: number) => {
         const newTableData = cloneDeep(tableData)
-        newTableData.pageSize = Number(value)
-        newTableData.pageIndex = 1
+        newTableData.size = Number(value)
+        newTableData.page = 1
         dispatch(setTableData(newTableData))
     }
 
@@ -152,26 +163,30 @@ const Customers = () => {
         dispatch(setTableData(newTableData))
     }
 
+    console.log('CustomersTable state:', { data, tableData, loading })
+
     return (
         <>
             <DataTable
+                ref={tableRef}
                 columns={columns}
-                data={data}
+                data={data || []}
                 skeletonAvatarColumns={[0]}
                 skeletonAvatarProps={{ width: 28, height: 28 }}
                 loading={loading}
                 pagingData={{
-                    total: tableData.total as number,
-                    pageIndex: tableData.pageIndex as number,
-                    pageSize: tableData.pageSize as number,
+                    total: tableData.totalPages || 0,
+                    pageIndex: tableData.page || 1,
+                    pageSize: tableData.size || 10,
                 }}
                 onPaginationChange={onPaginationChange}
                 onSelectChange={onSelectChange}
                 onSort={onSort}
             />
+            {data && data.length === 0 && <h5>Không tìm thấy khách hàng phù hợp.</h5>}
             <CustomerEditDialog />
         </>
     )
 }
 
-export default Customers
+export default CustomersTable
