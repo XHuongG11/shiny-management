@@ -44,10 +44,21 @@ const appsRoute: Routes = [
         },
     },
     {
+        key: 'appsCrm.staffList',
+        path: `${APP_PREFIX_PATH}/crm/staff-list`,
+        component: lazy(
+            () => import('@/views/crm/StaffManagement/StaffManagement'),
+        ),
+        authority: [MANAGER],
+        meta: {
+            header: 'Staff Management',
+        },
+    },
+    {
         key: 'appsSales.dashboard',
         path: `${APP_PREFIX_PATH}/sales/dashboard`,
         component: lazy(() => import('@/views/sales/SalesDashboard')),
-        authority: [MANAGER, STAFF],
+        authority: [MANAGER],
     },
     {
         key: 'appsSales.productList',
@@ -95,6 +106,20 @@ const appsRoute: Routes = [
         authority: [MANAGER, STAFF],
     },
     {
+        key: 'appsSales.returnProcessing',
+        path: `${APP_PREFIX_PATH}/sales/order-details/return/:orderId`,
+        component: lazy(
+            () =>
+                import(
+                    '@/views/sales/OrderDetails/components/ReturnProcessingPage'
+                ),
+        ),
+        authority: [MANAGER, STAFF],
+        meta: {
+            header: 'Process Return',
+        },
+    },
+    {
         key: 'appsSales.reviews',
         path: `${APP_PREFIX_PATH}/sales/reviews`,
         component: lazy(() => import('@/views/sales/ReviewList')),
@@ -107,6 +132,26 @@ const appsRoute: Routes = [
         authority: [MANAGER],
         meta: {
             header: 'Voucher Management',
+        },
+    },
+    {
+        key: 'appsSales.voucherAdd',
+        path: `${APP_PREFIX_PATH}/sales/vouchers/add`,
+        component: lazy(() => import('@/views/sales/VoucherAdd')),
+        authority: [MANAGER],
+        meta: {
+            header: 'Add New Voucher',
+            headerContainer: true,
+        },
+    },
+    {
+        key: 'appsSales.voucherEdit',
+        path: `${APP_PREFIX_PATH}/sales/vouchers/:voucherId`,
+        component: lazy(() => import('@/views/sales/VoucherEdit')),
+        authority: [MANAGER],
+        meta: {
+            header: 'Edit Voucher',
+            headerContainer: true,
         },
     },
     {

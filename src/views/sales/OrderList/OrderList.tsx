@@ -3,7 +3,7 @@ import { injectReducer } from '@/store'
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import OrdersTable from './components/OrdersTable'
 import OrdersTableTools from './components/OrdersTableTools'
-import OrderDeleteConfirmation from './components/OrderDeleteConfirmation'
+import Button from '@/components/ui/Button'
 
 injectReducer('salesOrderList', reducer)
 
@@ -15,7 +15,6 @@ const OrderList = () => {
                 <OrdersTableTools />
             </div>
             <OrdersTable />
-            <OrderDeleteConfirmation />
         </AdaptableCard>
     )
 }

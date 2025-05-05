@@ -11,6 +11,7 @@ import {
     toggleDeleteConfirmation,
     useAppDispatch,
     useAppSelector,
+    searchVouchers,
 } from '../store'
 import cloneDeep from 'lodash/cloneDeep'
 import dayjs from 'dayjs'
@@ -22,7 +23,7 @@ import type {
 import type { Voucher, VoucherApplicability } from '@/@types/voucher'
 
 type VoucherTableProps = {
-    onEdit: () => void
+    onEdit: (id: number) => void
 }
 
 const getApplicabilityLabel = (applicabilities: VoucherApplicability[]): string => {
@@ -69,7 +70,7 @@ const VoucherTable = ({ onEdit }: VoucherTableProps) => {
     const tableRef = useRef<DataTableResetHandle>(null)
     const dispatch = useAppDispatch()
 
-    const { page, size, sort, totalPages } = useAppSelector(
+    const { page, size, sort, totalPages , title} = useAppSelector(
         (state) => state.salesVoucherList.data.tableData
     )
     const loading = useAppSelector((state) => state.salesVoucherList.data.loading)
@@ -81,12 +82,17 @@ const VoucherTable = ({ onEdit }: VoucherTableProps) => {
     }, [page, size, sort])
 
     const tableData = useMemo(
-        () => ({ page, size, sort, totalPages }),
-        [page, size, sort, totalPages]
+        () => ({ page, size, sort, totalPages , title }),
+        [page, size, sort, totalPages, title]
     )
 
     const fetchData = () => {
-        dispatch(getVouchers({ page: page ?? 1, size: size ?? 10 }))
+        if (tableData.title && tableData.title.length > 1) {
+            dispatch(searchVouchers({ page: tableData.page as number, size: tableData.size as number, query: tableData.title as string }))
+        }
+        else {
+            dispatch(getVouchers({ page: tableData.page as number, size: tableData.size as number }))
+        }
     }
 
     const columns: ColumnDef<Voucher>[] = useMemo(
@@ -205,11 +211,9 @@ const VoucherTable = ({ onEdit }: VoucherTableProps) => {
                     }
                     
                     const onEditClick = () => {
-                        // Set the selected voucher first, then call onEdit in the next tick
-                        dispatch(setSelectedVoucher(row))
-                        setTimeout(() => {
-                            onEdit()
-                        }, 0)
+                        if (row.id) {
+                            onEdit(row.id)
+                        }
                     }
                     
                     return (
@@ -251,12 +255,6 @@ const VoucherTable = ({ onEdit }: VoucherTableProps) => {
         dispatch(setTableData(newTableData))
     }
 
-    const onSort = (sort: OnSortParam) => {
-        const newTableData = cloneDeep(tableData)
-        newTableData.sort = sort
-        dispatch(setTableData(newTableData))
-    }
-
     return (
         <DataTable
             ref={tableRef}
@@ -272,7 +270,6 @@ const VoucherTable = ({ onEdit }: VoucherTableProps) => {
             }}
             onPaginationChange={onPaginationChange}
             onSelectChange={onSelectChange}
-            onSort={onSort}
         />
     )
 }

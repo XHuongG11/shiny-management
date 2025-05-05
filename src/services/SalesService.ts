@@ -177,7 +177,12 @@ export async function apiCreateProduct<T, U extends Record<string, unknown>>(
 }
 
 export async function apiGetSalesOrders<T, U extends Record<string, unknown>>(
-    params: U,
+    params: {
+        status?: string;
+        query?: string;
+        page?: number;
+        size?: number;
+    }
 ) {
     return ApiService.fetchData<T>({
         url: '/orders/all',

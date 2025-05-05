@@ -1,9 +1,10 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Input from '@/components/ui/Input'
 import { HiOutlineSearch } from 'react-icons/hi'
 import {
     getOrders,
     setTableData,
+    setSearchQuery,
     useAppDispatch,
     useAppSelector,
 } from '../store'
@@ -21,28 +22,27 @@ const OrderTableSearch = () => {
         (state) => state.salesOrderList.data.tableData
     )
 
+    const [searchValue, setSearchValue] = useState(tableData.query || '')
+
     const debounceFn = debounce(handleDebounceFn, 500)
 
     function handleDebounceFn(val: string) {
         const newTableData = cloneDeep(tableData)
         newTableData.query = val
-        newTableData.pageIndex = 1
-        if (typeof val === 'string' && val.length > 1) {
-            fetchData(newTableData)
-        }
-
-        if (typeof val === 'string' && val.length === 0) {
-            fetchData(newTableData)
-        }
+        newTableData.page = 1
+        // Fetch data with the updated search query
+        fetchData(newTableData)
     }
 
-    const fetchData = (data: TableQueries) => {
+    const fetchData = (data: TableQueries & { status?: string, query?: string }) => {
         dispatch(setTableData(data))
-        dispatch(getOrders(data))
+        //dispatch(getOrders(data))
     }
 
-    const onEdit = (e: ChangeEvent<HTMLInputElement>) => {
-        debounceFn(e.target.value)
+    const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value
+        setSearchValue(value)
+        debounceFn(value)
     }
 
     return (
@@ -52,7 +52,8 @@ const OrderTableSearch = () => {
             size="sm"
             placeholder="Search"
             prefix={<HiOutlineSearch className="text-lg" />}
-            onChange={onEdit}
+            onChange={onSearchChange}
+            value={searchValue}
         />
     )
 }
