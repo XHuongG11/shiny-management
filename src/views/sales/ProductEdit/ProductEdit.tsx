@@ -49,7 +49,6 @@ const ProductEdit = () => {
         const productid = values.id
         if (productid !== undefined) {
             const success = await updateProduct(productid, values)
-            // update images
             if (values.images?.length !== 0) {
                 values.images?.forEach(async (i) => {
                     const formData = new FormData()
@@ -57,7 +56,6 @@ const ProductEdit = () => {
                     if (i.id === null) {
                         formData.append('productId', String(productid) || '')
                         const responseImage = await apiAddProductImage(formData)
-                        console.log('img data', responseImage.data)
                     }
                 })
             }
@@ -134,7 +132,7 @@ const ProductEdit = () => {
                 {!isEmpty(productData) && (
                     <>
                         <ProductForm
-                            type="edit"
+                            type="edit" 
                             initialData={productData}
                             onFormSubmit={handleFormSubmit}
                             onDiscard={handleDiscard}

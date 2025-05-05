@@ -14,22 +14,12 @@ const appsRoute: Routes = [
         },
     },
     {
-        key: 'appsCrm.customerDetails',
-        path: `${APP_PREFIX_PATH}/customer-details`,
-        component: lazy(() => import('@/views/crm/CustomerDetail')),
-        authority: [MANAGER, STAFF],
-        meta: {
-            header: 'Customer Details',
-            headerContainer: true,
-        },
-    },
-    {
         key: 'appsCrm.staffManagement',
         path: `${APP_PREFIX_PATH}/staffs`,
         component: lazy(() => import('@/views/crm/StaffManagement')),
         authority: [MANAGER, STAFF],
         meta: {
-            header: 'Staff Management',
+            header: 'Staffs',
             headerContainer: true,
         },
     },
@@ -39,7 +29,7 @@ const appsRoute: Routes = [
         component: lazy(() => import('@/views/crm/StaffEdit')),
         authority: [MANAGER, STAFF],
         meta: {
-            header: 'Staff Management',
+            header: 'Staffs',
             headerContainer: true,
         },
     },
@@ -49,7 +39,7 @@ const appsRoute: Routes = [
         component: lazy(() => import('@/views/crm/StaffAdd')),
         authority: [MANAGER, STAFF],
         meta: {
-            header: 'Staff Management',
+            header: 'Staffs',
             headerContainer: true,
         },
     },
@@ -58,6 +48,10 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/dashboard`,
         component: lazy(() => import('@/views/sales/SalesDashboard')),
         authority: [MANAGER],
+        meta: {
+            header: 'Dashboard',
+            headerContainer: true,
+        },
     },
     {
         key: 'appsSales.productList',
@@ -80,7 +74,7 @@ const appsRoute: Routes = [
         component: lazy(() => import('@/views/sales/ProductDetail')),
         authority: [MANAGER],
         meta: {
-            header: 'Detail Product',
+            header: 'Product Detail',
         },
     },
     {
@@ -97,6 +91,10 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/orders`,
         component: lazy(() => import('@/views/sales/OrderList')),
         authority: [STAFF],
+        meta: {
+            header: 'Orders',
+            headerContainer: true,
+        },
     },
     {
         key: 'appsSales.orderDetails',
@@ -123,6 +121,10 @@ const appsRoute: Routes = [
         path: `${APP_PREFIX_PATH}/reviews`,
         component: lazy(() => import('@/views/sales/ReviewList')),
         authority: [STAFF],
+        meta: {
+            header: 'Reviews',
+            headerContainer: true,
+        },
     },
     {
         key: 'appsSales.vouchers',
@@ -130,7 +132,7 @@ const appsRoute: Routes = [
         component: lazy(() => import('@/views/sales/VoucherList')),
         authority: [MANAGER],
         meta: {
-            header: 'Voucher Management',
+            header: 'Vouchers',
         },
     },
     {

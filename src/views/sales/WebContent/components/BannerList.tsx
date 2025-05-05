@@ -28,12 +28,6 @@ const BannerList: React.FC = () => {
     const [imageFile, setImageFile] = useState<File | null>(null)
     const [previewImage, setPreviewImage] = useState<string>('')
 
-    const positionOptions = [
-        { label: 'Home', value: 'home' },
-        { label: 'In Focus', value: 'infocus' },
-        { label: 'Product', value: 'product' },
-    ]
-
     const handleEdit = (record: Banner) => {
         setEditingBanner(record)
         form.setFieldsValue({
@@ -56,7 +50,6 @@ const BannerList: React.FC = () => {
     const handleUpdateBanner = async (values: any) => {
         if (editingBanner?.id) {
             const formData = new FormData()
-            formData.append('name', values.name)
             formData.append('position', values.position)
             
             if (imageFile) {
@@ -81,7 +74,6 @@ const BannerList: React.FC = () => {
             const file = info.file.originFileObj
             setImageFile(file)
             
-            // Create a preview URL
             const reader = new FileReader()
             reader.onload = (e) => {
                 setPreviewImage(e.target?.result as string)
@@ -157,29 +149,7 @@ const BannerList: React.FC = () => {
                     form={form}
                     layout="vertical"
                     onFinish={handleUpdateBanner}
-                >
-                    <Form.Item
-                        name="name"
-                        label="Banner Name"
-                        rules={[{ required: true, message: 'Please enter the banner name' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    
-                    <Form.Item
-                        name="position"
-                        label="Position"
-                        rules={[{ required: true, message: 'Please select the banner position' }]}
-                    >
-                        <Select>
-                            {positionOptions.map(option => (
-                                <Option key={option.value} value={option.value}>
-                                    {option.label}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-                    
+                >                    
                     <Form.Item
                         label="Banner Image"
                     >

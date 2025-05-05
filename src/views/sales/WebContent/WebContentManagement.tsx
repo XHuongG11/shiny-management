@@ -12,11 +12,9 @@ import BannerList from './components/BannerList'
 import PrivacyPolicyEditor from './components/PrivacyPolicyEditor'
 import { WebContentType } from '@/@types/webContent'
 import AdaptableCard from '@/components/shared/AdaptableCard'
-import WebContentTools from './components/WebContentTools'
 
 const { TabPane } = Tabs
 
-// Inject reducer for WebContent management
 injectReducer('webContent', reducer)
 
 const WebContentManagement = () => {
@@ -24,7 +22,6 @@ const WebContentManagement = () => {
     const { type, loading, error } = useAppSelector((state) => state.webContent.state)
     
     useEffect(() => {
-        // Fetch initial data
         dispatch(fetchBanners())
         dispatch(fetchPrivacyPolicy())
     }, [dispatch])
@@ -46,7 +43,6 @@ const WebContentManagement = () => {
         <AdaptableCard className="h-full" bodyClass="h-full">
             <div className="lg:flex items-center justify-between mb-4">
                 <h3 className="mb-4 lg:mb-0">Website Content Management</h3>
-                <WebContentTools />
             </div>
             <Tabs activeKey={type} onChange={handleTabChange}>
                 <TabPane tab="Banner Management" key="Banner">

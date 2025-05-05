@@ -18,7 +18,7 @@ import { FiTrash } from 'react-icons/fi'
 
 type FormFieldsName = {
     productSizes: {
-        size: number
+        size: string
         stock: number
         price: number
         discountPrice: number
@@ -32,7 +32,7 @@ type PricingFieldsProps = {
     errors: FormikErrors<FormFieldsName>
     values: {
         productSizes: {
-            size: number
+            size: string
             stock: number
             price: number
             discountPrice: number
@@ -220,7 +220,7 @@ const SizeFields = (props: PricingFieldsProps) => {
                                                                 form,
                                                             }: FieldProps) => {
                                                                 return (
-                                                                    <NumericFormatInput
+                                                                    <Input
                                                                         form={
                                                                             form
                                                                         }
@@ -228,17 +228,6 @@ const SizeFields = (props: PricingFieldsProps) => {
                                                                             field
                                                                         }
                                                                         placeholder="Size"
-                                                                        customInput={
-                                                                            NumberInput as ComponentType
-                                                                        }
-                                                                        onValueChange={(
-                                                                            e,
-                                                                        ) => {
-                                                                            form.setFieldValue(
-                                                                                field.name,
-                                                                                e.value,
-                                                                            )
-                                                                        }}
                                                                     />
                                                                 )
                                                             }}

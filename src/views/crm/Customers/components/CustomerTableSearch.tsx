@@ -53,7 +53,7 @@ const CustomerTableSearch = () => {
             ref={searchInput}
             className="max-w-md md:w-52 md:mb-0 mb-4"
             size="sm"
-            placeholder="Search Customer"
+            placeholder="Search customer"
             prefix={<HiOutlineSearch className="text-lg" />}
             value={searchValue}
             onChange={handleSearchChange}
