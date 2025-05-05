@@ -16,7 +16,6 @@ import {
 import cloneDeep from 'lodash/cloneDeep';
 import type { DataTableResetHandle, ColumnDef } from '@/components/shared/DataTable';
 import { Staff } from '@/@types/staff';
-import { t } from 'i18next';
 
 type StaffTableProps = {
     onEdit: (id: number) => void;
@@ -125,7 +124,8 @@ const StaffTable = ({ onEdit } : StaffTableProps) => {
                 cell: (props) => <StaffStatusColumn status={props.row.original.status as string} />,
             },
             {
-                header: '',
+                header: 'Action',
+                accessorKey: 'action',
                 id: 'action',
                 cell: (props) => {
                     const staff = props.row.original;

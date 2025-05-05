@@ -91,7 +91,7 @@ const StaffForm = ({staff, isEdit} : StaffFormProps) => {
                         {isEdit ? 'Staff updated successfully' : 'Staff created successfully'}
                     </Notification>
                 )
-                navigate(`${APP_PREFIX_PATH}/crm/staffs`)
+                navigate(`${APP_PREFIX_PATH}/staffs`)
             } else {
                 toast.push(
                     <Notification title="Error" type="danger">
@@ -129,7 +129,7 @@ const StaffForm = ({staff, isEdit} : StaffFormProps) => {
     };
 
     const handleDiscard = () => {
-        navigate(`${APP_PREFIX_PATH}/crm/staffs`);
+        navigate(`${APP_PREFIX_PATH}/staffs`);
     };
 
     return (

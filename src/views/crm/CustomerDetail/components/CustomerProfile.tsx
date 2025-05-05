@@ -19,7 +19,7 @@ import {
     useAppDispatch,
     Customer,
 } from '../store'
-import EditCustomerProfile from './EditCustomerProfile'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 
 type CustomerInfoFieldProps = {
     title?: string
@@ -60,7 +60,7 @@ const CustomerProfileAction = ({ id }: { id?: string }) => {
         if (id) {
             dispatch(deleteCustomer({ id }))
         }
-        navigate('/app/crm/customers')
+        navigate(`${APP_PREFIX_PATH}/customers`)
         toast.push(
             <Notification title={'Successfuly Deleted'} type="success">
                 Customer successfuly deleted
@@ -101,7 +101,6 @@ const CustomerProfileAction = ({ id }: { id?: string }) => {
                     action cannot be undone.
                 </p>
             </ConfirmDialog>
-            <EditCustomerProfile />
         </>
     )
 }

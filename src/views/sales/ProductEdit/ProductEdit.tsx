@@ -20,6 +20,7 @@ import ProductForm, {
     SetSubmitting,
 } from '@/views/sales/ProductForm'
 import isEmpty from 'lodash/isEmpty'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 
 injectReducer('salesProductEdit', reducer)
 
@@ -70,7 +71,7 @@ const ProductEdit = () => {
     }
 
     const handleDiscard = () => {
-        navigate('/app/sales/product-list')
+        navigate(`${APP_PREFIX_PATH}/products`)
     }
 
     const handleDelete = async (setDialogOpen: OnDeleteCallback) => {
@@ -111,7 +112,7 @@ const ProductEdit = () => {
                 placement: 'top-center',
             },
         )
-        navigate('/app/sales/product-list')
+        navigate(`${APP_PREFIX_PATH}/products`)
     }
 
     useEffect(() => {

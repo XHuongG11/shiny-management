@@ -51,7 +51,6 @@ function useAuth() {
                 dispatch(setUser(resp.data.data.user || defaultUser))
 
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
-                console.log('role user', resp.data?.data?.user?.role)
 
                 if (resp.data?.data?.user?.role === 'MANAGER') {
                     console.log('redirect role MANAGER')
@@ -65,7 +64,7 @@ function useAuth() {
                     navigate(
                         redirectUrl
                             ? redirectUrl
-                            : `${APP_PREFIX_PATH}/sales/order-list`,
+                            : `${APP_PREFIX_PATH}/orders`,
                     )
                 }
                 return {
@@ -98,18 +97,16 @@ function useAuth() {
                 }
                 const redirectUrl = query.get(REDIRECT_URL_KEY)
                 if (resp.data?.user?.role === 'MANAGER') {
-                    console.log('redirect role MANAGER')
                     navigate(
                         redirectUrl
                             ? redirectUrl
                             : appConfig.authenticatedEntryPath,
                     )
                 } else {
-                    console.log('redirect role STAFF')
                     navigate(
                         redirectUrl
                             ? redirectUrl
-                            : `${APP_PREFIX_PATH}/sales/order-list`,
+                            : `${APP_PREFIX_PATH}/orders`,
                     )
                 }
                 return {

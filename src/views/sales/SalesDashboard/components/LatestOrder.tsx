@@ -1,6 +1,7 @@
 import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import Table from '@/components/ui/Table'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 import useThemeClass from '@/utils/hooks/useThemeClass'
 import {
     createColumnHelper,
@@ -93,7 +94,7 @@ const OrderColumn = ({ row }: OrderColumnPros) => {
     const navigate = useNavigate()
 
     const onView = useCallback(() => {
-        navigate(`/app/sales/order-details/${row.id}`)
+        navigate(`${APP_PREFIX_PATH}/order-details/${row.id}`)
     }, [navigate, row])
 
     return (

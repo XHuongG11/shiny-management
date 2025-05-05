@@ -14,37 +14,6 @@ export async function apiGetAllCustomers<T extends Record<string, unknown>>(
 }
 
 
-export async function apiPutCrmCustomer<T, U extends Record<string, unknown>>(
-    data: U
-) {
-    return ApiService.fetchData<T>({
-        url: '/users/update',
-        method: 'put',
-        data,
-    })
-}
-
-export async function apiGetCrmCustomerDetails<
-    T,
-    U extends Record<string, unknown>
->(params: U) {
-    return ApiService.fetchData<T>({
-        url: `/users/customers/${params.id}`,
-        method: 'get',
-    })
-}
-
-export async function apiDeleteCrmCustomer<
-    T,
-    U extends Record<string, unknown>
->(data: U) {
-    return ApiService.fetchData<T>({
-        url: '/users/customer/delete-my-account',
-        method: 'post',
-        data,
-    })
-}
-
 export async function apiDeactivateCustomer<T>(id: number) {
     return ApiService.fetchData<T>({
         url: `/users/deactivate-customer/${id}`,

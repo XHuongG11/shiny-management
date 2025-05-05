@@ -1,30 +1,25 @@
-export enum EUserStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
+export type Customer = {
+    id: number;
+    fullName: string;
+    email: string;
+    phone: string;
+    username: string;
+    joinAt: string;
+    dob: string;
+    gender: string;
+    status: string;
+    membershipRank: string;
+    totalSpent: number;
+    isSubscribedForNews: boolean;
 }
 
-export interface Customer {
-    id: number
-    fullName: string
-    email: string
-    phone?: string
-    username?: string
-    dob?: string | null
-    gender?: 'MALE' | 'FEMALE' | 'OTHER'
-    status: EUserStatus
-    membershipRank?: string
-    totalSpent?: number
-    isSubscribedForNews?: boolean
-    role?: string
-}
-
-export interface CustomerListResponse {
-    code: string
-    message: string
+export type CustomerListResponse = {
+    code: string;
+    message: string;
     data: {
-        content: Customer[]
-        totalPages: number
-        totalElements: number
-        number: number
+        content: Customer[];
+        totalPages: number;
+        totalElements: number;
+        number: number;
     }
 }

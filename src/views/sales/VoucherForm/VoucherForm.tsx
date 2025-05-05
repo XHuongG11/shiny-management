@@ -266,7 +266,7 @@ const VoucherForm = ({ data, isEdit }: VoucherFormProps) => {
                     </Notification>
                 )
 
-                navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
+                navigate(`${APP_PREFIX_PATH}/vouchers`)
             } else {
                 toast.push(
                     <Notification title="Error" type="danger">
@@ -305,7 +305,7 @@ const VoucherForm = ({ data, isEdit }: VoucherFormProps) => {
     }
 
     const handleCancel = () => {
-        navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
+        navigate(`${APP_PREFIX_PATH}/vouchers`)
     }
 
     const renderApplicabilitySelector = (

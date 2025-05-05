@@ -24,7 +24,7 @@ const StaffEdit = () => {
                             Invalid staff ID
                         </Notification>
                     )
-                    navigate(`${APP_PREFIX_PATH}/crm/staffs`)
+                    navigate(`${APP_PREFIX_PATH}/staffs`)
                     return
                 }
                 
@@ -38,7 +38,7 @@ const StaffEdit = () => {
                             {response.data?.message || 'Failed to load staff'}
                         </Notification>
                     )
-                    navigate(`${APP_PREFIX_PATH}/crm/staffs`)
+                    navigate(`${APP_PREFIX_PATH}/staffs`)
                 }
             } catch (error: any) {
                 toast.push(
@@ -46,7 +46,7 @@ const StaffEdit = () => {
                         {error.response?.data?.message || 'Failed to load staff'}
                     </Notification>
                 )
-                navigate(`${APP_PREFIX_PATH}/crm/staffs`)
+                navigate(`${APP_PREFIX_PATH}/staffs`)
             } finally {
                 setLoading(false)
             }

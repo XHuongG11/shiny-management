@@ -42,7 +42,6 @@ const ProductTableSearch = () => {
 
     const onEdit = (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value
-        console.log('value', value)
         setSearchValue(value)
         debounceFn(e.target.value)
     }

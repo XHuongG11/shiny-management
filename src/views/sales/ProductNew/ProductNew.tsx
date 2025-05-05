@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { apiAddProductImage, apiCreateProduct } from '@/services/SalesService'
 import { ProductResponse } from '@/@types/product'
 import { ApiResponse } from '@/@types/auth'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 
 const ProductNew = () => {
     const navigate = useNavigate()
@@ -88,12 +89,12 @@ const ProductNew = () => {
                     placement: 'top-center',
                 },
             )
-            navigate('/app/sales/product-list')
+            navigate(`${APP_PREFIX_PATH}/products`)
         }
     }
 
     const handleDiscard = () => {
-        navigate('/app/sales/product-list')
+        navigate(`${APP_PREFIX_PATH}/products`)
     }
 
     return (

@@ -24,7 +24,7 @@ const VoucherEdit = () => {
                             Invalid voucher ID
                         </Notification>
                     )
-                    navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
+                    navigate(`${APP_PREFIX_PATH}/vouchers`)
                     return
                 }
                 
@@ -38,7 +38,7 @@ const VoucherEdit = () => {
                             {response.data?.message || 'Failed to load voucher'}
                         </Notification>
                     )
-                    navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
+                    navigate(`${APP_PREFIX_PATH}/vouchers`)
                 }
             } catch (error: any) {
                 toast.push(
@@ -46,7 +46,7 @@ const VoucherEdit = () => {
                         {error.response?.data?.message || 'Failed to load voucher'}
                     </Notification>
                 )
-                navigate(`${APP_PREFIX_PATH}/sales/vouchers`)
+                navigate(`${APP_PREFIX_PATH}/vouchers`)
             } finally {
                 setLoading(false)
             }

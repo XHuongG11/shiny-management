@@ -13,6 +13,7 @@ import { useLocation, useNavigate } from 'react-router-dom'; // Add useNavigate
 import isEmpty from 'lodash/isEmpty';
 import dayjs from 'dayjs';
 import { OrderResponse, OrderItem } from '@/@types/order';
+import { APP_PREFIX_PATH } from '@/constants/route.constant';
 
 const statusDisplayMap: Record<
     string,
@@ -115,11 +116,9 @@ const OrderDetails = () => {
             setLoading(true);
             try {
                 const response = await getOrderById<OrderResponse>(id);
-                console.log('Fetched order details:', response.data);
                 setData(response.data.data || null);
                 setError(null);
             } catch (error: any) {
-                console.error('Failed to fetch order details:', error);
                 setData(null);
                 setError(error.response?.data?.message || 'Failed to fetch order details');
             } finally {
@@ -237,7 +236,7 @@ const OrderDetails = () => {
     const handleProcessReturn = () => {
         if (!data?.id) return;
         // Navigate to the return processing page with the order ID
-        navigate(`/app/sales/order-details/return/${data.id}`);
+        navigate(`${APP_PREFIX_PATH}/order-details/return/${data.id}`);
     };
 
     console.log('Current data state:', data);

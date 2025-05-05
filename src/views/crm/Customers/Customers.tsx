@@ -1,22 +1,23 @@
 import AdaptableCard from '@/components/shared/AdaptableCard'
 import CustomersTable from './components/CustomersTable'
-import CustomersTableTools from './components/CustomersTableTools'
-import CustomerStatistic from './components/CustomerStatistic'
 import { injectReducer } from '@/store'
 import reducer from './store'
+import CustomerBan from './components/CustomerBan'
+import CustomerTableTools from './components/CustomerTableTools'
 
 injectReducer('crmCustomers', reducer)
 
 const Customers = () => {
     return (
-        <>
-            {/* <CustomerStatistic /> */}
             <AdaptableCard className="h-full" bodyClass="h-full">
-                <CustomersTableTools />
+                <div className="lg:flex items-center justify-between mb-4">
+                    <h3 className="mb-4 lg:mb-0">Customers</h3>
+                    <CustomerTableTools />
+                </div>
                 <CustomersTable />
+                <CustomerBan />
             </AdaptableCard>
-        </>
-    )
-}
+    );
+};
 
 export default Customers

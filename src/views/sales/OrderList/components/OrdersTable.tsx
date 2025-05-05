@@ -21,6 +21,7 @@ import type {
     DataTableResetHandle,
     ColumnDef,
 } from '@/components/shared/DataTable';
+import { APP_PREFIX_PATH } from '@/constants/route.constant';
 
 type Order = {
     id: string;
@@ -109,12 +110,7 @@ const ActionColumn = ({ row }: { row: Order }) => {
     const navigate = useNavigate();
 
     const onView = useCallback(() => {
-        if (row.id) {
-            console.log('Navigating to:', `/app/sales/order-details/${row.id}`);
-            navigate(`/app/sales/order-details/${row.id}`);
-        } else {
-            console.error('Order ID is undefined or invalid');
-        }
+        navigate(`${APP_PREFIX_PATH}/order-details/${row.id}`);
     }, [navigate, row]);
 
     return (
@@ -191,7 +187,7 @@ const OrdersTable = () => {
                         <span
                             className="cursor-pointer select-none font-semibold hover:text-blue-600"
                             onClick={() =>
-                                navigate(`/app/sales/order-details/${id}`)
+                                navigate(`${APP_PREFIX_PATH}/order-details/${id}`)
                             }
                         >
                             #{id}

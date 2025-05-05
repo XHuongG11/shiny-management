@@ -14,11 +14,11 @@ const StaffManagement = () => {
     const navigate = useNavigate();
 
     const handleAddStaff = () => {
-        navigate(`${APP_PREFIX_PATH}/crm/staffs/add`);
+        navigate(`${APP_PREFIX_PATH}/staffs/add`);
     };
 
     const handleEditStaff = (staffId: number) => {
-        navigate(`${APP_PREFIX_PATH}/crm/staffs/${staffId}`);
+        navigate(`${APP_PREFIX_PATH}/staffs/${staffId}`);
     };
 
     return (
