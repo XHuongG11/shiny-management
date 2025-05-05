@@ -16,7 +16,6 @@ import cloneDeep from 'lodash/cloneDeep'
 import dayjs from 'dayjs'
 import type {
     DataTableResetHandle,
-    OnSortParam,
     ColumnDef,
 } from '@/components/shared/DataTable'
 
@@ -135,7 +134,7 @@ const OrdersTable = () => {
     const navigate = useNavigate()
 
     const { page, size, sort, title, totalPages } = useAppSelector(
-        (state) => state.salesOrderList.data.tableData
+        (state) => state.salesOrderList.data.tableData,
     )
     const loading = useAppSelector((state) => state.salesOrderList.data.loading)
     const data = useAppSelector((state) => state.salesOrderList.data.orderList)
@@ -152,7 +151,7 @@ const OrdersTable = () => {
 
     const tableData = useMemo(
         () => ({ page, size, sort, title, total: totalPages }),
-        [page, size, sort, title, totalPages]
+        [page, size, sort, title, totalPages],
     )
 
     const columns: ColumnDef<Order>[] = useMemo(
@@ -214,10 +213,13 @@ const OrdersTable = () => {
                 accessorKey: 'status',
                 cell: (props) => {
                     const { status } = props.row.original
-                    const statusKey = status in statusDisplayMap ? status : 'UNKNOWN'
+                    const statusKey =
+                        status in statusDisplayMap ? status : 'UNKNOWN'
                     return (
                         <div className="flex items-center">
-                            <Badge className={statusDisplayMap[statusKey].dotClass} />
+                            <Badge
+                                className={statusDisplayMap[statusKey].dotClass}
+                            />
                             <span
                                 className={`ml-2 rtl:mr-2 capitalize font-semibold ${statusDisplayMap[statusKey].textClass}`}
                             >
@@ -236,7 +238,7 @@ const OrdersTable = () => {
                         <NumericFormat
                             displayType="text"
                             value={(Math.round(totalPrice * 100) / 100).toFixed(
-                                2
+                                2,
                             )}
                             suffix={' VNĐ'}
                             thousandSeparator={true}
@@ -250,7 +252,7 @@ const OrdersTable = () => {
                 cell: (props) => <ActionColumn row={props.row.original} />,
             },
         ],
-        [navigate]
+        [navigate],
     )
 
     const onPaginationChange = (page: number) => {

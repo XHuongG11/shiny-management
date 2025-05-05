@@ -49,6 +49,7 @@ type DataTableProps<T> = {
         pageIndex: number
         pageSize: number
     }
+    isPage?: boolean
 }
 
 type CheckBoxChangeEvent = ChangeEvent<HTMLInputElement>
@@ -123,6 +124,7 @@ function _DataTable<T>(
             pageIndex: 1,
             pageSize: 10,
         },
+        isPage = true,
     } = props
 
     const { pageSize, pageIndex, total } = pagingData
@@ -321,26 +323,30 @@ function _DataTable<T>(
                     </TBody>
                 )}
             </Table>
-            <div className="flex items-center justify-between mt-4">
-                <Pagination
-                    pageSize={pageSize}
-                    currentPage={pageIndex}
-                    total={total}
-                    onChange={handlePaginationChange}
-                />
-                <div style={{ minWidth: 130 }}>
-                    <Select
-                        size="sm"
-                        menuPlacement="top"
-                        isSearchable={false}
-                        value={pageSizeOption.filter(
-                            (option) => option.value === pageSize,
-                        )}
-                        options={pageSizeOption}
-                        onChange={(option) => handleSelectChange(option?.value)}
+            {isPage && (
+                <div className="flex items-center justify-between mt-4">
+                    <Pagination
+                        pageSize={pageSize}
+                        currentPage={pageIndex}
+                        total={total}
+                        onChange={handlePaginationChange}
                     />
+                    <div style={{ minWidth: 130 }}>
+                        <Select
+                            size="sm"
+                            menuPlacement="top"
+                            isSearchable={false}
+                            value={pageSizeOption.filter(
+                                (option) => option.value === pageSize,
+                            )}
+                            options={pageSizeOption}
+                            onChange={(option) =>
+                                handleSelectChange(option?.value)
+                            }
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
         </Loading>
     )
 }
