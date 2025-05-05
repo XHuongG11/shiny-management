@@ -62,7 +62,7 @@ export const deactivateCustomer = createAsyncThunk(
     SLICE_NAME + '/deactivateCustomer',
     async (id: number) => {
         const response = await apiDeactivateCustomer<boolean>(id)
-        return response.data
+        return { id, success: response.data }
     }
 )
 
@@ -70,13 +70,14 @@ export const activateCustomer = createAsyncThunk(
     SLICE_NAME + '/activateCustomer',
     async (id: number) => {
         const response = await apiActivateCustomer<boolean>(id)
-        return response.data
+        return { id, success: response.data }
     }
 )
 
 export const searchCustomers = createAsyncThunk(
     SLICE_NAME + '/searchCustomers',
     async (data: { name: string; page?: number; size?: number }) => {
+        console.log('searchCustomers params:', data)
         const response = await apiSearchCustomers<CustomerListResponse>(data)
         console.log('searchCustomers raw response:', response)
         return response.data
@@ -138,16 +139,19 @@ const customersSlice = createSlice({
                 console.log('getCustomers response:', action.payload)
                 state.customerList = action.payload.data.content || []
                 state.tableData.totalPages = action.payload.data.totalPages || 0
-                state.tableData.page = action.payload.data.number + 1 || 1
+                state.tableData.page = (action.payload.data.number || 0) + 1
                 state.loading = false
+                console.log('Updated state after getCustomers:', state)
             })
             .addCase(getCustomers.pending, (state) => {
                 state.loading = true
+                console.log('getCustomers pending, state:', state)
             })
             .addCase(getCustomers.rejected, (state, action) => {
                 console.log('getCustomers error:', action.error)
                 state.customerList = []
                 state.loading = false
+                console.log('Updated state after getCustomers error:', state)
             })
             .addCase(getCustomerDetails.fulfilled, (state, action) => {
                 state.selectedCustomer = action.payload
@@ -166,25 +170,24 @@ const customersSlice = createSlice({
                 }
             })
             .addCase(deactivateCustomer.fulfilled, (state, action) => {
-                if (state.selectedCustomer?.id) {
-                    state.customerList = state.customerList.map(customer =>
-                        customer.id === state.selectedCustomer?.id ? { ...customer, status: EUserStatus.INACTIVE } : customer
-                    )
-                }
+                const { id } = action.payload
+                state.customerList = state.customerList.map(customer =>
+                    customer.id === id ? { ...customer, status: EUserStatus.INACTIVE } : customer
+                )
             })
             .addCase(activateCustomer.fulfilled, (state, action) => {
-                if (state.selectedCustomer?.id) {
-                    state.customerList = state.customerList.map(customer =>
-                        customer.id === state.selectedCustomer?.id ? { ...customer, status: EUserStatus.ACTIVE } : customer
-                    )
-                }
+                const { id } = action.payload
+                state.customerList = state.customerList.map(customer =>
+                    customer.id === id ? { ...customer, status: EUserStatus.ACTIVE } : customer
+                )
             })
             .addCase(searchCustomers.fulfilled, (state, action) => {
                 console.log('searchCustomers response:', action.payload)
                 state.customerList = action.payload.data.content || []
                 state.tableData.totalPages = action.payload.data.totalPages || 0
-                state.tableData.page = action.payload.data.number + 1 || 1
+                state.tableData.page = (action.payload.data.number || 0) + 1
                 state.loading = false
+                console.log('Updated state after searchCustomers:', state)
             })
             .addCase(searchCustomers.pending, (state) => {
                 state.loading = true

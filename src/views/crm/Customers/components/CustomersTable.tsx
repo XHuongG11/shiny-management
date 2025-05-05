@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
 import DataTable from '@/components/shared/DataTable'
 import {
     getCustomers,
+    searchCustomers,
     setTableData,
     setSelectedCustomer,
     setDrawerOpen,
     useAppDispatch,
     useAppSelector,
+    deactivateCustomer,
+    activateCustomer,
 } from '../store'
 import useThemeClass from '@/utils/hooks/useThemeClass'
 import CustomerEditDialog from './CustomerEditDialog'
@@ -21,6 +24,7 @@ import type {
     ColumnDef,
 } from '@/components/shared/DataTable'
 import { Customer, EUserStatus } from '@/@types/customer'
+import { HiOutlineEye, HiOutlineLockClosed } from 'react-icons/hi'
 
 const statusColor: Record<string, string> = {
     [EUserStatus.ACTIVE]: 'bg-emerald-500',
@@ -36,12 +40,51 @@ const ActionColumn = ({ row }: { row: Customer }) => {
         dispatch(setSelectedCustomer(row))
     }
 
+    const handleLockToggle = () => {
+        console.log('Row status:', row.status, 'Expected ACTIVE:', EUserStatus.ACTIVE)
+        const isActive = row.status === EUserStatus.ACTIVE
+        console.log('Is active:', isActive)
+        const confirmationMessage = isActive
+            ? 'Bạn có muốn khóa tài khoản này không?'
+            : 'Bạn có muốn mở khóa tài khoản này không?'
+        if (window.confirm(confirmationMessage)) {
+            if (isActive) {
+                dispatch(deactivateCustomer(row.id))
+                    .unwrap()
+                    .then((response) => {
+                        console.log('Tài khoản đã được khóa:', row.id, 'Response:', response)
+                    })
+                    .catch((error) => {
+                        console.error('Lỗi khi khóa tài khoản:', error)
+                    })
+            } else {
+                dispatch(activateCustomer(row.id))
+                    .unwrap()
+                    .then((response) => {
+                        console.log('Tài khoản đã được mở khóa:', row.id, 'Response:', response)
+                    })
+                    .catch((error) => {
+                        console.error('Lỗi khi mở khóa tài khoản:', error)
+                    })
+            }
+        }
+    }
+
     return (
-        <div
-            className={`${textTheme} cursor-pointer select-none font-semibold`}
-            onClick={onDetail}
-        >
-            Detail
+        <div className="flex space-x-2 rtl:space-x-reverse">
+            <div
+                className={`${textTheme} cursor-pointer select-none hover:text-red-500`}
+                onClick={onDetail}
+            >
+                <HiOutlineEye/>
+            </div>
+            <div
+                className={`${textTheme} cursor-pointer select-none hover:text-red-500 ${row.status === EUserStatus.ACTIVE ? 'text-blue-500' : 'text-gray-500'}`}
+                onClick={handleLockToggle}
+                title={row.status === EUserStatus.ACTIVE ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
+            >
+                <HiOutlineLockClosed />
+            </div>
         </div>
     )
 }
@@ -64,8 +107,8 @@ const NameColumn = ({ row }: { row: Customer }) => {
 
 const CustomersTable = () => {
     const tableRef = useRef<DataTableResetHandle>(null)
-
     const dispatch = useAppDispatch()
+    const [searchTrigger, setSearchTrigger] = useState(0)
 
     const { page, size, sort, title, totalPages } = useAppSelector(
         (state) => state.crmCustomers.data.tableData
@@ -80,14 +123,26 @@ const CustomersTable = () => {
     )
 
     useEffect(() => {
-        console.log('Fetching customers with params:', { page, size, title, sort })
-        fetchData()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [page, size, sort, title])
+        console.log('Component mounted, dispatching getCustomers')
+        dispatch(getCustomers({ page: page, size: 10 }))
+    }, [dispatch, page])
 
-    const fetchData = () => {
-        dispatch(getCustomers({ page, size }))
-    }
+    // Trigger search when title changes
+    useEffect(() => {
+        console.log('Title changed to:', title, 'Triggering search:', searchTrigger)
+        setSearchTrigger((prev) => prev + 1)
+    }, [title])
+
+    useEffect(() => {
+        console.log('Fetching customers with params:', { page, size, title, sort })
+        if (title && title.trim()) {
+            console.log('Searching customers with name:', title, 'Trigger:', searchTrigger)
+            dispatch(searchCustomers({ name: title, page: page, size }))
+        } else {
+            console.log('Fetching all customers')
+            dispatch(getCustomers({ page: page, size }))
+        }
+    }, [dispatch, page, size, sort, searchTrigger])
 
     const tableData = useMemo(
         () => ({ page, size, sort, title, totalPages }),
@@ -163,7 +218,7 @@ const CustomersTable = () => {
         dispatch(setTableData(newTableData))
     }
 
-    console.log('CustomersTable state:', { data, tableData, loading })
+    console.log('CustomersTable state - data:', data)
 
     return (
         <>
@@ -183,7 +238,9 @@ const CustomersTable = () => {
                 onSelectChange={onSelectChange}
                 onSort={onSort}
             />
-            {data && data.length === 0 && <h5>Không tìm thấy khách hàng phù hợp.</h5>}
+            {data && data.length === 0 && !loading && (
+                <h5>Không tìm thấy khách hàng phù hợp với "{title}".</h5>
+            )}
             <CustomerEditDialog />
         </>
     )
