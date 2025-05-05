@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiGetAllStaffs, apiSearchStaffs, apiActivateStaff, apiDeactivateStaff } from '@/services/StaffService';
+import { apiGetAllStaffs, apiSearchStaffs, apiActivateStaff, apiDeactivateStaff, apiDeleteStaff } from '@/services/StaffService';
 import { Staff, StaffListResponse } from '@/@types/staff';
 import { TableQueries } from '@/@types/common';
 import { ApiResponse } from '@/@types/auth';
@@ -69,7 +69,7 @@ export const unbanStaff = createAsyncThunk(
 export const deleteStaff = createAsyncThunk(
     SLICE_NAME + '/deleteStaff', 
     async (id: number) => {
-    const response = await apiDeactivateStaff(id) as unknown as AxiosResponse<ApiResponse<Staff>>;
+    const response = await apiDeleteStaff(id) as unknown as AxiosResponse<ApiResponse<Staff>>;
     if (response.data.code === "200") {
         return id;
     }
