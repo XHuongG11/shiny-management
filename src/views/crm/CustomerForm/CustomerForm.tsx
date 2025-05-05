@@ -39,7 +39,8 @@ export type CustomerProps = Partial<
 
 type CustomerFormProps = {
     customer: CustomerProps
-    onFormSubmit: (values: FormModel) => void
+    onFormSubmit?: (values: FormModel) => void
+    readOnly?: boolean
 }
 
 dayjs.extend(customParseFormat)
@@ -64,32 +65,34 @@ const validationSchema = Yup.object().shape({
 const { TabNav, TabList, TabContent } = Tabs
 
 const CustomerForm = forwardRef<FormikRef, CustomerFormProps>((props, ref) => {
-    const { customer, onFormSubmit } = props
+    const { customer, onFormSubmit, readOnly = false } = props
 
     return (
         <Formik<FormModel>
             innerRef={ref}
             initialValues={{
-                name: customer.name || '',
+                name: customer.name || customer.fullName || '',
                 email: customer.email || '',
-                img: customer.img || '',
+                img: customer.img || customer.avatar || '',
                 location: customer?.personalInfo?.location || '',
                 title: customer?.personalInfo?.title || '',
-                phoneNumber: customer?.personalInfo?.phoneNumber || '',
-                birthday: (customer?.personalInfo?.birthday &&
-                    dayjs(
-                        customer.personalInfo.birthday,
-                        'DD/MM/YYYY'
-                    ).toDate()) as Date,
+                phoneNumber: customer?.personalInfo?.phoneNumber || customer.phone || '',
+                birthday: (customer?.personalInfo?.birthday
+                    ? dayjs(customer.personalInfo.birthday, 'DD/MM/YYYY').toDate()
+                    : customer.dob
+                    ? dayjs(customer.dob).toDate()
+                    : undefined) as Date,
                 facebook: customer?.personalInfo?.facebook || '',
                 twitter: customer?.personalInfo?.twitter || '',
                 pinterest: customer?.personalInfo?.pinterest || '',
                 linkedIn: customer?.personalInfo?.linkedIn || '',
             }}
-            validationSchema={validationSchema}
+            validationSchema={readOnly ? undefined : validationSchema}
             onSubmit={(values, { setSubmitting }) => {
-                onFormSubmit?.(values)
-                setSubmitting(false)
+                if (!readOnly) {
+                    onFormSubmit?.(values)
+                    setSubmitting(false)
+                }
             }}
         >
             {({ touched, errors }) => (
@@ -107,12 +110,15 @@ const CustomerForm = forwardRef<FormikRef, CustomerFormProps>((props, ref) => {
                                     <PersonalInfoForm
                                         touched={touched}
                                         errors={errors}
+                                        readOnly={readOnly}
+                                        customer={customer}
                                     />
                                 </TabContent>
                                 <TabContent value="social">
                                     <SocialLinkForm
                                         touched={touched}
                                         errors={errors}
+                                        readOnly={readOnly}
                                     />
                                 </TabContent>
                             </div>

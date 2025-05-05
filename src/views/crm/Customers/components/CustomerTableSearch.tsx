@@ -29,7 +29,7 @@ const CustomerTableSearch = forwardRef<
             ref={ref}
             className="max-w-md md:w-52 mb-4"
             size="sm"
-            placeholder="Search"
+            placeholder="Search by Name"
             prefix={<HiOutlineSearch className="text-lg" />}
             onChange={handleInputChange}
         />

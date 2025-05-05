@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { apiGetCrmMails, apiGetCrmMail } from '@/services/CrmService'
+import { apiGetCrmMails, apiGetCrmMail } from '@/services/CustomerService'
 
 export type Category = {
     category: string

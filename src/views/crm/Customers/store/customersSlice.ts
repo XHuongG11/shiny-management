@@ -1,136 +1,101 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import {
-    apiGetCrmCustomers,
-    apPutCrmCustomer,
-    apiGetCrmCustomersStatistic,
-} from '@/services/CrmService'
+    apiGetAllCustomers,
+    apiPutCrmCustomer,
+    apiGetCrmCustomerDetails,
+    apiDeleteCrmCustomer,
+    apiDeactivateCustomer,
+    apiActivateCustomer,
+    apiSearchCustomers,
+} from '@/services/CustomerService'
 import type { TableQueries } from '@/@types/common'
-
-type PersonalInfo = {
-    location: string
-    title: string
-    birthday: string
-    phoneNumber: string
-    facebook: string
-    twitter: string
-    pinterest: string
-    linkedIn: string
-}
-
-type OrderHistory = {
-    id: string
-    item: string
-    status: string
-    amount: number
-    date: number
-}
-
-type PaymentMethod = {
-    cardHolderName: string
-    cardType: string
-    expMonth: string
-    expYear: string
-    last4Number: string
-    primary: boolean
-}
-
-type Subscription = {
-    plan: string
-    status: string
-    billing: string
-    nextPaymentDate: number
-    amount: number
-}
-
-export type Customer = {
-    id: string
-    name: string
-    email: string
-    img: string
-    role: string
-    lastOnline: number
-    status: string
-    personalInfo: PersonalInfo
-    orderHistory: OrderHistory[]
-    paymentMethod: PaymentMethod[]
-    subscription: Subscription[]
-}
-
-type Statistic = {
-    value: number
-    growShrink: number
-}
-
-type CustomerStatistic = {
-    totalCustomers: Statistic
-    activeCustomers: Statistic
-    newCustomers: Statistic
-}
-
-type Filter = {
-    status: string
-}
-
-type GetCrmCustomersResponse = {
-    data: Customer[]
-    total: number
-}
-
-type GetCrmCustomersStatisticResponse = CustomerStatistic
+import { Customer, CustomerListResponse, EUserStatus } from '@/@types/customer'
 
 export type CustomersState = {
     loading: boolean
     statisticLoading: boolean
     customerList: Customer[]
-    statisticData: Partial<CustomerStatistic>
+    statisticData: Partial<any>
     tableData: TableQueries
-    filterData: Filter
+    filterData: { status: string }
     drawerOpen: boolean
     selectedCustomer: Partial<Customer>
 }
 
 export const SLICE_NAME = 'crmCustomers'
 
-export const getCustomerStatistic = createAsyncThunk(
-    'crmCustomers/data/getCustomerStatistic',
-    async () => {
-        const response =
-            await apiGetCrmCustomersStatistic<GetCrmCustomersStatisticResponse>()
+export const getCustomers = createAsyncThunk(
+    SLICE_NAME + '/getCustomers',
+    async (data: { page?: number; size?: number }) => {
+        console.log('getCustomers params:', data)
+        const response = await apiGetAllCustomers<CustomerListResponse>(data)
+        console.log('getCustomers raw response:', response)
         return response.data
     }
 )
 
-export const getCustomers = createAsyncThunk(
-    'crmCustomers/data/getCustomers',
-    async (data: TableQueries & { filterData?: Filter }) => {
-        const response = await apiGetCrmCustomers<
-            GetCrmCustomersResponse,
-            TableQueries
-        >(data)
+export const getCustomerDetails = createAsyncThunk(
+    SLICE_NAME + '/getCustomerDetails',
+    async (params: { id: string }) => {
+        const response = await apiGetCrmCustomerDetails<Customer, { id: string }>(params)
         return response.data
     }
 )
 
 export const putCustomer = createAsyncThunk(
-    'crmCustomers/data/putCustomer',
+    SLICE_NAME + '/putCustomer',
     async (data: Customer) => {
-        const response = await apPutCrmCustomer(data)
+        const response = await apiPutCrmCustomer<Customer, Customer>(data)
+        return response.data
+    }
+)
+
+export const deleteCustomer = createAsyncThunk(
+    SLICE_NAME + '/deleteCustomer',
+    async (data: { id: string }) => {
+        const response = await apiDeleteCrmCustomer<boolean, { id: string }>(data)
+        return response.data
+    }
+)
+
+export const deactivateCustomer = createAsyncThunk(
+    SLICE_NAME + '/deactivateCustomer',
+    async (id: number) => {
+        const response = await apiDeactivateCustomer<boolean>(id)
+        return { id, success: response.data }
+    }
+)
+
+export const activateCustomer = createAsyncThunk(
+    SLICE_NAME + '/activateCustomer',
+    async (id: number) => {
+        const response = await apiActivateCustomer<boolean>(id)
+        return { id, success: response.data }
+    }
+)
+
+export const searchCustomers = createAsyncThunk(
+    SLICE_NAME + '/searchCustomers',
+    async (data: { name: string; page?: number; size?: number }) => {
+        console.log('searchCustomers params:', data)
+        const response = await apiSearchCustomers<CustomerListResponse>(data)
+        console.log('searchCustomers raw response:', response)
         return response.data
     }
 )
 
 export const initialTableData: TableQueries = {
-    total: 0,
-    pageIndex: 1,
-    pageSize: 10,
-    query: '',
+    totalPages: 0,
+    page: 1,
+    size: 10,
+    title: '',
     sort: {
         order: '',
         key: '',
     },
 }
 
-export const initialFilterData = {
+const initialFilterData = {
     status: '',
 }
 
@@ -171,19 +136,66 @@ const customersSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(getCustomers.fulfilled, (state, action) => {
-                state.customerList = action.payload.data
-                state.tableData.total = action.payload.total
+                console.log('getCustomers response:', action.payload)
+                state.customerList = action.payload.data.content || []
+                state.tableData.totalPages = action.payload.data.totalPages || 0
+                state.tableData.page = (action.payload.data.number || 0) + 1
                 state.loading = false
+                console.log('Updated state after getCustomers:', state)
             })
             .addCase(getCustomers.pending, (state) => {
                 state.loading = true
+                console.log('getCustomers pending, state:', state)
             })
-            .addCase(getCustomerStatistic.fulfilled, (state, action) => {
-                state.statisticData = action.payload
-                state.statisticLoading = false
+            .addCase(getCustomers.rejected, (state, action) => {
+                console.log('getCustomers error:', action.error)
+                state.customerList = []
+                state.loading = false
+                console.log('Updated state after getCustomers error:', state)
             })
-            .addCase(getCustomerStatistic.pending, (state) => {
-                state.statisticLoading = true
+            .addCase(getCustomerDetails.fulfilled, (state, action) => {
+                state.selectedCustomer = action.payload
+            })
+            .addCase(putCustomer.fulfilled, (state, action) => {
+                const updatedCustomer = action.payload
+                state.customerList = state.customerList.map(customer =>
+                    customer.id === updatedCustomer.id ? updatedCustomer : customer
+                )
+                state.selectedCustomer = updatedCustomer
+            })
+            .addCase(deleteCustomer.fulfilled, (state, action) => {
+                if (state.selectedCustomer?.id) {
+                    state.customerList = state.customerList.filter(customer => customer.id !== state.selectedCustomer?.id)
+                    state.selectedCustomer = {}
+                }
+            })
+            .addCase(deactivateCustomer.fulfilled, (state, action) => {
+                const { id } = action.payload
+                state.customerList = state.customerList.map(customer =>
+                    customer.id === id ? { ...customer, status: EUserStatus.INACTIVE } : customer
+                )
+            })
+            .addCase(activateCustomer.fulfilled, (state, action) => {
+                const { id } = action.payload
+                state.customerList = state.customerList.map(customer =>
+                    customer.id === id ? { ...customer, status: EUserStatus.ACTIVE } : customer
+                )
+            })
+            .addCase(searchCustomers.fulfilled, (state, action) => {
+                console.log('searchCustomers response:', action.payload)
+                state.customerList = action.payload.data.content || []
+                state.tableData.totalPages = action.payload.data.totalPages || 0
+                state.tableData.page = (action.payload.data.number || 0) + 1
+                state.loading = false
+                console.log('Updated state after searchCustomers:', state)
+            })
+            .addCase(searchCustomers.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(searchCustomers.rejected, (state, action) => {
+                console.log('searchCustomers error:', action.error)
+                state.customerList = []
+                state.loading = false
             })
     },
 })

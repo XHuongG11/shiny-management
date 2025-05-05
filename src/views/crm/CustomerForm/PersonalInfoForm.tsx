@@ -1,7 +1,4 @@
-import DatePicker from '@/components/ui/DatePicker'
-import Input from '@/components/ui/Input'
 import Avatar from '@/components/ui/Avatar'
-import Upload from '@/components/ui/Upload'
 import { FormItem } from '@/components/ui/Form'
 import {
     HiUserCircle,
@@ -10,8 +7,12 @@ import {
     HiPhone,
     HiCake,
     HiOutlineUser,
+    HiTag,
+    HiCurrencyDollar,
+    HiCheckCircle,
 } from 'react-icons/hi'
-import { Field, FieldProps, FormikErrors, FormikTouched } from 'formik'
+import { FormikErrors, FormikTouched } from 'formik'
+import dayjs from 'dayjs'
 
 type FormFieldsName = {
     upload: string
@@ -26,10 +27,100 @@ type FormFieldsName = {
 type PersonalInfoFormProps = {
     touched: FormikTouched<FormFieldsName>
     errors: FormikErrors<FormFieldsName>
+    readOnly?: boolean
+    customer: any
 }
 
 const PersonalInfoForm = (props: PersonalInfoFormProps) => {
-    const { touched, errors } = props
+    const { touched, errors, readOnly, customer } = props
+
+    if (readOnly) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormItem label="Avatar">
+                    <Avatar
+                        className="border-2 border-white dark:border-gray-800 shadow-lg"
+                        size={100}
+                        shape="circle"
+                        icon={<HiOutlineUser />}
+                        src={customer.avatar || customer.img || '/img/default-avatar.png'}
+                    />
+                </FormItem>
+                <FormItem label="Name">
+                    <div className="flex items-center">
+                        <HiUserCircle className="text-xl mr-2" />
+                        <span>{customer.fullName || customer.name || 'N/A'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Username">
+                    <div className="flex items-center">
+                        <HiUserCircle className="text-xl mr-2" />
+                        <span>{customer.username || 'N/A'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Email">
+                    <div className="flex items-center">
+                        <HiMail className="text-xl mr-2" />
+                        <span>{customer.email || 'N/A'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Phone Number">
+                    <div className="flex items-center">
+                        <HiPhone className="text-xl mr-2" />
+                        <span>{customer.phone || customer.phoneNumber || 'N/A'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Birthday">
+                    <div className="flex items-center">
+                        <HiCake className="text-xl mr-2" />
+                        <span>
+                            {customer.dob
+                                ? dayjs(customer.dob).format('MM/DD/YYYY')
+                                : customer.birthday
+                                ? dayjs(customer.birthday).format('MM/DD/YYYY')
+                                : 'N/A'}
+                        </span>
+                    </div>
+                </FormItem>
+                <FormItem label="Status">
+                    <div className="flex items-center">
+                        <HiCheckCircle className="text-xl mr-2" />
+                        <span>{customer.status || 'N/A'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Gender">
+                    <div className="flex items-center">
+                        <HiUserCircle className="text-xl mr-2" />
+                        <span>{customer.gender || 'N/A'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Membership Rank">
+                    <div className="flex items-center">
+                        <HiTag className="text-xl mr-2" />
+                        <span>{customer.membershipRank || 'N/A'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Total Spent">
+                    <div className="flex items-center">
+                        <HiCurrencyDollar className="text-xl mr-2" />
+                        <span>{customer.totalSpent != null ? `$${customer.totalSpent}` : 'N/A'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Subscribed for News">
+                    <div className="flex items-center">
+                        <HiCheckCircle className="text-xl mr-2" />
+                        <span>{customer.isSubscribedForNews ? 'Yes' : 'No'}</span>
+                    </div>
+                </FormItem>
+                <FormItem label="Role">
+                    <div className="flex items-center">
+                        <HiUserCircle className="text-xl mr-2" />
+                        <span>{customer.role || 'N/A'}</span>
+                    </div>
+                </FormItem>
+            </div>
+        )
+    }
 
     return (
         <>
