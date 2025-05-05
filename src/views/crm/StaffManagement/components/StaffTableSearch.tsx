@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Input from '@/components/ui/Input';
 import { HiOutlineSearch } from 'react-icons/hi';
+import debounce from 'lodash/debounce';
 
 type StaffTableSearchProps = {
     onSearch: (query: string) => void;
@@ -9,9 +10,16 @@ type StaffTableSearchProps = {
 const StaffTableSearch = ({ onSearch }: StaffTableSearchProps) => {
     const [query, setQuery] = useState('');
 
+    // Đặt hàm debounce cho onSearch để giảm số lần gọi hàm
+    const debouncedSearch = useCallback(
+        debounce((nextValue: string) => onSearch(nextValue), 500), // 500ms debounce
+        []
+    );
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setQuery(e.target.value);
-        onSearch(e.target.value); // Gọi hàm `onSearch` khi giá trị thay đổi
+        const newQuery = e.target.value;
+        setQuery(newQuery);
+        debouncedSearch(newQuery); // Gọi hàm debounce
     };
 
     return (

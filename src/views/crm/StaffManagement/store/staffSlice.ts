@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiGetAllStaffs } from '@/services/StaffService';
+import { apiGetAllStaffs, apiDeleteStaff, apiActivateStaff, apiBanStaff, apiSearchStaffs } from '@/services/StaffService';
 import { Staff, StaffListResponse } from '@/@types/staff';
 
 interface StaffState {
@@ -9,6 +9,7 @@ interface StaffState {
         size: number;
         sort: string | null;
         totalPages: number;
+        query: string;
     };
     loading: boolean;
     selectedStaff: Staff | null;
@@ -23,6 +24,7 @@ const initialState: StaffState = {
         size: 10,
         sort: null,
         totalPages: 0,
+        query: '',
     },
     loading: false,
     selectedStaff: null,
@@ -30,15 +32,53 @@ const initialState: StaffState = {
     error: null,
 };
 
-export const getStaffs = createAsyncThunk('staff/getStaffs', async (params: { page: number; size: number }, { rejectWithValue }) => {
+export const getStaffs = createAsyncThunk('staff/getStaffs', async (params: { page: number; size: number; query?: string }, { rejectWithValue }) => {
     try {
         const response = await apiGetAllStaffs(params);
-        console.log('API response:', response);
         return response.data as StaffListResponse;
     } catch (error: any) {
         return rejectWithValue(error.message || 'Failed to fetch staffs');
     }
 });
+
+export const deleteStaff = createAsyncThunk('staff/deleteStaff', async (id: number, { rejectWithValue }) => {
+    try {
+        const response = await apiDeleteStaff(id);
+        return response.data;
+    } catch (error: any) {
+        return rejectWithValue(error.message || 'Failed to delete staff');
+    }
+});
+
+export const activateStaff = createAsyncThunk('staff/activateStaff', async (id: number, { rejectWithValue }) => {
+    try {
+        const response = await apiActivateStaff(id);
+        return response.data;
+    } catch (error: any) {
+        return rejectWithValue(error.message || 'Failed to activate staff');
+    }
+});
+
+export const banStaff = createAsyncThunk('staff/banStaff', async (id: number, { rejectWithValue }) => {
+    try {
+        const response = await apiBanStaff(id);
+        return response.data;
+    } catch (error: any) {
+        return rejectWithValue(error.message || 'Failed to ban staff');
+    }
+});
+
+export const findStaffs = createAsyncThunk('staff/findStaffs',
+    async (params: { page: number; size: number; name: string }, { rejectWithValue }) => {
+        try {
+            const response = await apiSearchStaffs(params);  
+            console.log('API search response:', response);
+            return response.data as StaffListResponse;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to search staffs');
+        }
+    }
+);
 
 const staffSlice = createSlice({
     name: 'staff',
@@ -52,6 +92,10 @@ const staffSlice = createSlice({
         },
         toggleDeleteConfirmation(state, action) {
             state.deleteConfirmationVisible = action.payload;
+        },
+        setSearchQuery(state, action) {
+            state.tableData.query = action.payload;
+            state.tableData.page = 1;
         },
     },
     extraReducers: (builder) => {
@@ -72,9 +116,42 @@ const staffSlice = createSlice({
             .addCase(getStaffs.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
+            })
+            .addCase(deleteStaff.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteStaff.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(deleteStaff.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(activateStaff.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(activateStaff.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(activateStaff.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(banStaff.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(banStaff.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(banStaff.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             });
     },
 });
 
-export const { setTableData, setSelectedStaff, toggleDeleteConfirmation } = staffSlice.actions;
+export const { setTableData, setSelectedStaff, toggleDeleteConfirmation, setSearchQuery } = staffSlice.actions;
 export default staffSlice.reducer;
