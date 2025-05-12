@@ -1,32 +1,17 @@
-import { useEffect } from 'react'
 import Loading from '@/components/shared/Loading'
-import Statistic from './Statistic'
-import SalesReport from './SalesReport'
-import SalesByCategories from './SalesByCategories'
+import { useAppSelector } from '../store'
 import LatestOrder from './LatestOrder'
+import SalesByCategories from './SalesByCategories'
+import SalesReport from './SalesReport'
+import Statistic from './Statistic'
 import TopProduct from './TopProduct'
-import { getSalesDashboardData, useAppSelector } from '../store'
-import { useAppDispatch } from '@/store'
 
 const SalesDashboardBody = () => {
-    const dispatch = useAppDispatch()
-
     const dashboardData = useAppSelector(
         (state) => state.salesDashboard.data.dashboardData,
     )
-    const month = useAppSelector((state) => state.salesDashboard.data.month)
-    const year = useAppSelector((state) => state.salesDashboard.data.year)
+
     const loading = useAppSelector((state) => state.salesDashboard.data.loading)
-
-    useEffect(() => {
-        fetchData()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-
-    const fetchData = () => {
-        console.log('month2', month, 'year2', year)
-        dispatch(getSalesDashboardData({ month, year }))
-    }
 
     return (
         <Loading loading={loading}>
