@@ -22,6 +22,7 @@ import type {
     ColumnDef,
 } from '@/components/shared/DataTable'
 import { ProductResponse } from '@/@types/product'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 
 const inventoryStatusColors = [
     {
@@ -47,7 +48,7 @@ const ActionColumn = ({ row }: { row: ProductResponse }) => {
     const navigate = useNavigate()
 
     const onEdit = () => {
-        navigate(`/app/sales/product-edit/${row.id}`)
+        navigate(`${APP_PREFIX_PATH}/edit/${row.id}`)
     }
 
     const onDelete = () => {
@@ -55,7 +56,7 @@ const ActionColumn = ({ row }: { row: ProductResponse }) => {
         dispatch(setSelectedProduct(row.id))
     }
     const onViewDetail = () => {
-        navigate(`/app/sales/product-detail/${row.id}`)
+        navigate(`${APP_PREFIX_PATH}/product-detail/${row.id}`)
     }
     return (
         <div className="flex justify-end text-lg">

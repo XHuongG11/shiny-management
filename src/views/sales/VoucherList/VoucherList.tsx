@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import reducer from './store'
 import { injectReducer } from '@/store'
 import AdaptableCard from '@/components/shared/AdaptableCard'
@@ -14,11 +13,11 @@ const VoucherList = () => {
     const navigate = useNavigate()
 
     const onAddVoucher = () => {
-        navigate(`${APP_PREFIX_PATH}/sales/vouchers/add`)
+        navigate(`${APP_PREFIX_PATH}/vouchers/add`)
     }
 
     const onEditVoucher = (voucherId: number) => {
-        navigate(`${APP_PREFIX_PATH}/sales/vouchers/${voucherId}`)
+        navigate(`${APP_PREFIX_PATH}/vouchers/${voucherId}`)
     }
 
     return (

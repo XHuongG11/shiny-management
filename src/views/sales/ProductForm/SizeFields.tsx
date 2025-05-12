@@ -221,19 +221,13 @@ const SizeFields = (props: PricingFieldsProps) => {
                                                             }: FieldProps) => {
                                                                 return (
                                                                     <Input
-                                                                        {...field}
+                                                                        form={
+                                                                            form
+                                                                        }
+                                                                        field={
+                                                                            field
+                                                                        }
                                                                         placeholder="Size"
-                                                                        type="text"
-                                                                        onChange={(
-                                                                            e,
-                                                                        ) => {
-                                                                            form.setFieldValue(
-                                                                                field.name,
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                            )
-                                                                        }}
                                                                     />
                                                                 )
                                                             }}

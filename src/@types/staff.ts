@@ -1,7 +1,3 @@
-export type Gender = 'M' | 'F';
-export type Role = 'ADMIN' | 'MANAGER' | 'STAFF';
-export type Status = 'active' | 'inactive';
-
 export type Staff = {
     id?: number;
     fullName: string;
@@ -9,14 +5,11 @@ export type Staff = {
     phone: string;
     username: string;
     password?: string;
-    gender: Gender;
-    role: Role;
-    status: Status;
+    gender: string;
+    role?: string;
+    status?: string;
     dob: string; // Ngày sinh
-    joinAt: string; // Ngày tham gia
-    avatar?: string; // URL ảnh đại diện
-    backupToken?: string; // Token dự phòng
-    backupTokenExpireAt?: string; // Thời gian hết hạn token dự phòng
+    joinAt?: string; // Ngày tham gia
 };
 
 export type StaffListResponse = {

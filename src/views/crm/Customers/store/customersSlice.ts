@@ -1,149 +1,69 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import {
-    apiGetCrmCustomers,
-    apPutCrmCustomer,
-    apiGetCrmCustomersStatistic,
-} from '@/services/CrmService'
+    apiGetAllCustomers,
+    apiDeactivateCustomer,
+    apiActivateCustomer,
+    apiSearchCustomers,
+} from '@/services/CustomerService'
 import type { TableQueries } from '@/@types/common'
-
-type PersonalInfo = {
-    location: string
-    title: string
-    birthday: string
-    phoneNumber: string
-    facebook: string
-    twitter: string
-    pinterest: string
-    linkedIn: string
-}
-
-type OrderHistory = {
-    id: string
-    item: string
-    status: string
-    amount: number
-    date: number
-}
-
-type PaymentMethod = {
-    cardHolderName: string
-    cardType: string
-    expMonth: string
-    expYear: string
-    last4Number: string
-    primary: boolean
-}
-
-type Subscription = {
-    plan: string
-    status: string
-    billing: string
-    nextPaymentDate: number
-    amount: number
-}
-
-export type Customer = {
-    id: string
-    name: string
-    email: string
-    img: string
-    role: string
-    lastOnline: number
-    status: string
-    personalInfo: PersonalInfo
-    orderHistory: OrderHistory[]
-    paymentMethod: PaymentMethod[]
-    subscription: Subscription[]
-}
-
-type Statistic = {
-    value: number
-    growShrink: number
-}
-
-type CustomerStatistic = {
-    totalCustomers: Statistic
-    activeCustomers: Statistic
-    newCustomers: Statistic
-}
-
-type Filter = {
-    status: string
-}
-
-type GetCrmCustomersResponse = {
-    data: Customer[]
-    total: number
-}
-
-type GetCrmCustomersStatisticResponse = CustomerStatistic
+import { Customer, CustomerListResponse } from '@/@types/customer'
 
 export type CustomersState = {
     loading: boolean
-    statisticLoading: boolean
     customerList: Customer[]
-    statisticData: Partial<CustomerStatistic>
     tableData: TableQueries
-    filterData: Filter
-    drawerOpen: boolean
-    selectedCustomer: Partial<Customer>
+    selectedCustomer: Customer | null
+    banConfirmation: boolean
 }
 
 export const SLICE_NAME = 'crmCustomers'
 
-export const getCustomerStatistic = createAsyncThunk(
-    'crmCustomers/data/getCustomerStatistic',
-    async () => {
-        const response =
-            await apiGetCrmCustomersStatistic<GetCrmCustomersStatisticResponse>()
-        return response.data
-    }
-)
-
-export const getCustomers = createAsyncThunk(
-    'crmCustomers/data/getCustomers',
-    async (data: TableQueries & { filterData?: Filter }) => {
-        const response = await apiGetCrmCustomers<
-            GetCrmCustomersResponse,
-            TableQueries
-        >(data)
-        return response.data
-    }
-)
-
-export const putCustomer = createAsyncThunk(
-    'crmCustomers/data/putCustomer',
-    async (data: Customer) => {
-        const response = await apPutCrmCustomer(data)
-        return response.data
-    }
-)
-
 export const initialTableData: TableQueries = {
-    total: 0,
-    pageIndex: 1,
-    pageSize: 10,
-    query: '',
-    sort: {
-        order: '',
-        key: '',
-    },
-}
-
-export const initialFilterData = {
-    status: '',
+    totalPages: 0,
+    page: 1,
+    size: 10,
+    title: '',
 }
 
 const initialState: CustomersState = {
     loading: false,
-    statisticLoading: false,
     customerList: [],
-    statisticData: {},
     tableData: initialTableData,
-    filterData: initialFilterData,
-    drawerOpen: false,
-    selectedCustomer: {},
+    selectedCustomer: null,
+    banConfirmation: false,
 }
+
+export const getCustomers = createAsyncThunk(
+    SLICE_NAME + '/getCustomers',
+    async (data: { page?: number; size?: number }) => {
+        const response = await apiGetAllCustomers<CustomerListResponse>(data)
+        return response.data
+    }
+)
+
+export const searchCustomers = createAsyncThunk(
+    SLICE_NAME + '/searchCustomers',
+    async (data: { name: string; page?: number; size?: number }) => {
+        const response = await apiSearchCustomers<CustomerListResponse>(data)
+        return response.data
+    }
+)
+
+export const deactivateCustomer = createAsyncThunk(
+    SLICE_NAME + '/deactivateCustomer',
+    async (id: number) => {
+        const response = await apiDeactivateCustomer<boolean>(id)
+        return { id, success: response.data }
+    }
+)
+
+export const activateCustomer = createAsyncThunk(
+    SLICE_NAME + '/activateCustomer',
+    async (id: number) => {
+        const response = await apiActivateCustomer<boolean>(id)
+        return { id, success: response.data }
+    }
+)
 
 const customersSlice = createSlice({
     name: `${SLICE_NAME}/state`,
@@ -152,49 +72,50 @@ const customersSlice = createSlice({
         setTableData: (state, action) => {
             state.tableData = action.payload
         },
-        setCustomerList: (state, action) => {
-            state.customerList = action.payload
-        },
-        setFilterData: (state, action) => {
-            state.filterData = action.payload
-        },
         setSelectedCustomer: (state, action) => {
             state.selectedCustomer = action.payload
         },
-        setDrawerOpen: (state) => {
-            state.drawerOpen = true
-        },
-        setDrawerClose: (state) => {
-            state.drawerOpen = false
-        },
+        toggleBanConfirmation: (state, action) => {
+            state.banConfirmation = action.payload
+        }
     },
     extraReducers: (builder) => {
         builder
             .addCase(getCustomers.fulfilled, (state, action) => {
-                state.customerList = action.payload.data
-                state.tableData.total = action.payload.total
+                state.customerList = action.payload.data.content
+                state.tableData.totalPages = action.payload.data.totalPages
                 state.loading = false
             })
             .addCase(getCustomers.pending, (state) => {
                 state.loading = true
             })
-            .addCase(getCustomerStatistic.fulfilled, (state, action) => {
-                state.statisticData = action.payload
-                state.statisticLoading = false
+            .addCase(deactivateCustomer.fulfilled, (state, action) => {
+                const { id } = action.payload
+                state.customerList = state.customerList.map(customer =>
+                    customer.id === id ? { ...customer, status: 'BANNED' } : customer
+                )
             })
-            .addCase(getCustomerStatistic.pending, (state) => {
-                state.statisticLoading = true
+            .addCase(activateCustomer.fulfilled, (state, action) => {
+                const { id } = action.payload
+                state.customerList = state.customerList.map(customer =>
+                    customer.id === id ? { ...customer, status: 'ACTIVE' } : customer
+                )
+            })
+            .addCase(searchCustomers.fulfilled, (state, action) => {
+                state.customerList = action.payload.data.content
+                state.tableData.totalPages = action.payload.data.totalPages
+                state.loading = false
+            })
+            .addCase(searchCustomers.pending, (state) => {
+                state.loading = true
             })
     },
 })
 
 export const {
     setTableData,
-    setCustomerList,
-    setFilterData,
     setSelectedCustomer,
-    setDrawerOpen,
-    setDrawerClose,
+    toggleBanConfirmation,
 } = customersSlice.actions
 
 export default customersSlice.reducer

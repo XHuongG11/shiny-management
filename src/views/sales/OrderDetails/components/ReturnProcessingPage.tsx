@@ -6,6 +6,7 @@ import Loading from '@/components/shared/Loading';
 import Tag from '@/components/ui/Tag';
 import { getOrderById, updateOrderStatusById } from '@/services/SalesService';
 import { OrderResponse } from '@/@types/order';
+import { APP_PREFIX_PATH } from '@/constants/route.constant';
 
 const ReturnProcessingPage = () => {
     const { orderId } = useParams();
@@ -44,7 +45,7 @@ const ReturnProcessingPage = () => {
             });
             setTimeout(() => {
                 setNotification(null);
-                navigate(`/app/sales/order-list`);
+                navigate(`${APP_PREFIX_PATH}/orders`);
             }, 2000);
         } catch (err: any) {
             setNotification({

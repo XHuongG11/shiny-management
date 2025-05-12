@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import DataTable from '@/components/shared/DataTable';
-import { HiOutlineTrash, HiOutlinePencil, HiOutlineCheckCircle, HiOutlineXCircle } from 'react-icons/hi';
+import { HiOutlineTrash, HiOutlinePencil, HiOutlineBan, HiOutlineCheckCircle } from 'react-icons/hi';
 import Tooltip from '@/components/ui/Tooltip';
 import dayjs from 'dayjs';
 import {
@@ -8,70 +8,85 @@ import {
     setTableData,
     setSelectedStaff,
     toggleDeleteConfirmation,
-    setSearchQuery,
-    activateStaff,
-    banStaff,
     useAppDispatch,
     useAppSelector,
+    searchStaffs,
+    toggleBanConfirmation,
 } from '../store';
 import cloneDeep from 'lodash/cloneDeep';
-import type { DataTableResetHandle, OnSortParam, ColumnDef } from '@/components/shared/DataTable';
+import type { DataTableResetHandle, ColumnDef } from '@/components/shared/DataTable';
 import { Staff } from '@/@types/staff';
-import StaffTableSearch from './StaffTableSearch';
-import toast from '@/components/ui/toast';
-import Notification from '@/components/ui/Notification';
 
 type StaffTableProps = {
-    onEdit: () => void;
+    onEdit: (id: number) => void;
 };
 
-const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
+const StaffStatusColumn = ({ status }: { status: string }) => {
+    let color = ''
+    let label = status
+    
+    switch(status) {
+        case 'ACTIVE':
+            color = 'bg-emerald-500'
+            label = 'ACTIVE'
+            break
+        case 'BANNED':
+            color = 'bg-red-500'
+            label = 'BANNED'
+            break
+        default:
+            color = 'bg-gray-500'
+            break
+    }
+    
+    return (
+        <div className="flex items-center">
+            <span className={`${color} w-2.5 h-2.5 rounded-full mr-2`}></span>
+            <span>{label}</span>
+        </div>
+    )
+}
+
+const StaffTable = ({ onEdit } : StaffTableProps) => {
     const tableRef = useRef<DataTableResetHandle>(null);
     const dispatch = useAppDispatch();
 
-    const staffState = useAppSelector((state) => state.staff.data);
+    const { page, size, sort, totalPages, title } = useAppSelector(
+        (state) => state.staffManagement.data.tableData
+    );
 
-    // Kiểm tra an toàn nếu staffState là undefined
-    if (!staffState) {
-        return (
-            <div className="text-red-500 p-4">
-                Error: Staff state is not initialized. Please ensure the staff reducer is registered in the Redux store.
-            </div>
-        );
-    }
-
-    const { page = 1, size = 10, sort = null, totalPages = 0, query = '' } = staffState.tableData || {};
-    const loading = staffState.loading || false;
-    const data = staffState.staffList || [];
-    const error = staffState.error || null;
+    const loading = useAppSelector((state) => state.staffManagement.data.loading);
+    const data = useAppSelector((state) => state.staffManagement.data.staffList);
 
     useEffect(() => {
         fetchData();
-    }, [page, size, sort, query]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, size, sort]);
 
     const tableData = useMemo(
-        () => ({ page, size, sort, totalPages, query }),
-        [page, size, sort, totalPages, query]
+        () => ({ page, size, sort, totalPages, title }),
+        [page, size, sort, totalPages, title]
     );
 
     const fetchData = () => {
-        dispatch(getStaffs({ page: page ?? 1, size: size ?? 10, query }));
+        if (tableData.title && tableData.title.length > 1) {
+            dispatch(searchStaffs({ page: tableData.page as number, size: tableData.size as number, name: tableData.title as string }));
+        }
+        else {
+            dispatch(getStaffs({ page: tableData.page as number, size: tableData.size as number}));
+        }
     };
-
-    // const handleSearch = (searchQuery: string) => {
-    //     dispatch(setSearchQuery(searchQuery));
-    // };
 
     const columns: ColumnDef<Staff>[] = useMemo(
         () => [
             {
                 header: 'ID',
                 accessorKey: 'id',
-                cell: (props) => <span>{props.row.original.id ?? 'N/A'}</span>,
+                cell: (props) => <span>{props.row.original.id}</span>,
             },
             {
                 header: 'Join Date',
-                accessorKey: 'joinAt',
+                accessorKey: 'join_at',
                 cell: (props) => (
                     <span>{dayjs(props.row.original.joinAt).format('DD/MM/YYYY')}</span>
                 ),
@@ -83,8 +98,8 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
             },
             {
                 header: 'Full Name',
-                accessorKey: 'fullName',
-                cell: (props) => <span>{props.row.original.fullName}</span>,
+                accessorKey: 'full_name',
+                cell: (props) => <span className="font-semibold">{props.row.original.fullName}</span>,
             },
             {
                 header: 'Phone',
@@ -100,117 +115,61 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
                 header: 'Gender',
                 accessorKey: 'gender',
                 cell: (props) => (
-                    <span>
-                        {props.row.original.gender === 'MALE'
-                            ? 'Male'
-                            : props.row.original.gender === 'FEMALE'
-                            ? 'Female'
-                            : 'Other'}
-                    </span>
+                    <span>{props.row.original.gender === 'MALE' ? 'Male' : 'Female'}</span>
                 ),
             },
             {
                 header: 'Status',
                 accessorKey: 'status',
-                cell: (props) => {
-                    const status = props.row.original.status || 'Unknown';
-                    return (
-                        <span
-                            className={`${
-                                status === 'ACTIVE'
-                                    ? 'text-green-500'
-                                    : status === 'BANNED'
-                                    ? 'text-red-500'
-                                    : 'text-gray-500'
-                            }`}
-                        >
-                            {status}
-                        </span>
-                    );
-                },
+                cell: (props) => <StaffStatusColumn status={props.row.original.status as string} />,
             },
             {
-                header: 'Actions',
-                id: 'actions',
+                header: 'Action',
+                accessorKey: 'action',
+                id: 'action',
                 cell: (props) => {
                     const staff = props.row.original;
+                    const isActive = staff.status === 'ACTIVE';
 
                     const onDeleteClick = () => {
-                        dispatch(toggleDeleteConfirmation(true));
-                        dispatch(setSelectedStaff(staff));
+                        dispatch(toggleDeleteConfirmation(true))
+                        dispatch(setSelectedStaff(staff))
                     };
 
                     const onEditClick = () => {
-                        dispatch(setSelectedStaff(staff));
-                        setTimeout(() => {
-                            onEdit();
-                        }, 0);
+                        onEdit(staff.id as number);
                     };
 
-                    const onToggleStatusClick = async () => {
-                        if (!staff.id) {
-                            console.error('No staff ID provided');
-                            return;
-                        }
-                        console.log(`Toggling status for ID: ${staff.id} from ${staff.status}`); // Debug log
-                        try {
-                            if (staff.status === 'ACTIVE') {
-                                await dispatch(banStaff(staff.id)).unwrap();
-                                toast.push(
-                                    <Notification title="Success" type="success">
-                                        Staff banned successfully
-                                    </Notification>
-                                );
-                            } else if (staff.status === 'BANNED') {
-                                await dispatch(activateStaff(staff.id)).unwrap();
-                                toast.push(
-                                    <Notification title="Success" type="success">
-                                        Staff activated successfully
-                                    </Notification>
-                                );
-                            }
-                            dispatch(getStaffs({ page: 1, size: 10, query }));
-                        } catch (error: any) {
-                            console.error('Toggle status error:', error); // Debug log
-                            toast.push(
-                                <Notification title="Error" type="danger">
-                                    {error.message || 'Failed to update status'}
-                                </Notification>
-                            );
-                        }
+                    const onBanUnbanClick = () => {
+                        dispatch(toggleBanConfirmation(true));
+                        dispatch(setSelectedStaff(staff));
                     };
 
                     return (
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end">
                             <Tooltip title="Edit">
-                                <button
-                                    className="text-blue-500 hover:text-blue-700"
+                                <span
+                                    className="cursor-pointer p-2 hover:text-blue-500"
                                     onClick={onEditClick}
                                 >
                                     <HiOutlinePencil />
-                                </button>
+                                </span>
                             </Tooltip>
-                            {staff.status !== 'REMOVED' ? (
-                                <Tooltip title={staff.status === 'ACTIVE' ? 'Ban' : 'Activate'}>
-                                    <button
-                                        className={
-                                            staff.status === 'ACTIVE'
-                                                ? 'text-orange-500 hover:text-orange-700'
-                                                : 'text-green-500 hover:text-green-700'
-                                        }
-                                        onClick={onToggleStatusClick}
-                                    >
-                                        {staff.status === 'ACTIVE' ? <HiOutlineXCircle /> : <HiOutlineCheckCircle />}
-                                    </button>
-                                </Tooltip>
-                            ) : null}
                             <Tooltip title="Delete">
-                                <button
-                                    className="text-red-500 hover:text-red-700"
+                                <span
+                                    className="cursor-pointer p-2 hover:text-red-500"
                                     onClick={onDeleteClick}
                                 >
                                     <HiOutlineTrash />
-                                </button>
+                                </span>
+                            </Tooltip>
+                            <Tooltip title={isActive ? "Ban Staff" : "Unban Staff"}>
+                                <span
+                                    className={`cursor-pointer p-2 ${isActive ? 'hover:text-amber-500' : 'hover:text-emerald-500'}`}
+                                    onClick={onBanUnbanClick}
+                                >
+                                    {isActive ? <HiOutlineBan /> : <HiOutlineCheckCircle />}
+                                </span>
                             </Tooltip>
                         </div>
                     );
@@ -233,52 +192,22 @@ const StaffTable: React.FC<StaffTableProps> = ({ onEdit }) => {
         dispatch(setTableData(newTableData));
     };
 
-    const onSort = (sort: OnSortParam) => {
-        const newTableData = cloneDeep(tableData);
-        newTableData.sort = sort;
-        dispatch(setTableData(newTableData));
-    };
-
-    if (error) {
-        return (
-            <div className="text-red-500 p-4">
-                Error: {error}
-                <button
-                    className="ml-4 text-blue-500 hover:text-blue-700"
-                    onClick={fetchData}
-                >
-                    Retry
-                </button>
-            </div>
-        );
-    }
-
     return (
-        <div>
-            {/* <StaffTableSearch onSearch={handleSearch} /> */}
-            {loading && data.length === 0 ? (
-                <div className="p-4">Loading...</div>
-            ) : !loading && data.length === 0 ? (
-                <div className="p-4">No staff members found.</div>
-            ) : (
-                <DataTable
-                    ref={tableRef}
-                    columns={columns}
-                    data={ data }
-                    skeletonAvatarColumns={[0]}
-                    skeletonAvatarProps={{ className: 'rounded-md' }}
-                    loading={loading}
-                    pagingData={{
-                        total: tableData.totalPages * tableData.size,
-                        pageIndex: tableData.page as number,
-                        pageSize: tableData.size as number,
-                    }}
-                    onPaginationChange={onPaginationChange}
-                    onSelectChange={onSelectChange}
-                    onSort={onSort}
-                />
-            )}
-        </div>
+        <DataTable
+            ref={tableRef}
+            columns={columns}
+            data={data}
+            skeletonAvatarColumns={[0]}
+            skeletonAvatarProps={{ className: 'rounded-md' }}
+            loading={loading}
+            pagingData={{
+                total: tableData.totalPages as number,
+                pageIndex: tableData.page as number,
+                pageSize: tableData.size as number,
+            }}
+            onPaginationChange={onPaginationChange}
+            onSelectChange={onSelectChange}
+        />
     );
 };
 

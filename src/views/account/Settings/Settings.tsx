@@ -68,7 +68,7 @@ const Settings = () => {
 
     const onTabChange = (val: string) => {
         setCurrentTab(val)
-        navigate(`/app/account/settings/${val}`)
+        navigate(`/manage/account/settings/${val}`)
     }
 
     const fetchData = async () => {

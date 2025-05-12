@@ -3,6 +3,7 @@ import { apiDeleteVoucher, apiGetAllVouchers, apiSearchVouchers } from '@/servic
 import type { TableQueries } from '@/@types/common'
 import { Voucher, VoucherListResponse } from '@/@types/voucher'
 import { ApiResponse } from '@/@types/auth'
+import { AxiosResponse } from 'axios'
 
 export type VoucherListState = {
     loading: boolean
@@ -33,7 +34,7 @@ export const searchVouchers = createAsyncThunk(
 export const deleteVoucher = createAsyncThunk(
     SLICE_NAME + '/deleteVoucher',
     async (id: number) => {
-        const response = await apiDeleteVoucher(id) as unknown as ApiResponse<Voucher>
+        const response = await apiDeleteVoucher(id) as unknown as AxiosResponse<ApiResponse<Voucher>>
         if (response.data.code === "200") {
             return id
         }

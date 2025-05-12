@@ -2,7 +2,6 @@ import { useEffect, useMemo, useCallback, useRef } from 'react'
 import DataTable from '@/components/shared/DataTable'
 import { HiOutlineTrash, HiOutlinePencil } from 'react-icons/hi'
 import { NumericFormat } from 'react-number-format'
-import Badge from '@/components/ui/Badge'
 import Tooltip from '@/components/ui/Tooltip'
 import {
     getVouchers,
@@ -17,7 +16,6 @@ import cloneDeep from 'lodash/cloneDeep'
 import dayjs from 'dayjs'
 import type {
     DataTableResetHandle,
-    OnSortParam,
     ColumnDef,
 } from '@/components/shared/DataTable'
 import type { Voucher, VoucherApplicability } from '@/@types/voucher'

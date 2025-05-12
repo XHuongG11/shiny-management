@@ -54,7 +54,8 @@ const getValidationSchema = () => {
         productSizes: Yup.array()
             .of(
                 Yup.object().shape({
-                    size: Yup.string().required('Size is required'),
+                    size: Yup.string()
+                        .required('Size is required'),
                     stock: Yup.number()
                         .typeError('Stock must be a number')
                         .required('Stock is required'),
@@ -140,7 +141,7 @@ const ProductForm = forwardRef<FormikRef, ProductForm>((props, ref) => {
             attributes: [],
             productSizes: [
                 {
-                    size: null,
+                    size: '',
                     stock: null,
                     price: null,
                     discountPrice: null,

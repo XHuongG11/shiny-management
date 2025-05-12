@@ -6,69 +6,43 @@ import type { Routes } from '@/@types/routes'
 const appsRoute: Routes = [
     {
         key: 'appsCrm.customers',
-        path: `${APP_PREFIX_PATH}/crm/customers`,
+        path: `${APP_PREFIX_PATH}/customers`,
         component: lazy(() => import('@/views/crm/Customers')),
         authority: [MANAGER, STAFF],
-        meta: {
-            header: 'Customers',
-        },
     },
     {
-        key: 'appsCrm.customerDetails',
-        path: `${APP_PREFIX_PATH}/crm/customer-details`,
-        component: lazy(() => import('@/views/crm/CustomerDetail')),
+        key: 'appsCrm.staffManagement',
+        path: `${APP_PREFIX_PATH}/staffs`,
+        component: lazy(() => import('@/views/crm/StaffManagement')),
         authority: [MANAGER, STAFF],
-        meta: {
-            header: 'Customer Details',
-            headerContainer: true,
-        },
     },
     {
-        key: 'appsCrm.mail',
-        path: `${APP_PREFIX_PATH}/crm/mail`,
-        component: lazy(() => import('@/views/crm/Mail')),
+        key: 'appsCrm.staffManagement',
+        path: `${APP_PREFIX_PATH}/staffs/:sid`,
+        component: lazy(() => import('@/views/crm/StaffEdit')),
         authority: [MANAGER, STAFF],
-        meta: {
-            pageContainerType: 'gutterless',
-            footer: false,
-        },
     },
     {
-        key: 'appsCrm.mail',
-        path: `${APP_PREFIX_PATH}/crm/mail/:category`,
-        component: lazy(() => import('@/views/crm/Mail')),
+        key: 'appsCrm.staffManagement',
+        path: `${APP_PREFIX_PATH}/staffs/add`,
+        component: lazy(() => import('@/views/crm/StaffAdd')),
         authority: [MANAGER, STAFF],
-        meta: {
-            pageContainerType: 'gutterless',
-            footer: false,
-        },
-    },
-    {
-        key: 'appsCrm.staffList',
-        path: `${APP_PREFIX_PATH}/crm/staff-list`,
-        component: lazy(
-            () => import('@/views/crm/StaffManagement/StaffManagement'),
-        ),
-        authority: [MANAGER],
-        meta: {
-            header: 'Staff Management',
-        },
     },
     {
         key: 'appsSales.dashboard',
-        path: `${APP_PREFIX_PATH}/sales/dashboard`,
+        path: `${APP_PREFIX_PATH}/dashboard`,
         component: lazy(() => import('@/views/sales/SalesDashboard')),
         authority: [MANAGER],
     },
     {
         key: 'appsSales.productList',
-        path: `${APP_PREFIX_PATH}/sales/product-list`,
+        path: `${APP_PREFIX_PATH}/products`,
         component: lazy(() => import('@/views/sales/ProductList')),
         authority: [MANAGER],
     },
     {
         key: 'appsSales.productEdit',
-        path: `${APP_PREFIX_PATH}/sales/product-edit/:productId`,
+        path: `${APP_PREFIX_PATH}/edit/:productId`,
         component: lazy(() => import('@/views/sales/ProductEdit')),
         authority: [MANAGER],
         meta: {
@@ -77,16 +51,16 @@ const appsRoute: Routes = [
     },
     {
         key: 'appsSales.productDetail',
-        path: `${APP_PREFIX_PATH}/sales/product-detail/:productId`,
+        path: `${APP_PREFIX_PATH}/product-detail/:productId`,
         component: lazy(() => import('@/views/sales/ProductDetail')),
         authority: [MANAGER],
         meta: {
-            header: 'Detail Product',
+            header: 'Product Detail',
         },
     },
     {
         key: 'appsSales.productNew',
-        path: `${APP_PREFIX_PATH}/sales/product-new`,
+        path: `${APP_PREFIX_PATH}/product-new`,
         component: lazy(() => import('@/views/sales/ProductNew')),
         authority: [MANAGER],
         meta: {
@@ -95,19 +69,19 @@ const appsRoute: Routes = [
     },
     {
         key: 'appsSales.orderList',
-        path: `${APP_PREFIX_PATH}/sales/order-list`,
+        path: `${APP_PREFIX_PATH}/orders`,
         component: lazy(() => import('@/views/sales/OrderList')),
         authority: [STAFF],
     },
     {
         key: 'appsSales.orderDetails',
-        path: `${APP_PREFIX_PATH}/sales/order-details/:orderId`,
+        path: `${APP_PREFIX_PATH}/order-details/:orderId`,
         component: lazy(() => import('@/views/sales/OrderDetails')),
         authority: [STAFF],
     },
     {
         key: 'appsSales.returnProcessing',
-        path: `${APP_PREFIX_PATH}/sales/order-details/return/:orderId`,
+        path: `${APP_PREFIX_PATH}/order-details/return/:orderId`,
         component: lazy(
             () =>
                 import(
@@ -121,22 +95,19 @@ const appsRoute: Routes = [
     },
     {
         key: 'appsSales.reviews',
-        path: `${APP_PREFIX_PATH}/sales/reviews`,
+        path: `${APP_PREFIX_PATH}/reviews`,
         component: lazy(() => import('@/views/sales/ReviewList')),
         authority: [STAFF],
     },
     {
         key: 'appsSales.vouchers',
-        path: `${APP_PREFIX_PATH}/sales/vouchers`,
+        path: `${APP_PREFIX_PATH}/vouchers`,
         component: lazy(() => import('@/views/sales/VoucherList')),
         authority: [MANAGER],
-        meta: {
-            header: 'Voucher Management',
-        },
     },
     {
         key: 'appsSales.voucherAdd',
-        path: `${APP_PREFIX_PATH}/sales/vouchers/add`,
+        path: `${APP_PREFIX_PATH}/vouchers/add`,
         component: lazy(() => import('@/views/sales/VoucherAdd')),
         authority: [MANAGER],
         meta: {
@@ -146,7 +117,7 @@ const appsRoute: Routes = [
     },
     {
         key: 'appsSales.voucherEdit',
-        path: `${APP_PREFIX_PATH}/sales/vouchers/:voucherId`,
+        path: `${APP_PREFIX_PATH}/vouchers/:voucherId`,
         component: lazy(() => import('@/views/sales/VoucherEdit')),
         authority: [MANAGER],
         meta: {
@@ -156,47 +127,16 @@ const appsRoute: Routes = [
     },
     {
         key: 'appsSales.catalogManagement',
-        path: `${APP_PREFIX_PATH}/sales/catalog-management`,
+        path: `${APP_PREFIX_PATH}/catalogs`,
         component: lazy(() => import('@/views/sales/CatalogManagement')),
         authority: [MANAGER],
     },
     {
-        key: 'appsknowledgeBase.helpCenter',
-        path: `${APP_PREFIX_PATH}/knowledge-base/help-center`,
-        component: lazy(() => import('@/views/knowledge-base/HelpCenter')),
-        authority: [MANAGER, STAFF],
-        meta: {
-            pageContainerType: 'gutterless',
-        },
-    },
-    {
-        key: 'appsknowledgeBase.article',
-        path: `${APP_PREFIX_PATH}/knowledge-base/article`,
-        component: lazy(() => import('@/views/knowledge-base/Article')),
-        authority: [MANAGER, STAFF],
-    },
-    {
-        key: 'appsknowledgeBase.manageArticles',
-        path: `${APP_PREFIX_PATH}/knowledge-base/manage-articles`,
-        component: lazy(() => import('@/views/knowledge-base/ManageArticles')),
-        authority: [MANAGER, STAFF],
-        meta: {
-            header: 'Manage Articles',
-            extraHeader: lazy(
-                () =>
-                    import(
-                        '@/views/knowledge-base/ManageArticles/components/PanelHeader'
-                    ),
-            ),
-            headerContainer: true,
-        },
-    },
-    {
-        key: 'appsknowledgeBase.editArticle',
-        path: `${APP_PREFIX_PATH}/knowledge-base/edit-article`,
-        component: lazy(() => import('@/views/knowledge-base/EditArticle')),
-        authority: [MANAGER, STAFF],
-    },
+        key: 'appsSales.webContent',
+        path: `${APP_PREFIX_PATH}/web-content`,
+        component: lazy(() => import('@/views/sales/WebContent')),
+        authority: [MANAGER],
+    }, 
     {
         key: 'appsAccount.settings',
         path: `${APP_PREFIX_PATH}/account/settings/:tab`,
