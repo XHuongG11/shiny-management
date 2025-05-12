@@ -10,9 +10,7 @@ import { useEffect, useState } from 'react'
 
 const SalesDashboardHeader = () => {
     const dispatch = useAppDispatch()
-    const [selectedDate, setSelectedDate] = useState<Dayjs>(
-        dayjs().subtract(1, 'month'),
-    )
+    const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())
 
     const onFilter = () => {
         if (!selectedDate) return

@@ -93,7 +93,7 @@ const CollectionsTable = () => {
                 updateCollection({
                     id: values.id ?? 0,
                     name: values.name,
-                    description: values.description,
+                    description: values.description.replace(/<\/?p>/g, ''),
                 }),
             )
             if (resp.meta.requestStatus === 'fulfilled') {

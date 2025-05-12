@@ -18,7 +18,7 @@ import { FiTrash } from 'react-icons/fi'
 
 type FormFieldsName = {
     productSizes: {
-        size: number
+        size: string
         stock: number
         price: number
         discountPrice: number
@@ -32,7 +32,7 @@ type PricingFieldsProps = {
     errors: FormikErrors<FormFieldsName>
     values: {
         productSizes: {
-            size: number
+            size: string
             stock: number
             price: number
             discountPrice: number
@@ -220,23 +220,18 @@ const SizeFields = (props: PricingFieldsProps) => {
                                                                 form,
                                                             }: FieldProps) => {
                                                                 return (
-                                                                    <NumericFormatInput
-                                                                        form={
-                                                                            form
-                                                                        }
-                                                                        field={
-                                                                            field
-                                                                        }
+                                                                    <Input
+                                                                        {...field}
                                                                         placeholder="Size"
-                                                                        customInput={
-                                                                            NumberInput as ComponentType
-                                                                        }
-                                                                        onValueChange={(
+                                                                        type="text"
+                                                                        onChange={(
                                                                             e,
                                                                         ) => {
                                                                             form.setFieldValue(
                                                                                 field.name,
-                                                                                e.value,
+                                                                                e
+                                                                                    .target
+                                                                                    .value,
                                                                             )
                                                                         }}
                                                                     />

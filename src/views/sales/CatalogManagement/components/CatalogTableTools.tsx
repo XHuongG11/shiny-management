@@ -26,7 +26,7 @@ const CatalogTableTools = () => {
             const resp = await dispatch(
                 addCollection({
                     name: values.name,
-                    description: values.description,
+                    description: values.description.replace(/<\/?p>/g, ''),
                 }),
             )
             if (resp.meta.requestStatus === 'fulfilled') {
